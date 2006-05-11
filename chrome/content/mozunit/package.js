@@ -18,6 +18,6 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-this.Assert        = Module.require('package', 'assertions');
+this.assertions    = Module.require('package', 'assertions');
 this.TestSuite     = Module.require('class', 'mozunit');
 this.Specification = this.TestSuite;
