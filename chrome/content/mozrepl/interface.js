@@ -18,16 +18,12 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-function constructor(serverConstructor) {
-    this._serverConstructor = serverConstructor;
-    this._server = null;
+function constructor(server) {
+    this._server = server;
 }
 
 function toggleServer() {
     var command = document.getElementById('mozrepl-command-toggle');
-
-    if(!this._server) 
-        this._server = new this._serverConstructor();
 
     if(this._server.isActive()) {
         this._server.stop();        
@@ -39,11 +35,3 @@ function toggleServer() {
     }
 }
 
-function dump(text, interactorName) {
-    var interactor;
-    if(interactorName)
-        interactor = this._server.getInteractor(interactorName);
-    else
-        interactor = this._server.getFirstInteractor();
-    interactor.output(text);
-}

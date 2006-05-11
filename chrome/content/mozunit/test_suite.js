@@ -89,9 +89,10 @@ function testSummary(summary) {
 function __output(string) {
     if(this.__outputter)
         this.__outputter(string);
-    else if(typeof(MozRepl_Server) == 'object' &&
-            MozRepl_Server.isActive())
-        MozRepl_dump(string);
+    else if(typeof(devbox.mozrepl.server) == 'object' &&
+            devbox.mozrepl.server.isActive() &&
+            devbox.mozrepl.dump)
+        devbox.mozrepl.dump(string);
     else
         dump(string);
 }
