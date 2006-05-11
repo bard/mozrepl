@@ -20,11 +20,11 @@
 
 var Interactor = Module.require('class', 'interactor');
 
-function constructor(port) {
-    this._port = 4242 || port;
-}
+function constructor() {}
 
-function start() {
+function start(port) {
+    if(!port)
+        port = 4242;
     var server = this;
 
     var socketListener = {
@@ -62,7 +62,7 @@ function start() {
         this.__serv = Components
             .classes['@mozilla.org/network/server-socket;1']
             .createInstance(Components.interfaces.nsIServerSocket);
-        this.__serv.init(this._port, true, -1);
+        this.__serv.init(port, true, -1);
         this.__serv.asyncListen(socketListener);
         dump('MozRepl: Listening...\n');
     } catch(e) {
