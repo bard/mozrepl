@@ -42,7 +42,7 @@ function start() {
             }
             dump('MozRepl: Accepted connection.\n');
 
-            var interactor = new Interactor(instream, outstream)
+            var interactor = new Interactor(instream, outstream, server)
             interactor.name = (new Date()).getTime();
 
             var pump = Components
@@ -51,10 +51,8 @@ function start() {
 
             pump.init(stream, -1, -1, 0, 0, false);
             pump.asyncRead(interactor, null);
-            server.addInteractor(interactor, interactor.name);
         },
         onStopListening: function(serv, status) {
-            alert('stop listening');
         }
     };
 

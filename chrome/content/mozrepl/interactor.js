@@ -18,7 +18,8 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-function constructor(instream, outstream) {
+function constructor(instream, outstream, server) {
+    this.__server = server;
     this.__instream = instream;
     this.__outstream = outstream;
     this.__buffer == '';
@@ -49,15 +50,14 @@ function output(text) {
 }
 
 function onStartRequest(request, context) {
-//        this.name = (new Date()).getTime()
-//        MozRepl_Server.addInteractor(this, this.name);
+    this.__server.addInteractor(this, this.name);
 }
 
 function onStopRequest(request, context, status) {
     this.__instream.close();
     this.__outstream.close();
-//        if(this.name)
-//            MozRepl_Server.removeInteractor(name);
+    if(this.name)
+        this.__server.removeInteractor(this.name);
     dump('MozRepl: Closed a connection.\n');
 }
 
