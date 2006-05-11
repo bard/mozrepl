@@ -1,0 +1,2 @@
+content devbox chrome/content/
+overlay chrome://browser/content/browser.xul chrome://devbox/content/overlay.xul
