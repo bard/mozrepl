@@ -24,13 +24,13 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 <!DOCTYPE overlay>
 <overlay id="devbox-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
   <script type="application/x-javascript" src="mozrepl/server.js"/>
   <script type="application/x-javascript" src="mozrepl/interactor.js"/>
+  <script type="application/x-javascript" src="mozrepl/interface.js"/>
 
   <script type="application/x-javascript" src="mozunit/assert.js"/>
   <script type="application/x-javascript" src="mozunit/mozunit.js"/>
-
-  <script type="application/x-javascript" src="overlay.js"/>
 
   <commandset id="mainCommandSet">
     <command id="mozrepl-command-toggle"
