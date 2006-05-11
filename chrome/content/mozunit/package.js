@@ -19,5 +19,5 @@
 */
 
 this.assertions    = Module.require('package', 'assertions');
-this.TestSuite     = Module.require('class', 'mozunit');
+this.TestSuite     = Module.require('class',   'test_suite');
 this.Specification = this.TestSuite;
