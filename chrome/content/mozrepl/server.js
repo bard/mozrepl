@@ -51,6 +51,7 @@ function start() {
 
             pump.init(stream, -1, -1, 0, 0, false);
             pump.asyncRead(interactor, null);
+            server.addInteractor(interactor, interactor.name);
         },
         onStopListening: function(serv, status) {
         }
@@ -104,13 +105,3 @@ function getFirstInteractor() {
         return this.__interactors[name];
     return null;
 }
-
-// function dump(text, interactorName) {
-//     var inteactor;
-//     if(interactorName)
-//         interactor = MozRepl_Server.getInteractor(interactorName);
-//     else
-//         interactor = MozRepl_Server.getFirstInteractor();
-    
-//     interactor.output(text);
-// }

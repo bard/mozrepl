@@ -50,7 +50,6 @@ function output(text) {
 }
 
 function onStartRequest(request, context) {
-    this.__server.addInteractor(this, this.name);
 }
 
 function onStopRequest(request, context, status) {

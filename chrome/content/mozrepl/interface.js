@@ -38,3 +38,12 @@ function toggleServer() {
         command.setAttribute('label', 'Stop MozRepl');
     }
 }
+
+function dump(text, interactorName) {
+    var interactor;
+    if(interactorName)
+        interactor = this._server.getInteractor(interactorName);
+    else
+        interactor = this._server.getFirstInteractor();
+    interactor.output(text);
+}
