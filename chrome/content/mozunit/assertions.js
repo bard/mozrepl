@@ -16,7 +16,7 @@
 //
 // Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
-function equals: function(x, y) {
+function equals(x, y) {
     if(y != x)
         throw new AssertionFailed('Expected ' + x + ', got ' + y + '.');
 }
