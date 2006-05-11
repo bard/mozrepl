@@ -17,7 +17,7 @@
 // Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 function constructor() {
-    this.__tests = {}
+    this._tests = {}
 
     this.__defineSetter__(
         'tests', function(value) {
@@ -41,54 +41,54 @@ function constructor() {
 }
 
 function setUp(fn) {
-    this.__setUp = fn;
+    this._setUp = fn;
 }
 
 function tearDown(fn) {
-    this.__tearDown = fn;
+    this._tearDown = fn;
 }
 
 function test(desc, fn) {
-    this.__tests[desc] = fn;
+    this._tests[desc] = fn;
 }
 
 function setTests(hash) {
-    // should probably clear our __tests hash and copy over, instead
+    // should probably clear our _tests hash and copy over, instead
     // of modifying parameter
 
     if(hash.setUp) {
-        this.__setUp = hash.setUp;
+        this._setUp = hash.setUp;
         delete hash.setUp;
     }
 
     if(hash.given) {
-        this.__setUp = hash.given;
+        this._setUp = hash.given;
         delete hash.given;
     }
 
     if(hash.tearDown) {
-        this.__tearDown = hash.tearDown;
+        this._tearDown = hash.tearDown;
         delete hash.tearDown;
     }
 
-    this.__tests = hash;
+    this._tests = hash;
 }
 
 function testResult(eventType, eventLocation, message) {
     if(eventType != 'SUCCESS')
-        this.__output(eventType + ' in <' + eventLocation + '>\n' + (message || '') + '\n');
+        this._output(eventType + ' in <' + eventLocation + '>\n' + (message || '') + '\n');
 }
 
 function testSummary(summary) {
-    this.__output('\nTest run summary\n' +
+    this._output('\nTest run summary\n' +
                   '  Successes: ' + summary.successes + '\n' +
                   '  Failures:  ' + summary.failures + '\n' +
                   '  Errors:    ' + summary.errors + '\n\n');
 }
 
-function __output(string) {
-    if(this.__outputter)
-        this.__outputter(string);
+function _output(string) {
+    if(this._outputter)
+        this._outputter(string);
     else if(typeof(devbox.mozrepl.server) == 'object' &&
             devbox.mozrepl.server.isActive() &&
             devbox.mozrepl.dump)
@@ -104,14 +104,14 @@ function run() {
         errors: 0
     };
 
-    for(desc in this.__tests) {
+    for(desc in this._tests) {
         var context = {};
 
         try {
-            if(this.__setUp)
-                this.__setUp.call(context);
+            if(this._setUp)
+                this._setUp.call(context);
 
-            this.__tests[desc].call(context);
+            this._tests[desc].call(context);
 
             summary.successes += 1;
             this.testResult('SUCCESS', desc);
@@ -143,16 +143,16 @@ function run() {
             this.testResult('ERROR', desc, trace);
         }
 
-        if(this.__tearDown)
-            this.__tearDown.call(context);
+        if(this._tearDown)
+            this._tearDown.call(context);
     }
     this.testSummary(summary);
 }
 
 function describe() {
-    this.__output('Specification\n\n')
-        for(desc in this.__tests)
-            this.__output('  * ' + desc + '\n\n');
+    this._output('Specification\n\n')
+        for(desc in this._tests)
+            this._output('  * ' + desc + '\n\n');
 }
 
 /*
