@@ -25,18 +25,14 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 <overlay id="devbox-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-  <script type="application/x-javascript" src="mozrepl/server.js"/>
-  <script type="application/x-javascript" src="mozrepl/interactor.js"/>
-  <script type="application/x-javascript" src="mozrepl/interface.js"/>
-
-  <script type="application/x-javascript" src="mozunit/assert.js"/>
-  <script type="application/x-javascript" src="mozunit/mozunit.js"/>
+  <script type="application/x-javascript" src="lib/module_helper.js"/>
+  <script type="application/x-javascript" src="main.js"/>
 
   <commandset id="mainCommandSet">
     <command id="mozrepl-command-toggle"
              label="Start MozRepl"
              accesskey="R"
-             oncommand="MozRepl_Interface.toggleServer();"/>
+             oncommand="devbox.mozrepl.ui.toggleServer();"/>
   </commandset>
 
   <menupopup id="menu_ToolsPopup">
