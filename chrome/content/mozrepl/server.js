@@ -57,13 +57,13 @@ function start(port) {
         }
     };
 
-    this.__interactors = {};
+    this._interactors = {};
     try {
-        this.__serv = Components
+        this._serv = Components
             .classes['@mozilla.org/network/server-socket;1']
             .createInstance(Components.interfaces.nsIServerSocket);
-        this.__serv.init(port, true, -1);
-        this.__serv.asyncListen(socketListener);
+        this._serv.init(port, true, -1);
+        this._serv.asyncListen(socketListener);
         dump('MozRepl: Listening...\n');
     } catch(e) {
         dump('MozRepl: Exception: ' + e);
@@ -72,36 +72,36 @@ function start(port) {
 
 function stop() {
     dump('MozRepl: Closing...\n');
-    this.__serv.close();
-    delete this.__serv;
-    delete this.__interactors;
+    this._serv.close();
+    delete this._serv;
+    delete this._interactors;
 }
  
 function isActive() {
-    if(this.__serv)
+    if(this._serv)
         return true;
 }
  
 function addInteractor(interactor, name) {
-    if(!this.__interactors[name])
-        this.__interactors[name] = interactor;
+    if(!this._interactors[name])
+        this._interactors[name] = interactor;
 }
 
 function renameInteractor(oldName, newName) {
-    this.__interactors[newName] = this.__interactors[oldName];
-    delete this.__interactors[oldName];
+    this._interactors[newName] = this._interactors[oldName];
+    delete this._interactors[oldName];
 }
 
 function removeInteractor(name) {
-    delete this.__interactors[name];
+    delete this._interactors[name];
 }
 
 function getInteractor(name) {
-    return this.__interactors[name];
+    return this._interactors[name];
 }
     
 function getFirstInteractor() {
-    for(name in this.__interactors)
-        return this.__interactors[name];
+    for(name in this._interactors)
+        return this._interactors[name];
     return null;
 }

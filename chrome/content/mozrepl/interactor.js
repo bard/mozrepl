@@ -19,11 +19,11 @@
 */
 
 function constructor(instream, outstream, server) {
-    this.__server = server;
-    this.__instream = instream;
-    this.__outstream = outstream;
-    this.__buffer == '';
-    this.__loader = Components
+    this._server = server;
+    this._instream = instream;
+    this._outstream = outstream;
+    this._buffer == '';
+    this._loader = Components
         .classes['@mozilla.org/moz/jssubscript-loader;1']
         .getService(Components.interfaces.mozIJSSubScriptLoader);
     this.USE_SUBSCRIPT_LOADER_FOR_EVAL = false;
@@ -42,34 +42,34 @@ function evaluate(code) {
 
 function load(url, context) {
     dump('MozRepl: Loading subscript ' + url + '\n');
-    return this.__loader.loadSubScript(url, context || window);    
+    return this._loader.loadSubScript(url, context || window);    
 }
 
 function output(text) {
-    this.__outstream.write(text, text.length);
+    this._outstream.write(text, text.length);
 }
 
 function onStartRequest(request, context) {
 }
 
 function onStopRequest(request, context, status) {
-    this.__instream.close();
-    this.__outstream.close();
+    this._instream.close();
+    this._outstream.close();
     if(this.name)
-        this.__server.removeInteractor(this.name);
+        this._server.removeInteractor(this.name);
     dump('MozRepl: Closed a connection.\n');
 }
 
 function onDataAvailable(request, context, inputStream, offset, count) {
     try {
-        this.__buffer += this.__instream.read(count);
+        this._buffer += this._instream.read(count);
 
         var rx = /^::([^\s]+) (.+)\n/m;
-        m = this.__buffer.match(rx);
+        m = this._buffer.match(rx);
         if(m) {
             var cmd = m[1];
             var arg = m[2];
-            this.__buffer = this.__buffer.replace(rx, '');
+            this._buffer = this._buffer.replace(rx, '');
             
             switch(cmd) {
             case 'name':
@@ -78,22 +78,22 @@ function onDataAvailable(request, context, inputStream, offset, count) {
                 MozRepl_Server.renameInteractor(oldName, this.name);
                 break;
             case 'echo':
-                this.__outstream.write(arg + '\n', arg.length + 1);
+                this._outstream.write(arg + '\n', arg.length + 1);
                 break;
             case 'load':
                 var result = this.load(arg) + '\n\n';
-                this.__outstream.write('>>> ' + result, result.length + 4);
+                this._outstream.write('>>> ' + result, result.length + 4);
                 break;
             }
         }
 
-        var match = this.__buffer.match(/\n--end-emacs-input\n/m);
+        var match = this._buffer.match(/\n--end-emacs-input\n/m);
         if (match) {
-            var code = this.__buffer.substr(0, match.index);
-            this.__buffer = '';
+            var code = this._buffer.substr(0, match.index);
+            this._buffer = '';
 
             var result = this.evaluate(code) + '\n\n';
-            this.__outstream.write('>>> ' + result, result.length + 4);
+            this._outstream.write('>>> ' + result, result.length + 4);
         }
 
     } catch(exception) {
@@ -106,9 +106,9 @@ function onDataAvailable(request, context, inputStream, offset, count) {
                     call = call.replace(/\\n/g, '\n');
                             
                     if(call.length > 200)
-                        call = call.substr(0, 200) + '[...]\n'
+                        call = call.substr(0, 200) + '[...]\n';
                             
-                            trace += call.replace(/^/mg, '\t') + '\n';
+                    trace += call.replace(/^/mg, '\t') + '\n';
                 }
             }
         }
@@ -116,6 +116,6 @@ function onDataAvailable(request, context, inputStream, offset, count) {
         trace +=  '!!! ' + exception.toString() + '\n\n';
                     
         this.output(trace);
-        this.__buffer = '';
+        this._buffer = '';
     }
 }
