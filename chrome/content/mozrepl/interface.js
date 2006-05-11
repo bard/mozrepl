@@ -27,11 +27,11 @@ function toggleServer() {
 
     if(this._server.isActive()) {
         this._server.stop();        
-        command.setAttribute('label', 'Start MozRepl');
+        command.setAttribute('label', 'Start Repl');
     }
     else {
         this._server.start();
-        command.setAttribute('label', 'Stop MozRepl');
+        command.setAttribute('label', 'Stop Repl');
     }
 }
 

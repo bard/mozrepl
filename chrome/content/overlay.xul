@@ -30,12 +30,25 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
   <commandset id="mainCommandSet">
     <command id="mozrepl-command-toggle"
-             label="Start MozRepl"
+             label="Start Repl"
              accesskey="R"
              oncommand="devbox.mozrepl.ui.toggleServer();"/>
   </commandset>
 
   <menupopup id="menu_ToolsPopup">
-    <menuitem command="mozrepl-command-toggle"/>
+    <menu label="DevBox">
+      <menupopup>
+        <menuitem command="mozrepl-command-toggle"/>
+      </menupopup>
+    </menu>
   </menupopup>
+
+  <toolbox id="navigator-toolbox">    
+    <toolbar id="devbox-toolbar" toolbarname="Devbox Toolbar" 
+             class="chromeclass-toolbar" context="toolbar-context-menu" 
+             hidden="false" persist="hidden">
+      
+      <toolbarbutton command="mozrepl-command-toggle"/>
+    </toolbar>
+  </toolbox>
 </overlay>
