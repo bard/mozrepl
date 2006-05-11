@@ -75,7 +75,7 @@ function onDataAvailable(request, context, inputStream, offset, count) {
             case 'name':
                 var oldName = this.name;
                 this.name = arg;
-                MozRepl_Server.renameInteractor(oldName, this.name);
+                this._server.renameInteractor(oldName, this.name);
                 break;
             case 'echo':
                 this._outstream.write(arg + '\n', arg.length + 1);
