@@ -49,14 +49,18 @@ function output(text) {
     this._outstream.write(text, text.length);
 }
 
-function onStartRequest(request, context) {
-}
-
-function onStopRequest(request, context, status) {
+function close() {
     this._instream.close();
     this._outstream.close();
     if(this.name)
         this._server.removeInteractor(this.name);
+}
+
+function onStartRequest(request, context) {
+}
+
+function onStopRequest(request, context, status) {
+    this.close();
     dump('MozRepl: Closed a connection.\n');
 }
 

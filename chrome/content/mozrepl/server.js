@@ -53,6 +53,7 @@ function start(port) {
             pump.asyncRead(interactor, null);
             server.addInteractor(interactor, interactor.name);
         },
+
         onStopListening: function(serv, status) {
         }
     };
@@ -73,8 +74,11 @@ function start(port) {
 function stop() {
     dump('MozRepl: Closing...\n');
     this._serv.close();
+    for(var interactorName in this._interactors) {
+        this._interactors[interactorName].close();
+        this.removeInteractor(interactorName);
+    }
     delete this._serv;
-    delete this._interactors;
 }
  
 function isActive() {
