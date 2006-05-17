@@ -17,7 +17,7 @@
 // Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
 function constructor() {
-    this._tests = {}
+    this._tests = [];
 
     this.__defineSetter__(
         'tests', function(value) {
@@ -48,30 +48,21 @@ function tearDown(fn) {
     this._tearDown = fn;
 }
 
-function test(desc, fn) {
-    this._tests[desc] = fn;
+function test(desc, code) {
+    this._tests.push([desc, code]);
 }
 
 function setTests(hash) {
-    // should probably clear our _tests hash and copy over, instead
-    // of modifying parameter
-
-    if(hash.setUp) {
+    if(hash.setUp) 
         this._setUp = hash.setUp;
-        delete hash.setUp;
-    }
 
-    if(hash.given) {
+    if(hash.given) 
         this._setUp = hash.given;
-        delete hash.given;
-    }
 
-    if(hash.tearDown) {
-        this._tearDown = hash.tearDown;
-        delete hash.tearDown;
-    }
-
-    this._tests = hash;
+    for(var desc in hash)
+        this._tests.push({
+            desc: desc,
+            code: hash[desc]});
 }
 
 function testResult(eventType, eventLocation, message) {
@@ -97,6 +88,52 @@ function _output(string) {
         dump(string);
 }
 
+function exec(code, setUp, tearDown) {
+    var result = {
+        type:    undefined,
+        message: undefined
+    };
+    var context = {};
+
+    try {
+        if(setUp)
+            setUp.call(context);
+
+        code.call(context);
+
+        result.type = 'SUCCESS';
+        result.message = null;
+    } catch(exception if exception.name == 'AssertionFailed') {
+        result.type = 'FAILURE';
+        result.message = '\t' + (exception.message || exception) + '\n';
+    } catch(exception){
+        var trace = '';
+
+        if(exception.stack) {
+            var calls = exception.stack.split('\n');
+            for each(var call in calls) {
+                if(call.length > 0) {
+                    call = call.replace(/\\n/g, '\n');
+
+                    if(call.length > 200)
+                        call = call.substr(0, 200) + '[...]\n';
+
+                    trace += call.replace(/^/mg, '\t') + '\n';
+                }
+            }
+        }
+
+        trace = '\t' + exception.toString() + '\n' + trace;
+        result.type = 'ERROR';
+        result.message = trace;
+    }
+
+    if(tearDown)
+        tearDown.call(context);
+
+    return result;
+}
+
 function run() {
     var summary = {
         successes: 0,
@@ -104,55 +141,31 @@ function run() {
         errors: 0
     };
 
-    for(desc in this._tests) {
-        var context = {};
+    for each(var test in this._tests) {
+        var result = this.exec(test.code, this._setUp, this._tearDown);
 
-        try {
-            if(this._setUp)
-                this._setUp.call(context);
-
-            this._tests[desc].call(context);
-
+        switch(result.type) {
+        case 'SUCCESS':
             summary.successes += 1;
-            this.testResult('SUCCESS', desc);
-        } catch(exception if exception.name == 'AssertionFailed') {
+            break;
+        case 'FAILURE':
             summary.failures += 1;
-
-            var message = '\t' + (exception.message || exception) + '\n';
-
-            this.testResult('FAILURE', desc, message);
-        } catch(exception){
+            break;
+        case 'ERROR':
             summary.errors += 1;
-            var trace = '';
-
-            if(exception.stack) {
-                var calls = exception.stack.split('\n');
-                for each (call in calls) {
-                    if(call.length > 0) {
-                        call = call.replace(/\\n/g, '\n');
-
-                        if(call.length > 200)
-                            call = call.substr(0, 200) + '[...]\n'
-
-                                trace += call.replace(/^/mg, '\t') + '\n';
-                    }
-                }
-            }
-
-            trace = '\t' + exception.toString() + '\n' + trace;
-            this.testResult('ERROR', desc, trace);
+            break;
         }
-
-        if(this._tearDown)
-            this._tearDown.call(context);
+        
+        this.testResult(result.type, test.desc, result.message);
     }
+    
     this.testSummary(summary);
 }
 
 function describe() {
     this._output('Specification\n\n')
-        for(desc in this._tests)
-            this._output('  * ' + desc + '\n\n');
+        for each(var test in this._tests)
+            this._output('  * ' + test.desc + '\n\n');
 }
 
 /*
