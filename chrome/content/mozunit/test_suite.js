@@ -56,6 +56,8 @@ function setTests(hash) {
     for(var desc in hash) 
         if(desc == 'setUp' || desc == 'given')
             this._setUp = hash[desc];
+        else if(desc == 'tearDown')
+            this._tearDown = hash[desc];
         else
             this._tests.push({
                 desc: desc,
