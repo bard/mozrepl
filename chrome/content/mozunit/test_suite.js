@@ -101,6 +101,9 @@ function exec(code, setUp, tearDown) {
 
         code.call(context);
 
+        if(tearDown)
+            tearDown.call(context);
+
         result.type = 'SUCCESS';
         result.message = null;
     } catch(exception if exception.name == 'AssertionFailed') {
@@ -127,9 +130,6 @@ function exec(code, setUp, tearDown) {
         result.type = 'ERROR';
         result.message = trace;
     }
-
-    if(tearDown)
-        tearDown.call(context);
 
     return result;
 }
