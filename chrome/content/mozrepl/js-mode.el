@@ -27,6 +27,7 @@
 
 ;;; Code:
 
+(require 'cc-defs)
 (require 'cc-mode)
 (require 'cc-langs)
 (require 'cc-bytecomp)
