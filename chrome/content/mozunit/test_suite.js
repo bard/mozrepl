@@ -16,7 +16,10 @@
 //
 // Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
-function constructor() {
+function constructor(opts) {
+    opts = opts || {};
+
+    this._runStrategy = opts.runStrategy;
     this._tests = [];
 
     this.__defineSetter__(
@@ -71,9 +74,9 @@ function testResult(eventType, eventLocation, message) {
 
 function testSummary(summary) {
     this._output('\nTest run summary\n' +
-                  '  Successes: ' + summary.successes + '\n' +
-                  '  Failures:  ' + summary.failures + '\n' +
-                  '  Errors:    ' + summary.errors + '\n\n');
+                 '  Successes: ' + summary.successes + '\n' +
+                 '  Failures:  ' + summary.failures + '\n' +
+                 '  Errors:    ' + summary.errors + '\n\n');
 }
 
 function _output(string) {
@@ -87,12 +90,29 @@ function _output(string) {
         dump(string);
 }
 
-function exec(code, setUp, tearDown) {
+function _formatStackTrace1(exception) {
+    var trace = '';
+    if(exception.stack) {
+        var calls = exception.stack.split('\n');
+        for each(var call in calls) {
+            if(call.length > 0) {
+                call = call.replace(/\\n/g, '\n');
+
+                if(call.length > 200)
+                    call = call.substr(0, 200) + '[...]\n';
+
+                trace += call.replace(/^/mg, '\t') + '\n';
+            }
+        }
+    }
+    return trace;
+}
+
+function _exec1(code, setUp, tearDown, context) {
     var result = {
         type:    undefined,
         message: undefined
     };
-    var context = {};
 
     try {
         if(setUp)
@@ -109,23 +129,7 @@ function exec(code, setUp, tearDown) {
         result.type = 'FAILURE';
         result.message = '\t' + (exception.message || exception) + '\n';
     } catch(exception){
-        var trace = '';
-
-        if(exception.stack) {
-            var calls = exception.stack.split('\n');
-            for each(var call in calls) {
-                if(call.length > 0) {
-                    call = call.replace(/\\n/g, '\n');
-
-                    if(call.length > 200)
-                        call = call.substr(0, 200) + '[...]\n';
-
-                    trace += call.replace(/^/mg, '\t') + '\n';
-                }
-            }
-        }
-
-        trace = '\t' + exception.toString() + '\n' + trace;
+        trace = '\t' + exception.toString() + '\n' + _formatStackTrace1(exception);
         result.type = 'ERROR';
         result.message = trace;
     }
@@ -133,32 +137,96 @@ function exec(code, setUp, tearDown) {
     return result;
 }
 
-function run() {
+function _updateSummary(summary, resultType) {
+    switch(resultType) {
+    case 'SUCCESS':
+        summary.successes += 1;
+        break;
+    case 'FAILURE':
+        summary.failures += 1;
+        break;
+    case 'ERROR':
+        summary.errors += 1;
+        break;
+    }
+}
+
+function _asyncRun1(tests, setUp, tearDown, resultOutputter, onTestRunFinished) {
+    var fsm = Module.require('package', 'lib/fsm');
+    var testIndex = 0;
+    var context;
     var summary = {
         successes: 0,
         failures: 0,
         errors: 0
     };
 
-    for each(var test in this._tests) {
-        var result = this.exec(test.code, this._setUp, this._tearDown);
+    var stateTransitions = {
+        start:    { ok: 'doSetUp' },
+        doSetUp:  { ok: 'doTest' },
+        doTest:   { ok: 'nextTest' },
+        nextTest: { ok: 'doSetUp', ko: 'finished' },
+        finished: { }
+    }
 
-        switch(result.type) {
-        case 'SUCCESS':
-            summary.successes += 1;
-            break;
-        case 'FAILURE':
-            summary.failures += 1;
-            break;
-        case 'ERROR':
-            summary.errors += 1;
-            break;
+    var stateHandlers = {
+        start: function(continuation) {
+            continuation('ok')
+        },
+        doSetUp: function(continuation) {
+            context = {};
+            setUp.call(context, continuation);
+        },
+        doTest: function(continuation) {
+            var test = tests[testIndex];
+            var result = _exec1(
+                test.code, null, tearDown, context);
+            _updateSummary(summary, result.type);
+            resultOutputter(result.type, test.desc, result.message);
+            continuation('ok');
+        },
+        nextTest: function(continuation) {
+            testIndex += 1;
+            tests[testIndex] ? continuation('ok') : continuation('ko');
+        },
+        finished: function(continuation) {
+            onTestRunFinished(summary);
         }
-        
-        this.testResult(result.type, test.desc, result.message);
+    }
+
+    fsm.go('start', {}, stateHandlers, stateTransitions, []);
+}
+
+function _syncRun1(tests, setUp, tearDown, resultOutputter) {
+    var summary = {
+        successes: 0,
+        failures: 0,
+        errors: 0
+    };
+
+    for each(var test in tests) {
+        var context = {};
+        var result = _exec1(
+            test.code, setUp, tearDown, context);
+
+        _updateSummary(summary, result.type);
+        resultOutputter(result.type, test.desc, result.message);
     }
     
-    this.testSummary(summary);
+    return summary;
+}
+
+function run() {
+    var _this = this;
+    if(this._runStrategy == 'async') 
+        this._asyncRun1(
+            this._tests, this._setUp, this._tearDown, this.testResult,
+            function(summary) {
+                _this.testSummary(summary);
+            });        
+    else 
+        this.testSummary(
+            this._syncRun1(this._tests, this._setUp, this._tearDown, this.testResult));
 }
 
 function describe() {
