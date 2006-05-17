@@ -53,16 +53,13 @@ function test(desc, code) {
 }
 
 function setTests(hash) {
-    if(hash.setUp) 
-        this._setUp = hash.setUp;
-
-    if(hash.given) 
-        this._setUp = hash.given;
-
-    for(var desc in hash)
-        this._tests.push({
-            desc: desc,
-            code: hash[desc]});
+    for(var desc in hash) 
+        if(desc == 'setUp' || desc == 'given')
+            this._setUp = hash[desc];
+        else
+            this._tests.push({
+                desc: desc,
+                code: hash[desc]});
 }
 
 function testResult(eventType, eventLocation, message) {
