@@ -16,6 +16,23 @@
 //
 // Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
+const fsm = Module.require('package', 'lib/fsm');
+
+/*
+ * Invocation:
+ *     var suite = new TestSuite();
+ *     var suite = new TestSuite({runStrategy: 'async'});
+ *
+ * Use async run strategy when test cases mustn't be run immediately
+ * after test setup, for example when during setup a document is
+ * loaded into the browser and the browser will signal when the
+ * document has finished loading through a callback.
+ *
+ * Alias:
+ *     var spec = new Specification();
+ *
+ */
+
 function constructor(opts) {
     opts = opts || {};
 
@@ -43,17 +60,46 @@ function constructor(opts) {
         });
 }
 
-function setUp(fn) {
-    this._setUp = fn;
-}
-
-function tearDown(fn) {
-    this._tearDown = fn;
-}
-
-function test(desc, code) {
-    this._tests.push([desc, code]);
-}
+/*
+ * Define test cases, optionally with setup and teardown.
+ *
+ *     var suite = new TestSuite();
+ *     suite.tests = {
+ *         setUp: function() {
+ *             this.plusFactor = 4;
+ *         },
+ *     
+ *         testOperation: function() {
+ *             assert.equals(8, 2+2+this.plusFactor);
+ *         },
+ *     
+ *         tearDown: function() {
+ *             // release resources if necessary
+ *         }
+ *     }
+ *
+ * Every test is run in a context created ex-novo and accessible via
+ * the 'this' identifier.
+ *
+ * Aliases: setTests(), stateThat.  'setUp' is also aliased to
+ * 'given'.  The latter two allow a more Behaviour-Driven Development
+ * style.
+ *
+ *     var spec = new Specification();
+ *     spec.stateThat = {
+ *         given: function() {
+ *             this.plusFactor = 4;
+ *         },
+ *
+ *         'Adding two and two and plus factor yields eight': function() {
+ *             assert.equals(8, 2+2+this.plusFactor);
+ *         },
+ *
+ *         tearDown: function() {
+ *             // release resources if necessary
+ *         }
+ *
+ */
 
 function setTests(hash) {
     for(var desc in hash) 
@@ -66,6 +112,88 @@ function setTests(hash) {
                 desc: desc,
                 code: hash[desc]});
 }
+
+/*
+ * Runs tests with strategy defined at construction time.
+ *
+ *    var suite = new TestSuite();
+ *    suite.tests = { ... };
+ *    suite.run();
+ *
+ * Alias: verify();
+ *
+ *    var spec = new Specification();
+ *    spec.stateThat = { ... };
+ *    spec.verify();
+ *
+ */
+
+function run() {
+    var _this = this;
+    if(this._runStrategy == 'async') 
+        this._asyncRun1(
+            this._tests, this._setUp, this._tearDown, this.testResult,
+            function(summary) {
+                _this.testSummary(summary);
+            });        
+    else 
+        this.testSummary(
+            this._syncRun1(this._tests, this._setUp, this._tearDown, this.testResult));
+}
+
+function verify() {
+    this.run();
+}
+
+/*
+ * Outputs a human-readable of test descriptions.  Useful if you named
+ * test with long strings.
+ *
+ */
+
+function describe() {
+    this._output('Specification\n\n')
+        for each(var test in this._tests)
+            this._output('  * ' + test.desc + '\n\n');
+}
+
+/*
+ * Alternative style for defining setup.
+ *
+ */
+
+function setUp(fn) {
+    this._setUp = fn;
+}
+
+function given(fn) {
+    this.setUp(fn);
+}
+
+/*
+ * Alternative style for defining teardown.
+ *
+ */
+
+function tearDown(fn) {
+    this._tearDown = fn;
+}
+
+/*
+ * Alternative style for defining tests.  Can be called multiple
+ * times.
+ *
+ */
+
+function test(desc, code) {
+    this._tests.push([desc, code]);
+}
+
+function states(desc, fn) {
+    this.test(desc, fn);
+}
+
+/* Undocumented - and in need of refactoring/rethinking */
 
 function testResult(eventType, eventLocation, message) {
     if(eventType != 'SUCCESS')
@@ -89,6 +217,8 @@ function _output(string) {
     else
         dump(string);
 }
+
+/* Side effect-free functions. They're the ones who do the real job. :-) */
 
 function _formatStackTrace1(exception) {
     var trace = '';
@@ -151,8 +281,26 @@ function _updateSummary(summary, resultType) {
     }
 }
 
+function _syncRun1(tests, setUp, tearDown, resultOutputter) {
+    var summary = {
+        successes: 0,
+        failures: 0,
+        errors: 0
+    };
+
+    for each(var test in tests) {
+        var context = {};
+        var result = _exec1(
+            test.code, setUp, tearDown, context);
+
+        _updateSummary(summary, result.type);
+        resultOutputter(result.type, test.desc, result.message);
+    }
+    
+    return summary;
+}
+
 function _asyncRun1(tests, setUp, tearDown, resultOutputter, onTestRunFinished) {
-    var fsm = Module.require('package', 'lib/fsm');
     var testIndex = 0;
     var context;
     var summary = {
@@ -196,81 +344,3 @@ function _asyncRun1(tests, setUp, tearDown, resultOutputter, onTestRunFinished) 
 
     fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
-
-function _syncRun1(tests, setUp, tearDown, resultOutputter) {
-    var summary = {
-        successes: 0,
-        failures: 0,
-        errors: 0
-    };
-
-    for each(var test in tests) {
-        var context = {};
-        var result = _exec1(
-            test.code, setUp, tearDown, context);
-
-        _updateSummary(summary, result.type);
-        resultOutputter(result.type, test.desc, result.message);
-    }
-    
-    return summary;
-}
-
-function run() {
-    var _this = this;
-    if(this._runStrategy == 'async') 
-        this._asyncRun1(
-            this._tests, this._setUp, this._tearDown, this.testResult,
-            function(summary) {
-                _this.testSummary(summary);
-            });        
-    else 
-        this.testSummary(
-            this._syncRun1(this._tests, this._setUp, this._tearDown, this.testResult));
-}
-
-function describe() {
-    this._output('Specification\n\n')
-        for each(var test in this._tests)
-            this._output('  * ' + test.desc + '\n\n');
-}
-
-/*
- * The following aliases, together with the other name for
- * TestSuite (Specification) encourage a more behavour-oriented
- * (as opposed to test-oriented) frame of mind.
- *
- * Example:
- *
- *     var spec = new Specification();
- *
- *     spec.stateThat = {
- *         given: function() {
- *             this.a = 3;
- *         },
- *
- *         'adding 1 and 2 is 3': function() {
- *             Assert.equals(3, 1 + 2);
- *         },
- *
- *         'adding 3 and 4 is 7': function() {
- *             Assert.equals(7, 3 + 4);
- *         },
- *     }
- *
- *     spec.verify();
- *
- */
-
-function given(fn) {
-    this.setUp(fn);
-}
-
-function states(desc, fn) {
-    this.test(desc, fn);
-}
-
-function verify() {
-    this.run();
-}
-
