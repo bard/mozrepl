@@ -37,6 +37,11 @@ function isDefined(x) {
         throw new AssertionFailed('Expected value to be defined, was undefined');
 }
 
+function isUndefined(x) {
+    if(x != undefined)
+        throw new AssertionFailed('Expected value to be undefined, was defined');        
+}
+
 function isFalse(x) {
     if(x)
         throw new AssertionFailed('Expected false or equivalent, got ' + x);
