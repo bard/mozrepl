@@ -130,15 +130,21 @@ function setTests(hash) {
 
 function run() {
     var _this = this;
+
+    function resultOutputter(eventType, eventLocation, message) {
+        if(eventType != 'SUCCESS')
+            _this._output(eventType + ' in <' + eventLocation + '>\n' + (message || '') + '\n');
+    }
+    
     if(this._runStrategy == 'async') 
         this._asyncRun1(
-            this._tests, this._setUp, this._tearDown, this.testResult,
+            this._tests, this._setUp, this._tearDown, resultOutputter,
             function(summary) {
                 _this.testSummary(summary);
             });        
     else 
         this.testSummary(
-            this._syncRun1(this._tests, this._setUp, this._tearDown, this.testResult));
+            this._syncRun1(this._tests, this._setUp, this._tearDown, resultOutputter));
 }
 
 function verify() {
@@ -310,11 +316,12 @@ function _asyncRun1(tests, setUp, tearDown, resultOutputter, onTestRunFinished) 
     };
 
     var stateTransitions = {
-        start:    { ok: 'doSetUp' },
-        doSetUp:  { ok: 'doTest' },
-        doTest:   { ok: 'nextTest' },
-        nextTest: { ok: 'doSetUp', ko: 'finished' },
-        finished: { }
+        start:      { ok: 'doSetUp' },
+        doSetUp:    { ok: 'doTest', ko: 'doTearDown' },
+        doTest:     { ok: 'doTearDown' },
+        doTearDown: { ok: 'nextTest', ko: 'nextTest' },
+        nextTest:   { ok: 'doSetUp', ko: 'finished' },
+        finished:   { }
     }
 
     var stateHandlers = {
@@ -323,15 +330,28 @@ function _asyncRun1(tests, setUp, tearDown, resultOutputter, onTestRunFinished) 
         },
         doSetUp: function(continuation) {
             context = {};
-            setUp.call(context, continuation);
+            try {
+                setUp.call(context, continuation);
+            } catch(e) {
+                continuation('ko');
+            }
         },
         doTest: function(continuation) {
             var test = tests[testIndex];
             var result = _exec1(
-                test.code, null, tearDown, context);
+                test.code, null, null, context);
             _updateSummary(summary, result.type);
             resultOutputter(result.type, test.desc, result.message);
             continuation('ok');
+        },
+        doTearDown: function(continuation) { // exceptions in setup/teardown are not reported correctly
+            try {
+                // perhaps should pass continuation to tearDown as well
+                tearDown.call(context); 
+                continuation('ok');
+            } catch(e) {
+                continuation('ko');
+            }
         },
         nextTest: function(continuation) {
             testIndex += 1;
