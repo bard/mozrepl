@@ -46,11 +46,22 @@ started as needed)."
   (comint-send-string "\n--end-emacs-input\n")
   (display-buffer (process-buffer (inferior-moz-process))))
 
+(defvar moz-temporary-file nil)
+
+(defun moz-temporary-file ()
+  (if (and moz-temporary-file
+           (file-readable-p moz-temporary-file))
+      moz-temporary-file
+    (setq moz-temporary-file (make-temp-file "emacs-mozrepl"))))
+
 (defun moz-send-region (start end)
-  "Send the current region to the inferior Mozilla process."
   (interactive "r")
-  (comint-send-region (inferior-moz-process) start end)
-  (comint-send-string (inferior-moz-process) "\n--end-emacs-input\n")
+  (let ((file (moz-temporary-file)))
+    (write-region start end file)
+    (comint-send-string (inferior-moz-process)
+                        (concat "::load file://localhost/"
+                                file
+                                "\n")))
   (display-buffer (process-buffer (inferior-moz-process))))
 
 (defun moz-send-defun ()
