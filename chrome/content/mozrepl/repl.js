@@ -70,34 +70,32 @@ function exit() {
 }
 
 function _feed(input) {
-    try {
-        var code;
-        switch(this.inputMode) {
-        case 'chunk':
-            code = input;
-            break;
-        case 'multiline':
-            this._buffer += input;
+    var code;
+    switch(this.inputMode) {
+    case 'chunk':
+        code = input;
+        break;
+    case 'multiline':
+        this._buffer += input;
         
-            var match = this._buffer.match(this.multilineTerminator);
-            if (match) {
-                code = this._buffer.substr(0, match.index);
-                this._buffer = '';
-            }
-            break;
+        var match = this._buffer.match(this.multilineTerminator);
+        if (match) {
+            code = this._buffer.substr(0, match.index);
+            this._buffer = '';
         }
+        break;
+    }
 
-        if(code) {
+    if(code) {
+        try { 
             this.print(this.load('data:application/x-javascript,' +
                                  encodeURIComponent(code)) + '\n');
-            this.prompt();
+        } catch(exception) {
+            this.print(_formatStackTrace1(exception));
+            this.print('!!! ' + exception.toString() + '\n\n');
         }
-        
-    } catch(exception) {
-        this.print(_formatStackTrace1(exception));
-        this.print('!!! ' + exception.toString() + '\n\n');
-        this._buffer = '';
-    }    
+        this.prompt();
+    }
 }
 
 function _formatStackTrace1(exception) {
