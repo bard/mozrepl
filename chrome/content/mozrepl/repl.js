@@ -25,7 +25,7 @@ function constructor(session, topLevelContext) {
         .getService(Components.interfaces.mozIJSSubScriptLoader);
     this._contextHistory = [];
     this._currentContext = topLevelContext;
-    this._buffer == '';
+    this._buffer = '';
     this._topLevelContext = topLevelContext;
 
     this.multilineTerminator = /\n--end-remote-input\n/m;
