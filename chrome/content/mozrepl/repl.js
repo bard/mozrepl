@@ -25,6 +25,7 @@ function constructor(session, topLevelContext) {
         .getService(Components.interfaces.mozIJSSubScriptLoader);
     this._contextHistory = [];
     this._currentContext = topLevelContext;
+    this._buffer == '';
 
     var name = 'repl';
     if(topLevelContext[name]) {
@@ -57,4 +58,53 @@ function leave() {
         
 function exit() {
     this._session.close();
+}
+
+function _feed(input) {
+    try {
+        this._buffer += input;
+
+        var rx = /^::([^\s]+) (.+)\n/m;
+        m = this._buffer.match(rx);
+        if(m) {
+            var cmd = m[1];
+            var arg = m[2];
+            this._buffer = this._buffer.replace(rx, '');
+            
+            this.print('!!! Special REPL commands no longer supported. (' + cmd + ', ' + arg + ')\n\n');
+        }
+
+        var match = this._buffer.match(/\n--end-emacs-input\n/m);
+        if (match) {
+            var code = this._buffer.substr(0, match.index);
+            this._buffer = '';
+
+            var result = this.load(
+                'data:application/x-javascript,' + encodeURIComponent(code)) +
+                '\n\n';
+            this.print('>>> ' + result);
+        }
+
+    } catch(exception) {
+        var trace = '';
+                
+        if(exception.stack) {
+            var calls = exception.stack.split('\n');
+            for each (call in calls) {
+                if(call.length > 0) {
+                    call = call.replace(/\\n/g, '\n');
+                            
+                    if(call.length > 200)
+                        call = call.substr(0, 200) + '[...]\n';
+                            
+                    trace += call.replace(/^/mg, '\t') + '\n';
+                }
+            }
+        }
+
+        trace +=  '!!! ' + exception.toString() + '\n\n';
+                    
+        this.print(trace);
+        this._buffer = '';
+    }    
 }

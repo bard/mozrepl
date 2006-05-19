@@ -24,7 +24,6 @@ function constructor(instream, outstream, server) {
     this._server = server;
     this._instream = instream;
     this._outstream = outstream;
-    this._buffer == '';
     this._repl = new REPL(this, window);
 }
 
@@ -43,50 +42,5 @@ function onStopRequest(request, context, status) {
 }
 
 function onDataAvailable(request, context, inputStream, offset, count) {
-    try {
-        this._buffer += this._instream.read(count);
-
-        var rx = /^::([^\s]+) (.+)\n/m;
-        m = this._buffer.match(rx);
-        if(m) {
-            var cmd = m[1];
-            var arg = m[2];
-            this._buffer = this._buffer.replace(rx, '');
-            
-            this._repl.print('!!! Special REPL commands no longer supported. (' + cmd + ', ' + arg + ')\n\n');
-        }
-
-        var match = this._buffer.match(/\n--end-emacs-input\n/m);
-        if (match) {
-            var code = this._buffer.substr(0, match.index);
-            this._buffer = '';
-
-            var result = this._repl.load(
-                'data:application/x-javascript,' + encodeURIComponent(code)) +
-                '\n\n';
-            this._repl.print('>>> ' + result);
-        }
-
-    } catch(exception) {
-        var trace = '';
-                
-        if(exception.stack) {
-            var calls = exception.stack.split('\n');
-            for each (call in calls) {
-                if(call.length > 0) {
-                    call = call.replace(/\\n/g, '\n');
-                            
-                    if(call.length > 200)
-                        call = call.substr(0, 200) + '[...]\n';
-                            
-                    trace += call.replace(/^/mg, '\t') + '\n';
-                }
-            }
-        }
-
-        trace +=  '!!! ' + exception.toString() + '\n\n';
-                    
-        this._repl.print(trace);
-        this._buffer = '';
-    }
+    this._repl._feed(this._instream.read(count));
 }
