@@ -33,12 +33,14 @@ function constructor(session, topLevelContext) {
 
     var name = 'repl';
     if(this._topLevelContext[name]) {
-        for(var n=1; this._topLevelContext['repl' + n]; n++)
+        for(var i=1; this._topLevelContext['repl' + i]; i++)
             ;
-        name = 'repl' + n;
-        this.print('Hmmm, other repl\'s are running in this context.  To avoid conflicts, yours will be named "' + name + '".\n\n');
+        name = 'repl' + i;
+        this.print('Hmmm, seems like other repl\'s are running in this context.\n' +
+                   'To avoid conflicts, yours will be named "' + name + '".\n\n');
     }
-    this._topLevelContext[name] = this;
+    this._name = name;
+    this._topLevelContext[this._name] = this;
     this.prompt();
 }
 
@@ -67,6 +69,10 @@ function leave() {
         
 function exit() {
     this._session.close();
+}
+
+function _cleanUp() {
+    delete this._topLevelContext[this._name];
 }
 
 function _feed(input) {

@@ -32,6 +32,7 @@ function output(string) {
 }
 
 function close() {
+    this._repl._cleanUp();
     this._instream.close();
     this._outstream.close();
     this._server.removeSession(this);
