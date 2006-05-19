@@ -60,21 +60,6 @@ function constructor(instream, outstream, server) {
     this.USE_SUBSCRIPT_LOADER_FOR_EVAL = true;
 }
 
-function evaluate(code) {
-    if(this.USE_SUBSCRIPT_LOADER_FOR_EVAL) {
-        dump('MozRepl: Evaluating as subscript: ' + code + '\n');
-        code = 'data:application/x-javascript,' + encodeURIComponent(code);
-        return this._repl.load(code);
-    } else {
-        dump('MozRepl: Evaluating with eval(): ' + code + '\n');
-        return eval(code);
-    }
-}
-
-function output(text) {
-    this._outstream.write(text, text.length);
-}
-
 function close() {
     this._instream.close();
     this._outstream.close();
@@ -90,6 +75,11 @@ function onStopRequest(request, context, status) {
 }
 
 function onDataAvailable(request, context, inputStream, offset, count) {
+    var outstream = this._outstream;
+    function print(text) {
+        outstream.write(text, text.length);
+    }
+
     try {
         this._buffer += this._instream.read(count);
 
@@ -100,8 +90,7 @@ function onDataAvailable(request, context, inputStream, offset, count) {
             var arg = m[2];
             this._buffer = this._buffer.replace(rx, '');
             
-            var message = '!!! Special REPL commands no longer supported. (' + cmd + ', ' + arg + ')\n\n';
-            this._outstream.write(message, message.length);
+            print('!!! Special REPL commands no longer supported. (' + cmd + ', ' + arg + ')\n\n');
         }
 
         var match = this._buffer.match(/\n--end-emacs-input\n/m);
@@ -109,8 +98,10 @@ function onDataAvailable(request, context, inputStream, offset, count) {
             var code = this._buffer.substr(0, match.index);
             this._buffer = '';
 
-            var result = this.evaluate(code) + '\n\n';
-            this._outstream.write('>>> ' + result, result.length + 4);
+            var result = this._repl.load(
+                'data:application/x-javascript,' + encodeURIComponent(code)) +
+                '\n\n';
+            print('>>> ' + result);
         }
 
     } catch(exception) {
@@ -132,7 +123,7 @@ function onDataAvailable(request, context, inputStream, offset, count) {
 
         trace +=  '!!! ' + exception.toString() + '\n\n';
                     
-        this.output(trace);
+        print(trace);
         this._buffer = '';
     }
 }
