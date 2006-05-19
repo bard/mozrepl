@@ -21,16 +21,9 @@
 var devbox = (new ModuleHelper(['chrome://devbox/content'])).require('package', 'package');
 
 (function(){
-    var repl = devbox.mozrepl;
-
-    repl.server = new repl.Server();
-    repl.ui = new repl.Interface(repl.server);
-    repl.dump = function(text, interactorName) {
-        var interactor;
-        if(interactorName)
-            interactor = repl.server.getInteractor(interactorName);
-        else
-            interactor = repl.server.getFirstInteractor();
-        interactor.output(text);        
+    devbox.mozrepl.server = new devbox.mozrepl.Server();
+    devbox.mozrepl.ui = new devbox.mozrepl.Interface(devbox.mozrepl.server);
+    devbox.mozrepl.dump = function(text) {
+        devbox.mozrepl.server.getSession(0).output(text);
     }    
 })();

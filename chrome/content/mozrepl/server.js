@@ -95,7 +95,3 @@ function removeSession(session) {
 function getSession(index) {
     return this._sessions[index];
 }
-
-function getFirstSession() {
-    return this.getSession(0);
-}
