@@ -43,7 +43,6 @@ function start(port) {
             dump('MozRepl: Accepted connection.\n');
 
             var session = new Session(instream, outstream, server)
-            session.name = (new Date()).getTime();
 
             var pump = Components
             .classes['@mozilla.org/network/input-stream-pump;1']
@@ -51,14 +50,11 @@ function start(port) {
 
             pump.init(stream, -1, -1, 0, 0, false);
             pump.asyncRead(session, null);
-            server.addSession(session, session.name);
-        },
-
-        onStopListening: function(serv, status) {
+            server.addSession(session);
         }
     };
 
-    this._sessions = {};
+    this._sessions = [];
     try {
         this._serv = Components
             .classes['@mozilla.org/network/server-socket;1']
@@ -74,10 +70,10 @@ function start(port) {
 function stop() {
     dump('MozRepl: Closing...\n');
     this._serv.close();
-    for(var sessionName in this._sessions) {
-        this._sessions[sessionName].close();
-        this.removeSession(sessionName);
-    }
+    for each(var session in this._sessions)
+        session.close();
+    this._sessions.splice(0, this._sessions.length);
+
     delete this._serv;
 }
  
@@ -86,26 +82,20 @@ function isActive() {
         return true;
 }
  
-function addSession(session, name) {
-    if(!this._sessions[name])
-        this._sessions[name] = session;
+function addSession(session) {
+    this._sessions.push(session);
 }
 
-function renameSession(oldName, newName) {
-    this._sessions[newName] = this._sessions[oldName];
-    delete this._sessions[oldName];
+function removeSession(session) {
+    var index = this._sessions.indexOf(session);
+    if(index != -1)
+        this._sessions.splice(index, 1);
 }
 
-function removeSession(name) {
-    delete this._sessions[name];
+function getSession(index) {
+    return this._sessions[index];
 }
 
-function getSession(name) {
-    return this._sessions[name];
-}
-    
 function getFirstSession() {
-    for(name in this._sessions)
-        return this._sessions[name];
-    return null;
+    return this.getSession(0);
 }

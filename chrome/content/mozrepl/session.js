@@ -42,14 +42,14 @@ function constructor(instream, outstream, server) {
             var context = this.contextHistory.pop();
             this.setContext(context);
         },
-        changeContext: function(context) {
+        setContext: function(context) {
             if(session._context)
                 delete session._context.repl;
             session._context = context;
             session._context.repl = replHelper;
         }
     };
-    replHelper.changeContext(window);
+    replHelper.setContext(window);
     
     this.USE_SUBSCRIPT_LOADER_FOR_EVAL = true;
 }
@@ -79,8 +79,7 @@ function output(text) {
 function close() {
     this._instream.close();
     this._outstream.close();
-    if(this.name)
-        this._server.removeSession(this.name);
+    this._server.removeSession(this);
 }
 
 function onStartRequest(request, context) {
@@ -103,11 +102,6 @@ function onDataAvailable(request, context, inputStream, offset, count) {
             this._buffer = this._buffer.replace(rx, '');
             
             switch(cmd) {
-            case 'name':
-                var oldName = this.name;
-                this.name = arg;
-                this._server.renameSession(oldName, this.name);
-                break;
             case 'echo':
                 this._outstream.write(arg + '\n', arg.length + 1);
                 break;
