@@ -30,12 +30,11 @@ function constructor(instream, outstream, server) {
     var session = this;
     var replHelper = {
         contextHistory: [],
-        
         print: function(string) {
             session._outstream.write(string, string.length);
         },
         load: function(url, context) {
-            session.load(url, context);
+            return session._loader.loadSubScript(url, context || session._context);
         },
         enter: function(context) {
             this.contextHistory.push(session._context);
@@ -50,10 +49,14 @@ function constructor(instream, outstream, server) {
                 delete session._context.repl;
             session._context = context;
             session._context.repl = replHelper;
+        },
+        exit: function() {
+            session.close();
         }
     };
     replHelper.setContext(window);
-    
+
+    this._repl = replHelper;
     this.USE_SUBSCRIPT_LOADER_FOR_EVAL = true;
 }
 
@@ -61,18 +64,11 @@ function evaluate(code) {
     if(this.USE_SUBSCRIPT_LOADER_FOR_EVAL) {
         dump('MozRepl: Evaluating as subscript: ' + code + '\n');
         code = 'data:application/x-javascript,' + encodeURIComponent(code);
-        return this.load(code);
+        return this._repl.load(code);
     } else {
         dump('MozRepl: Evaluating with eval(): ' + code + '\n');
         return eval(code);
     }
-}
-
-function load(url, context) {
-    dump('MozRepl: Loading subscript ' + url + ' in ' +
-         (this._context ? 'custom context' : 'window context') +
-         '\n');
-    return this._loader.loadSubScript(url, this._context || window); 
 }
 
 function output(text) {
@@ -104,15 +100,8 @@ function onDataAvailable(request, context, inputStream, offset, count) {
             var arg = m[2];
             this._buffer = this._buffer.replace(rx, '');
             
-            switch(cmd) {
-            case 'echo':
-                this._outstream.write(arg + '\n', arg.length + 1);
-                break;
-            case 'load':
-                var result = this.load(arg) + '\n\n';
-                this._outstream.write('>>> ' + result, result.length + 4);
-                break;
-            }
+            var message = '!!! Special REPL commands no longer supported. (' + cmd + ', ' + arg + ')\n\n';
+            this._outstream.write(message, message.length);
         }
 
         var match = this._buffer.match(/\n--end-emacs-input\n/m);

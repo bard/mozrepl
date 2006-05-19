@@ -59,9 +59,9 @@ started as needed)."
   (let ((file (moz-temporary-file)))
     (write-region start end file)
     (comint-send-string (inferior-moz-process)
-                        (concat "::load file://localhost/"
+                        (concat "repl.load('file://localhost/"
                                 file
-                                "\n")))
+                                "')\n--end-emacs-input\n")))
   (display-buffer (process-buffer (inferior-moz-process))))
 
 (defun moz-send-defun ()
@@ -74,9 +74,9 @@ started as needed)."
   (interactive)
   (save-buffer)
   (comint-send-string (inferior-moz-process)
-                      (concat  "::load file://localhost/"
+                      (concat  "repl.load('file://localhost/"
                                (buffer-file-name)
-                               "\n"))
+                               "')\n--end-emacs-input\n"))
   (display-buffer (process-buffer (inferior-moz-process))))
 
 ;;; Inferior Mode
