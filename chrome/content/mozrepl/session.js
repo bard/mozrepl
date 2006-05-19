@@ -18,46 +18,14 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
+const REPL = Module.require('class', 'repl');
+
 function constructor(instream, outstream, server) {
     this._server = server;
     this._instream = instream;
     this._outstream = outstream;
     this._buffer == '';
-    this._loader = Components
-        .classes['@mozilla.org/moz/jssubscript-loader;1']
-        .getService(Components.interfaces.mozIJSSubScriptLoader);
-
-    var session = this;
-    var replHelper = {
-        contextHistory: [],
-        print: function(string) {
-            session._outstream.write(string, string.length);
-        },
-        load: function(url, context) {
-            return session._loader.loadSubScript(url, context || session._context);
-        },
-        enter: function(context) {
-            this.contextHistory.push(session._context);
-            this.setContext(context);
-        },
-        leave: function() {
-            var context = this.contextHistory.pop();
-            this.setContext(context);
-        },
-        setContext: function(context) {
-            if(session._context)
-                delete session._context.repl;
-            session._context = context;
-            session._context.repl = replHelper;
-        },
-        exit: function() {
-            session.close();
-        }
-    };
-    replHelper.setContext(window);
-
-    this._repl = replHelper;
-    this.USE_SUBSCRIPT_LOADER_FOR_EVAL = true;
+    this._repl = new REPL(this, window);
 }
 
 function close() {
