@@ -18,15 +18,22 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-function constructor(session, startingContext) {
+function constructor(session, topLevelContext) {
     this._session = session;
     this._loader = Components
         .classes['@mozilla.org/moz/jssubscript-loader;1']
         .getService(Components.interfaces.mozIJSSubScriptLoader);
     this._contextHistory = [];
-    this._currentContext = [];
-    if(startingContext)
-        this._setContext(startingContext);
+    this._currentContext = topLevelContext;
+
+    var name = 'repl';
+    if(topLevelContext[name]) {
+        for(var n=1; topLevelContext['repl' + n]; n++)
+            ;
+        name = 'repl' + n;
+        this.print('Other repl\'s found in this context, yours will be named "' + name + '". Enjoy!\n\n');
+    }
+    topLevelContext[name] = this;
 }
 
 function print(string) {
@@ -39,20 +46,13 @@ function load(url, arbitraryContext) {
         
 function enter(newContext) {
     this._contextHistory.push(this._currentContext);
-    this._setContext(newContext);
+    this._currentContext = newContext;
 }
         
 function leave() {
     var previousContext = this._contextHistory.pop();
     if(previousContext)
-        this._setContext(previousContext);
-}
-        
-function _setContext(context) {
-    if(this._currentContext)
-        delete this._currentContext.repl;
-    this._currentContext = context;
-    this._currentContext.repl = this;
+        this._currentContext = previousContext;
 }
         
 function exit() {

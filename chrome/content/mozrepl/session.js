@@ -43,11 +43,6 @@ function onStopRequest(request, context, status) {
 }
 
 function onDataAvailable(request, context, inputStream, offset, count) {
-    var outstream = this._outstream;
-    function print(text) {
-        outstream.write(text, text.length);
-    }
-
     try {
         this._buffer += this._instream.read(count);
 
@@ -58,7 +53,7 @@ function onDataAvailable(request, context, inputStream, offset, count) {
             var arg = m[2];
             this._buffer = this._buffer.replace(rx, '');
             
-            print('!!! Special REPL commands no longer supported. (' + cmd + ', ' + arg + ')\n\n');
+            this._repl.print('!!! Special REPL commands no longer supported. (' + cmd + ', ' + arg + ')\n\n');
         }
 
         var match = this._buffer.match(/\n--end-emacs-input\n/m);
@@ -69,7 +64,7 @@ function onDataAvailable(request, context, inputStream, offset, count) {
             var result = this._repl.load(
                 'data:application/x-javascript,' + encodeURIComponent(code)) +
                 '\n\n';
-            print('>>> ' + result);
+            this._repl.print('>>> ' + result);
         }
 
     } catch(exception) {
@@ -91,7 +86,7 @@ function onDataAvailable(request, context, inputStream, offset, count) {
 
         trace +=  '!!! ' + exception.toString() + '\n\n';
                     
-        print(trace);
+        this._repl.print(trace);
         this._buffer = '';
     }
 }
