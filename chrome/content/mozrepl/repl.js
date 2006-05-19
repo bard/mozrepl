@@ -38,7 +38,7 @@ function constructor(session, topLevelContext) {
 }
 
 function print(string) {
-    this._session._outstream.write(string, string.length);
+    this._session.output(string);
 }
         
 function load(url, arbitraryContext) {

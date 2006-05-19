@@ -27,6 +27,10 @@ function constructor(instream, outstream, server) {
     this._repl = new REPL(this, window);
 }
 
+function output(string) {
+    this._outstream.write(string, string.length);
+}
+
 function close() {
     this._instream.close();
     this._outstream.close();
