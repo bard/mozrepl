@@ -27,15 +27,15 @@ function constructor(instream, outstream, server) {
         .classes['@mozilla.org/moz/jssubscript-loader;1']
         .getService(Components.interfaces.mozIJSSubScriptLoader);
 
-    var interactor = this;
+    var session = this;
     var replHelper = {
         contextHistory: [],
         
         print: function(string) {
-            interactor._outstream.write(string, string.length);
+            session._outstream.write(string, string.length);
         },
         enter: function(context) {
-            this.contextHistory.push(interactor._context);
+            this.contextHistory.push(session._context);
             this.setContext(context);
         },
         leave: function() {
@@ -43,10 +43,10 @@ function constructor(instream, outstream, server) {
             this.setContext(context);
         },
         changeContext: function(context) {
-            if(interactor._context)
-                delete interactor._context.repl;
-            interactor._context = context;
-            interactor._context.repl = replHelper;
+            if(session._context)
+                delete session._context.repl;
+            session._context = context;
+            session._context.repl = replHelper;
         }
     };
     replHelper.changeContext(window);
@@ -80,7 +80,7 @@ function close() {
     this._instream.close();
     this._outstream.close();
     if(this.name)
-        this._server.removeInteractor(this.name);
+        this._server.removeSession(this.name);
 }
 
 function onStartRequest(request, context) {
@@ -106,7 +106,7 @@ function onDataAvailable(request, context, inputStream, offset, count) {
             case 'name':
                 var oldName = this.name;
                 this.name = arg;
-                this._server.renameInteractor(oldName, this.name);
+                this._server.renameSession(oldName, this.name);
                 break;
             case 'echo':
                 this._outstream.write(arg + '\n', arg.length + 1);

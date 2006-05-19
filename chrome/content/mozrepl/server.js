@@ -18,7 +18,7 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-var Interactor = Module.require('class', 'interactor');
+const Session = Module.require('class', 'session');
 
 function constructor() {}
 
@@ -42,23 +42,23 @@ function start(port) {
             }
             dump('MozRepl: Accepted connection.\n');
 
-            var interactor = new Interactor(instream, outstream, server)
-            interactor.name = (new Date()).getTime();
+            var session = new Session(instream, outstream, server)
+            session.name = (new Date()).getTime();
 
             var pump = Components
             .classes['@mozilla.org/network/input-stream-pump;1']
             .createInstance(Components.interfaces.nsIInputStreamPump);
 
             pump.init(stream, -1, -1, 0, 0, false);
-            pump.asyncRead(interactor, null);
-            server.addInteractor(interactor, interactor.name);
+            pump.asyncRead(session, null);
+            server.addSession(session, session.name);
         },
 
         onStopListening: function(serv, status) {
         }
     };
 
-    this._interactors = {};
+    this._sessions = {};
     try {
         this._serv = Components
             .classes['@mozilla.org/network/server-socket;1']
@@ -74,9 +74,9 @@ function start(port) {
 function stop() {
     dump('MozRepl: Closing...\n');
     this._serv.close();
-    for(var interactorName in this._interactors) {
-        this._interactors[interactorName].close();
-        this.removeInteractor(interactorName);
+    for(var sessionName in this._sessions) {
+        this._sessions[sessionName].close();
+        this.removeSession(sessionName);
     }
     delete this._serv;
 }
@@ -86,26 +86,26 @@ function isActive() {
         return true;
 }
  
-function addInteractor(interactor, name) {
-    if(!this._interactors[name])
-        this._interactors[name] = interactor;
+function addSession(session, name) {
+    if(!this._sessions[name])
+        this._sessions[name] = session;
 }
 
-function renameInteractor(oldName, newName) {
-    this._interactors[newName] = this._interactors[oldName];
-    delete this._interactors[oldName];
+function renameSession(oldName, newName) {
+    this._sessions[newName] = this._sessions[oldName];
+    delete this._sessions[oldName];
 }
 
-function removeInteractor(name) {
-    delete this._interactors[name];
+function removeSession(name) {
+    delete this._sessions[name];
 }
 
-function getInteractor(name) {
-    return this._interactors[name];
+function getSession(name) {
+    return this._sessions[name];
 }
     
-function getFirstInteractor() {
-    for(name in this._interactors)
-        return this._interactors[name];
+function getFirstSession() {
+    for(name in this._sessions)
+        return this._sessions[name];
     return null;
 }
