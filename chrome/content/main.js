@@ -22,7 +22,7 @@ var devbox = (new ModuleHelper(['chrome://devbox/content'])).require('package', 
 
 (function(){
     devbox.mozrepl.server = new devbox.mozrepl.Server();
-    devbox.mozrepl.ui = new devbox.mozrepl.Interface(devbox.mozrepl.server);
+    devbox.mozrepl.ui = new devbox.mozrepl.UI(devbox.mozrepl.server);
     devbox.mozrepl.dump = function(text) {
         devbox.mozrepl.server.getSession(0).output(text);
     }    
