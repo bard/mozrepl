@@ -106,17 +106,28 @@ function _feed(input) {
             this._inputBuffer = '';
         }
         break;
+    case 'syntax':
+        this._inputBuffer += input;
+        code = this._inputBuffer;
+        break;
     }
 
     if(code) {
         try { 
             this.print(this.load('data:application/x-javascript,' +
                                  encodeURIComponent(code)) + '\n');
-        } catch(exception) {
-            this.print(_formatStackTrace1(exception));
-            this.print('!!! ' + exception.toString() + '\n\n');
+            this.prompt();
+            
+            if(this.inputMode == 'syntax')
+                this._inputBuffer = '';
+        } catch(e) {
+            if(!(e.name == 'SyntaxError' &&
+                 this.inputMode == 'syntax')) {
+                this.print(_formatStackTrace1(e));
+                this.print('!!! ' + e.toString() + '\n\n');
+                this.prompt();
+            }
         }
-        this.prompt();
     }
 }
 
