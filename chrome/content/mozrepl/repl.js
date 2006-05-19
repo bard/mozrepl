@@ -18,34 +18,50 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-function constructor(session, topLevelContext) {
-    this._session = session;
+function constructor(instream, outstream, server, hostContext) {
+    var repl = this;
+    this._instream = instream;
+    this._outstream = outstream;
+    this._server = server;
+    this._hostContext = hostContext;
+    
     this._loader = Components
         .classes['@mozilla.org/moz/jssubscript-loader;1']
         .getService(Components.interfaces.mozIJSSubScriptLoader);
     this._contextHistory = [];
-    this._currentContext = topLevelContext;
-    this._buffer = '';
-    this._topLevelContext = topLevelContext;
+    this._currentContext = this._hostContext;
+    this._inputBuffer = '';
+    this._networkListener = {
+        onStartRequest: function(request, context) {
+        },
+        onStopRequest: function(request, context, status) {
+            repl.exit();
+        },
+        onDataAvailable: function(request, context, inputStream, offset, count) {
+            repl._feed(repl._instream.read(count));
+        }
+    }
+
+    this._name = 'repl';
+    if(this._hostContext[this._name]) {
+        for(var i=1; this._hostContext['repl' + i]; i++)
+            ;
+        this._name = 'repl' + i;
+    }
+    this._hostContext[this._name] = this;
 
     this.multilineTerminator = /\n--end-remote-input\n/m;
     this.inputMode = 'chunk';
 
-    var name = 'repl';
-    if(this._topLevelContext[name]) {
-        for(var i=1; this._topLevelContext['repl' + i]; i++)
-            ;
-        name = 'repl' + i;
+    if(this._name != 'repl')
         this.print('Hmmm, seems like other repl\'s are running in this context.\n' +
-                   'To avoid conflicts, yours will be named "' + name + '".\n\n');
-    }
-    this._name = name;
-    this._topLevelContext[this._name] = this;
+                   'To avoid conflicts, yours will be named "' + this._name + '".\n\n');
     this.prompt();
 }
 
 function print(data) {
-    this._session.output(data.toString());
+    var string = data.toString();
+    this._outstream.write(string, string.length);
 }
 
 function prompt() {
@@ -53,7 +69,8 @@ function prompt() {
 }
         
 function load(url, arbitraryContext) {
-    return this._loader.loadSubScript(url, arbitraryContext || this._currentContext);
+    return this._loader.loadSubScript(
+        url, arbitraryContext || this._currentContext);
 }
         
 function enter(newContext) {
@@ -66,13 +83,12 @@ function leave() {
     if(previousContext)
         this._currentContext = previousContext;
 }
-        
-function exit() {
-    this._session.close();
-}
 
-function _cleanUp() {
-    delete this._topLevelContext[this._name];
+function exit() {
+    delete this._hostContext[this._name];
+    this._instream.close();
+    this._outstream.close();
+    this._server.removeSession(this);
 }
 
 function _feed(input) {
@@ -82,12 +98,12 @@ function _feed(input) {
         code = input;
         break;
     case 'multiline':
-        this._buffer += input;
+        this._inputBuffer += input;
         
-        var match = this._buffer.match(this.multilineTerminator);
+        var match = this._inputBuffer.match(this.multilineTerminator);
         if (match) {
-            code = this._buffer.substr(0, match.index);
-            this._buffer = '';
+            code = this._inputBuffer.substr(0, match.index);
+            this._inputBuffer = '';
         }
         break;
     }

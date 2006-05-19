@@ -18,7 +18,7 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-const Session = Module.require('class', 'session');
+const REPL = Module.require('class', 'repl');
 
 function constructor() {}
 
@@ -42,14 +42,14 @@ function start(port) {
             }
             dump('MozRepl: Accepted connection.\n');
 
-            var session = new Session(instream, outstream, server)
+            var session = new REPL(instream, outstream, server, window);
 
             var pump = Components
             .classes['@mozilla.org/network/input-stream-pump;1']
             .createInstance(Components.interfaces.nsIInputStreamPump);
 
             pump.init(stream, -1, -1, 0, 0, false);
-            pump.asyncRead(session, null);
+            pump.asyncRead(session._networkListener, null);
             server.addSession(session);
         }
     };
