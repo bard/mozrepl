@@ -26,7 +26,32 @@ function constructor(instream, outstream, server) {
     this._loader = Components
         .classes['@mozilla.org/moz/jssubscript-loader;1']
         .getService(Components.interfaces.mozIJSSubScriptLoader);
-    this.USE_SUBSCRIPT_LOADER_FOR_EVAL = false;
+
+    var interactor = this;
+    var replHelper = {
+        contextHistory: [],
+        
+        print: function(string) {
+            interactor._outstream.write(string, string.length);
+        },
+        enter: function(context) {
+            this.contextHistory.push(interactor._context);
+            this.setContext(context);
+        },
+        leave: function() {
+            var context = this.contextHistory.pop();
+            this.setContext(context);
+        },
+        changeContext: function(context) {
+            if(interactor._context)
+                delete interactor._context.repl;
+            interactor._context = context;
+            interactor._context.repl = replHelper;
+        }
+    };
+    replHelper.changeContext(window);
+    
+    this.USE_SUBSCRIPT_LOADER_FOR_EVAL = true;
 }
 
 function evaluate(code) {
@@ -41,8 +66,10 @@ function evaluate(code) {
 }
 
 function load(url, context) {
-    dump('MozRepl: Loading subscript ' + url + '\n');
-    return this._loader.loadSubScript(url, context || window);    
+    dump('MozRepl: Loading subscript ' + url + ' in ' +
+         (this._context ? 'custom context' : 'window context') +
+         '\n');
+    return this._loader.loadSubScript(url, this._context || window); 
 }
 
 function output(text) {
