@@ -43,10 +43,12 @@ started as needed)."
 (defun moz-send (string)
   "Send a string for evaluation to the inferior Mozilla process."
   (comint-send-string (inferior-moz-process) string)
-  (comint-send-string "\n--end-emacs-input\n")
+  (comint-send-string moz-input-terminator)
   (display-buffer (process-buffer (inferior-moz-process))))
 
 (defvar moz-temporary-file nil)
+
+(defvar moz-input-terminator "\n--end-remote-input\n")
 
 (defun moz-temporary-file ()
   (if (and moz-temporary-file
@@ -61,7 +63,8 @@ started as needed)."
     (comint-send-string (inferior-moz-process)
                         (concat "repl.load('file://localhost/"
                                 file
-                                "')\n--end-emacs-input\n")))
+                                "')" 
+                                moz-input-terminator)))
   (display-buffer (process-buffer (inferior-moz-process))))
 
 (defun moz-send-defun ()
@@ -76,7 +79,8 @@ started as needed)."
   (comint-send-string (inferior-moz-process)
                       (concat  "repl.load('file://localhost/"
                                (buffer-file-name)
-                               "')\n--end-emacs-input\n"))
+                               "')"
+                               moz-input-terminator))
   (display-buffer (process-buffer (inferior-moz-process))))
 
 ;;; Inferior Mode
@@ -120,7 +124,7 @@ and setting up the inferior-mozilla buffer."
   (interactive)
   (end-of-line)
   (comint-send-input)
-  (comint-send-string (inferior-moz-process) "\n--end-emacs-input\n"))
+  (comint-send-string (inferior-moz-process) moz-input-terminator))
 
 (provide 'moz)
 

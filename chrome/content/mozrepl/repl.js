@@ -26,20 +26,28 @@ function constructor(session, topLevelContext) {
     this._contextHistory = [];
     this._currentContext = topLevelContext;
     this._buffer == '';
-    this._multilineTerminator = /\n--end-emacs-input\n/m;
+    this._topLevelContext = topLevelContext;
+
+    this.multilineTerminator = /\n--end-remote-input\n/m;
+    this.inputMode = 'chunk';
 
     var name = 'repl';
-    if(topLevelContext[name]) {
-        for(var n=1; topLevelContext['repl' + n]; n++)
+    if(this._topLevelContext[name]) {
+        for(var n=1; this._topLevelContext['repl' + n]; n++)
             ;
         name = 'repl' + n;
-        this.print('Other repl\'s found in this context, yours will be named "' + name + '". Enjoy!\n\n');
+        this.print('Hmmm, other repl\'s are running in this context.  To avoid conflicts, yours will be named "' + name + '".\n\n');
     }
-    topLevelContext[name] = this;
+    this._topLevelContext[name] = this;
+    this.prompt();
 }
 
-function print(string) {
-    this._session.output(string);
+function print(data) {
+    this._session.output(data.toString());
+}
+
+function prompt() {
+    this.print('> ');
 }
         
 function load(url, arbitraryContext) {
@@ -63,19 +71,28 @@ function exit() {
 
 function _feed(input) {
     try {
-        this._buffer += input;
-
-        var match = this._buffer.match(this._multilineTerminator);
-        if (match) {
-            var code = this._buffer.substr(0, match.index);
-            this._buffer = '';
-
-            var result = this.load(
-                'data:application/x-javascript,' + encodeURIComponent(code)) +
-                '\n\n';
-            this.print('>>> ' + result);
+        var code;
+        switch(this.inputMode) {
+        case 'chunk':
+            code = input;
+            break;
+        case 'multiline':
+            this._buffer += input;
+        
+            var match = this._buffer.match(this.multilineTerminator);
+            if (match) {
+                code = this._buffer.substr(0, match.index);
+                this._buffer = '';
+            }
+            break;
         }
 
+        if(code) {
+            this.print(this.load('data:application/x-javascript,' +
+                                 encodeURIComponent(code)) + '\n');
+            this.prompt();
+        }
+        
     } catch(exception) {
         this.print(_formatStackTrace1(exception));
         this.print('!!! ' + exception.toString() + '\n\n');
