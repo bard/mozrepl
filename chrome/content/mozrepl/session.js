@@ -34,6 +34,9 @@ function constructor(instream, outstream, server) {
         print: function(string) {
             session._outstream.write(string, string.length);
         },
+        load: function(url, context) {
+            session.load(url, context);
+        },
         enter: function(context) {
             this.contextHistory.push(session._context);
             this.setContext(context);
