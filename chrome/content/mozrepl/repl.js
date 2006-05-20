@@ -50,8 +50,11 @@ function constructor(instream, outstream, server, hostContext) {
     }
     this._hostContext[this._name] = this;
 
-    this.multilineTerminator = /\n--end-remote-input\n/m;
-    this.inputMode = 'chunk';
+    this._inputTerminators = {
+        line:      /\n/m,
+        multiline: /\n--end-remote-input\n/m
+    }
+    this.inputMode = 'line';
 
     if(this._name != 'repl')
         this.print('Hmmm, seems like other repl\'s are running in this context.\n' +
@@ -93,21 +96,16 @@ function exit() {
 
 function _feed(input) {
     var code;
+    this._inputBuffer += input;
+    
     switch(this.inputMode) {
-    case 'chunk':
-        code = input;
-        break;
+    case 'line':
     case 'multiline':
-        this._inputBuffer += input;
-        
-        var match = this._inputBuffer.match(this.multilineTerminator);
-        if (match) {
+        var match = this._inputBuffer.match(this._inputTerminators[this.inputMode]);
+        if(match) 
             code = this._inputBuffer.substr(0, match.index);
-            this._inputBuffer = '';
-        }
         break;
     case 'syntax':
-        this._inputBuffer += input;
         code = this._inputBuffer;
         break;
     }
@@ -116,15 +114,15 @@ function _feed(input) {
         try { 
             this.print(this.load('data:application/x-javascript,' +
                                  encodeURIComponent(code)) + '\n');
+            this._inputBuffer = '';
             this.prompt();
-            
-            if(this.inputMode == 'syntax')
-                this._inputBuffer = '';
         } catch(e) {
-            if(!(e.name == 'SyntaxError' &&
-                 this.inputMode == 'syntax')) {
+            if(e.name == 'SyntaxError' && this.inputMode == 'syntax') {
+                // ignore, and keep the buffer
+            } else {
                 this.print(_formatStackTrace1(e));
                 this.print('!!! ' + e.toString() + '\n\n');
+                this._inputBuffer = '';
                 this.prompt();
             }
         }

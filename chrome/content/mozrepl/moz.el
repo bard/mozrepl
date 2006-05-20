@@ -90,10 +90,7 @@ started as needed)."
 
 (define-derived-mode inferior-moz-mode comint-mode "Inf-Mozilla"
   "Major mode for interacting with a Mozilla browser."
-  :syntax-table js-mode-syntax-table
-  (define-key inferior-moz-mode-map
-    "\C-j" 'inferior-moz-send-input)
-  (set (make-local-variable 'comint-eol-on-send) nil))
+  :syntax-table js-mode-syntax-table)
 
 (defun inferior-moz-switch-to-mozilla ()
   "Show the inferior mozilla buffer.  Start the process if
@@ -119,12 +116,6 @@ and setting up the inferior-mozilla buffer."
   (with-current-buffer inferior-moz-buffer
     (inferior-moz-mode)
     (run-hooks 'inferior-moz-hook)))
-
-(defun inferior-moz-send-input ()
-  (interactive)
-  (end-of-line)
-  (comint-send-input)
-  (comint-send-string (inferior-moz-process) moz-input-terminator))
 
 (provide 'moz)
 
