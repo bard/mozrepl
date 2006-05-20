@@ -92,7 +92,7 @@ function enter(newContext) {
     return this._currentContext;
 }
         
-function exit() {
+function leave() {
     var previousContext = this._contextHistory.pop();
     if(previousContext) {
         if(previousContext instanceof Window)
