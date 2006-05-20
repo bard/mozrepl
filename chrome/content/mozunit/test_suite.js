@@ -216,10 +216,8 @@ function testSummary(summary) {
 function _output(string) {
     if(this._outputter)
         this._outputter(string);
-    else if(typeof(devbox.mozrepl.server) == 'object' &&
-            devbox.mozrepl.server.isActive() &&
-            devbox.mozrepl.dump)
-        devbox.mozrepl.dump(string);
+    else if(typeof(repl) == 'object')
+        repl.print(string);
     else
         dump(string);
 }
