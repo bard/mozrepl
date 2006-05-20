@@ -50,9 +50,9 @@ function constructor(instream, outstream, server, hostContext) {
     }
     this._hostContext[this._name] = this;
 
-    this._inputTerminators = {
-        line:      /\n/m,
-        multiline: /\n--end-remote-input\n/m,
+    this._inputSeparators = {
+        line:      /\n/gm,
+        multiline: /\n--end-remote-input\n/gm,
         syntax:    /\n$/m
     }
     this.inputMode = 'line';
@@ -149,31 +149,59 @@ function _feed(input) {
         this.prompt();
         return;
     }
-        
-    this._inputBuffer += input;
+    
+    repl = this;
 
-    var match, code;
-    match = this._inputBuffer.match(this._inputTerminators[this.inputMode]);
-    if(match) 
-        code = this._inputBuffer.substr(0, match.index);    
-
-    if(code) {
-        try { 
-            this.print(this.load('data:application/x-javascript,' +
-                                 encodeURIComponent(code)) + '\n');
-            this._inputBuffer = '';
-            this.prompt();
-        } catch(e) {
-            if(e.name == 'SyntaxError' && this.inputMode == 'syntax') {
-                // ignore, and keep the buffer
-            } else {
-                this.print(_formatStackTrace1(e));
-                this.print('!!! ' + e.toString() + '\n\n');
-                this._inputBuffer = '';
-                this.prompt();
-            }
-        }
+    function evaluate(code) {
+        var result = repl.load('data:application/x-javascript,' +
+                               encodeURIComponent(code));
+        repl.print(result + '\n');
+        repl.prompt();
     }
+
+    function handleError(e) {
+        repl.print(_formatStackTrace1(e));
+        repl.print('!!! ' + e.toString() + '\n\n');
+        repl.prompt();        
+    }
+
+    switch(this.inputMode) {
+    case 'line':
+    case 'multiline':
+        this._inputBuffer = _eachChunk(
+            this._inputBuffer + input,
+            this._inputSeparators[this.inputMode],
+            function(inputChunk) {
+                try {
+                    evaluate(inputChunk);
+                } catch(e) {
+                    handleError(e);
+                };
+            });
+        break;
+    case 'syntax':
+        this._inputBuffer += input;
+        try {
+            evaluate(this._inputBuffer);
+            this._inputBuffer = '';
+        } catch(e if e.name == 'SyntaxError') {
+            // ignore and keep filling the buffer
+        } catch(e) {
+            handleError(e);
+            this._inputBuffer = '';
+        }
+        break;
+    }
+}
+
+function _eachChunk(string, separator, chunkHandler) {
+    var start = 0;
+    var match;
+    while(match = separator.exec(string)) {
+        chunkHandler(string.substring(start, match.index));
+        start = separator.lastIndex;
+    }
+    return string.substring(start, string.length);
 }
 
 function _formatStackTrace1(exception) {
