@@ -79,16 +79,29 @@ function load(url, arbitraryContext) {
         
 function enter(newContext) {
     this._contextHistory.push(this._currentContext);
+    if(newContext instanceof Window)
+        this._migrate(newContext);
+
     this._currentContext = newContext;
+    return this._currentContext;
 }
         
-function back() {
+function exit() {
     var previousContext = this._contextHistory.pop();
-    if(previousContext)
-        this._currentContext = previousContext;
+    if(previousContext) {
+        if(previousContext instanceof Window)
+            this._migrate(previousContext)
+        this._currentContext = previousContext;        
+    }
+    return this._currentContext;
 }
 
-function exit() {
+function _migrate(context) {
+    context.repl = this;
+    delete this._currentContext.repl;
+}
+
+function quit() {
     delete this._hostContext[this._name];
     this._instream.close();
     this._outstream.close();

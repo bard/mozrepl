@@ -58,13 +58,12 @@ started as needed)."
 
 (defun moz-send-region (start end)
   (interactive "r")
-  (let ((file (moz-temporary-file)))
-    (write-region start end file)
-    (comint-send-string (inferior-moz-process)
-                        (concat "repl.load('file://localhost/"
-                                file
-                                "')" 
-                                moz-input-terminator)))
+  (comint-send-string (inferior-moz-process)
+                      "repl._savedInputMode = repl.inputMode; repl.inputMode = 'multiline'; undefined;\n")
+  (comint-send-region (inferior-moz-process)
+                      start end)
+  (comint-send-string (inferior-moz-process)
+                      "repl.inputMode = repl._savedInputMode; undefined;\n--end-remote-input\n")
   (display-buffer (process-buffer (inferior-moz-process))))
 
 (defun moz-send-defun ()
@@ -77,10 +76,12 @@ started as needed)."
   (interactive)
   (save-buffer)
   (comint-send-string (inferior-moz-process)
-                      (concat  "repl.load('file://localhost/"
-                               (buffer-file-name)
-                               "')"
-                               moz-input-terminator))
+                      "repl._savedInputMode = repl.inputMode; repl.inputMode = 'line'; undefined;\n")
+  (comint-send-string (inferior-moz-process)
+                      (concat "repl._evaluationResult = repl.load('file://localhost/"
+                              (buffer-file-name)
+                              "');"
+                              "repl.inputMode = repl._savedInputMode; repl._evaluationResult;\n"))
   (display-buffer (process-buffer (inferior-moz-process))))
 
 ;;; Inferior Mode
