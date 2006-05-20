@@ -117,12 +117,13 @@ function inspect(obj, maxDepth, name, curDepth) {
         repl.print(text + "\n");
     }
 
-    name = name || '<obj>';
-    maxDepth = maxDepth || 1;
-
-    if (curDepth == undefined)
+    if(name == undefined)
+        name = '<obj>';
+    if(maxDepth == undefined)
+        maxDepth = 0;
+    if(curDepth == undefined)
         curDepth = 0;
-    if (maxDepth != undefined && curDepth > maxDepth)
+    if(maxDepth != undefined && curDepth > maxDepth)
         return;
 
     var i = 0;
@@ -145,11 +146,14 @@ function inspect(obj, maxDepth, name, curDepth) {
         print(name + " is empty");    
 }
 
+function lookAround() {
+    this.inspect(this._currentContext, 0, '');
+}
+
 /* Private functions */
 
 function _feed(input) {
-    if(input.match(/^\s*$/) &&
-       this._inputBuffer.match(/^\s*$/)) {
+    if(input.match(/^\s*$/) && this._inputBuffer.match(/^\s*$/)) {
         this.prompt();
         return;
     }
