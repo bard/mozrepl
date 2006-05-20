@@ -94,6 +94,41 @@ function exit() {
     this._server.removeSession(this);
 }
 
+// adapted from ddumpObject() at
+// http://lxr.mozilla.org/mozilla/source/extensions/sroaming/resources/content/transfer/utility.js
+
+function inspect(obj, name, maxDepth, curDepth) {
+    function print(text) {
+        repl.print(text + "\n");
+    }
+
+    name = name || '<obj>';
+
+    if (curDepth == undefined)
+        curDepth = 0;
+    if (maxDepth != undefined && curDepth > maxDepth)
+        return;
+
+    var i = 0;
+    for(var prop in obj) {
+        i++;
+        if (typeof(obj[prop]) == "object") {
+            if (obj[prop] && obj[prop].length != undefined)
+                print(name + "." + prop + "=[probably array, length "
+                      + obj[prop].length + "]");
+            else
+                print(name + "." + prop + "=[" + typeof(obj[prop]) + "]");
+            inspect(obj[prop], name + "." + prop, maxDepth, curDepth+1);
+        }
+        else if (typeof(obj[prop]) == "function")
+            print(name + "." + prop + "=[function]");
+        else
+            print(name + "." + prop + "=" + obj[prop]);
+    }
+    if(!i)
+        print(name + " is empty");    
+}
+
 function _feed(input) {
     var code;
     this._inputBuffer += input;
