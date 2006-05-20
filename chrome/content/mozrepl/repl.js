@@ -41,21 +41,27 @@ function constructor(instream, outstream, server, hostContext) {
             repl._feed(repl._instream.read(count));
         }
     }
-
-    this._name = 'repl';
-    if(this._hostContext[this._name]) {
-        for(var i=1; this._hostContext['repl' + i]; i++)
-            ;
-        this._name = 'repl' + i;
-    }
-    this._hostContext[this._name] = this;
-
     this._inputSeparators = {
         line:      /\n/gm,
         multiline: /\n--end-remote-input\n/gm,
         syntax:    /\n$/m
     }
-    this.inputMode = 'line';
+    this._inputMode = 'line';
+
+    this._name = _chooseName1('repl', this._hostContext);
+    this._hostContext[this._name] = this;
+
+    this.__defineSetter__(
+        'inputMode', function(mode) {
+            if(mode.match(/^(line|syntax|multiline)$/)) 
+                this._inputMode = mode;
+            else
+                repl.print('Input mode must be one of line, syntax, multiline.');
+        });
+    this.__defineGetter__(
+        'inputMode', function() {
+            return this._inputMode;
+        });
 
     if(this._name != 'repl')
         this.print('Hmmm, seems like other repl\'s are running in this context.\n' +
@@ -81,7 +87,7 @@ function enter(newContext) {
     this._contextHistory.push(this._currentContext);
     if(newContext instanceof Window)
         this._migrate(newContext);
-
+    
     this._currentContext = newContext;
     return this._currentContext;
 }
@@ -94,11 +100,6 @@ function exit() {
         this._currentContext = previousContext;        
     }
     return this._currentContext;
-}
-
-function _migrate(context) {
-    context.repl = this;
-    delete this._currentContext.repl;
 }
 
 function quit() {
@@ -143,6 +144,8 @@ function inspect(obj, maxDepth, name, curDepth) {
     if(!i)
         print(name + " is empty");    
 }
+
+/* Private functions */
 
 function _feed(input) {
     if(input.match(/^\s*$/) &&
@@ -195,6 +198,13 @@ function _feed(input) {
     }
 }
 
+function _migrate(context) {
+    context.repl = this;
+    delete this._currentContext.repl;
+}
+
+/* private, side-effects free functions */
+
 function _eachChunk(string, separator, chunkHandler) {
     var start = 0;
     var match;
@@ -222,3 +232,16 @@ function _formatStackTrace1(exception) {
     }
     return trace;
 }
+
+function _chooseName1(basename, context) {
+    return (basename in context) ?
+        (function() {
+            var i = 1;
+            do { i++ } while(basename + i in context);
+            return basename + i;
+        })()
+        :
+        basename;
+}
+
+
