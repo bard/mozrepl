@@ -111,12 +111,13 @@ function quit() {
 // adapted from ddumpObject() at
 // http://lxr.mozilla.org/mozilla/source/extensions/sroaming/resources/content/transfer/utility.js
 
-function inspect(obj, name, maxDepth, curDepth) {
+function inspect(obj, maxDepth, name, curDepth) {
     function print(text) {
         repl.print(text + "\n");
     }
 
     name = name || '<obj>';
+    maxDepth = maxDepth || 1;
 
     if (curDepth == undefined)
         curDepth = 0;
@@ -132,7 +133,7 @@ function inspect(obj, name, maxDepth, curDepth) {
                       + obj[prop].length + "]");
             else
                 print(name + "." + prop + "=[" + typeof(obj[prop]) + "]");
-            inspect(obj[prop], name + "." + prop, maxDepth, curDepth+1);
+            inspect(obj[prop], maxDepth, name + "." + prop, curDepth+1);
         }
         else if (typeof(obj[prop]) == "function")
             print(name + "." + prop + "=[function]");
