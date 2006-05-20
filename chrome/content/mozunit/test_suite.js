@@ -38,6 +38,29 @@ function constructor(opts) {
 
     this._runStrategy = opts.runStrategy;
     this._tests = [];
+    this._reportHandler = function(report) {
+        if(report.result == 'success')
+            return;
+        
+        var printout = '';
+        printout += 'Test ' + report.testIndex + '/' + report.testCount + ': ';
+        printout += report.testDescription + '\n';
+        
+        printout += report.result.toUpperCase();
+        if(report.additionalInfo)
+            printout += ': ' + report.additionalInfo;
+        printout += '\n';
+        
+        if(report.result == 'error')
+            printout += report.stackTrace.replace(/^/mg, '\t') + '\n';
+
+        printout += ('\n');
+
+        if(typeof(repl) == 'object')
+            repl.print(printout);
+        else
+            dump(printout);
+    }
 
     this.__defineSetter__(
         'tests', function(value) {
@@ -57,6 +80,11 @@ function constructor(opts) {
     this.__defineSetter__(
         'stateThat', function(hash) {
             this.setTests(hash);
+        });
+
+    this.__defineSetter__(
+        'reportHandler', function(callback) {
+            this._reportHandler = callback;
         });
 }
 
@@ -129,22 +157,8 @@ function setTests(hash) {
  */
 
 function run() {
-    var _this = this;
-
-    function resultOutputter(eventType, eventLocation, message) {
-        if(eventType != 'SUCCESS')
-            _this._output(eventType + ' in <' + eventLocation + '>\n' + (message || '') + '\n');
-    }
-    
-    if(this._runStrategy == 'async') 
-        this._asyncRun1(
-            this._tests, this._setUp, this._tearDown, resultOutputter,
-            function(summary) {
-                _this.testSummary(summary);
-            });        
-    else 
-        this.testSummary(
-            this._syncRun1(this._tests, this._setUp, this._tearDown, resultOutputter));
+    this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'](
+        this._tests, this._setUp, this._tearDown, this._reportHandler);
 }
 
 function verify() {
@@ -199,43 +213,29 @@ function states(desc, fn) {
     this.test(desc, fn);
 }
 
-/* Undocumented - and in need of refactoring/rethinking */
-
-function testResult(eventType, eventLocation, message) {
-    if(eventType != 'SUCCESS')
-        this._output(eventType + ' in <' + eventLocation + '>\n' + (message || '') + '\n');
-}
-
-function testSummary(summary) {
-    this._output('\nTest run summary\n' +
-                 '  Successes: ' + summary.successes + '\n' +
-                 '  Failures:  ' + summary.failures + '\n' +
-                 '  Errors:    ' + summary.errors + '\n\n');
-}
-
-function _output(string) {
-    if(this._outputter)
-        this._outputter(string);
-    else if(typeof(repl) == 'object')
-        repl.print(string);
-    else
-        dump(string);
-}
-
 /* Side effect-free functions. They're the ones who do the real job. :-) */
 
 function _formatStackTrace1(exception) {
+    function comesFromFramework(call) {
+        return (call.match(/@chrome:\/\/devbox\/content\/lib\/fsm\.js:/) ||
+                call.match(/@chrome:\/\/devbox\/content\/mozunit\/test_suite\.js:/) ||
+                // Following is VERY kludgy
+                call.match(/\(function \(exitResult\) \{if \(eventHandlers/))
+    }
+    
     var trace = '';
     if(exception.stack) {
         var calls = exception.stack.split('\n');
         for each(var call in calls) {
-            if(call.length > 0) {
+            if(call.length > 0 && !comesFromFramework(call)) {
                 call = call.replace(/\\n/g, '\n');
 
                 if(call.length > 200)
-                    call = call.substr(0, 200) + '[...]\n';
+                    call =
+                        call.substr(0, 100) + ' [...] ' +
+                        call.substr(call.length - 100) + '\n';
 
-                trace += call.replace(/^/mg, '\t') + '\n';
+                trace += call + '\n';
             }
         }
     }
@@ -243,9 +243,10 @@ function _formatStackTrace1(exception) {
 }
 
 function _exec1(code, setUp, tearDown, context) {
-    var result = {
-        type:    undefined,
-        message: undefined
+    var report = {
+        result:         undefined,
+        additionalInfo: undefined,
+        stackTrace:     undefined,        
     };
 
     try {
@@ -257,61 +258,35 @@ function _exec1(code, setUp, tearDown, context) {
         if(tearDown)
             tearDown.call(context);
 
-        result.type = 'SUCCESS';
-        result.message = null;
+        report.result = 'success';
     } catch(exception if exception.name == 'AssertionFailed') {
-        result.type = 'FAILURE';
-        result.message = '\t' + (exception.message || exception) + '\n';
+        report.result = 'failure';
+        report.additionalInfo = (exception.message || exception);
     } catch(exception){
-        trace = '\t' + exception.toString() + '\n' + _formatStackTrace1(exception);
-        result.type = 'ERROR';
-        result.message = trace;
+        report.result = 'error';
+        report.additionalInfo = exception.toString();
+        report.stackTrace = _formatStackTrace1(exception);
     }
 
-    return result;
+    return report;
 }
 
-function _updateSummary(summary, resultType) {
-    switch(resultType) {
-    case 'SUCCESS':
-        summary.successes += 1;
-        break;
-    case 'FAILURE':
-        summary.failures += 1;
-        break;
-    case 'ERROR':
-        summary.errors += 1;
-        break;
+function _syncRun1(tests, setUp, tearDown, reportHandler) {
+    var test, context, report;
+    for(var i=0, l=tests.length; i<l; i++) {
+        test = tests[i];
+        context = {};
+        report = _exec1(test.code, setUp, tearDown, context);
+        report.testDescription = test.desc;
+        report.testIndex = i+1;
+        report.testCount = l;
+        reportHandler(report);
     }
 }
 
-function _syncRun1(tests, setUp, tearDown, resultOutputter) {
-    var summary = {
-        successes: 0,
-        failures: 0,
-        errors: 0
-    };
-
-    for each(var test in tests) {
-        var context = {};
-        var result = _exec1(
-            test.code, setUp, tearDown, context);
-
-        _updateSummary(summary, result.type);
-        resultOutputter(result.type, test.desc, result.message);
-    }
-    
-    return summary;
-}
-
-function _asyncRun1(tests, setUp, tearDown, resultOutputter, onTestRunFinished) {
+function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
     var testIndex = 0;
     var context;
-    var summary = {
-        successes: 0,
-        failures: 0,
-        errors: 0
-    };
 
     var stateTransitions = {
         start:      { ok: 'doSetUp' },
@@ -335,11 +310,13 @@ function _asyncRun1(tests, setUp, tearDown, resultOutputter, onTestRunFinished) 
             }
         },
         doTest: function(continuation) {
-            var test = tests[testIndex];
-            var result = _exec1(
-                test.code, null, null, context);
-            _updateSummary(summary, result.type);
-            resultOutputter(result.type, test.desc, result.message);
+            var test, report;
+            test = tests[testIndex];
+            report = _exec1(test.code, null, null, context);
+            report.testDescription = test.desc;
+            report.testIndex = testIndex + 1;
+            report.testCount = tests.length;
+            reportHandler(report);
             continuation('ok');
         },
         doTearDown: function(continuation) { // exceptions in setup/teardown are not reported correctly
@@ -356,7 +333,8 @@ function _asyncRun1(tests, setUp, tearDown, resultOutputter, onTestRunFinished) 
             tests[testIndex] ? continuation('ok') : continuation('ko');
         },
         finished: function(continuation) {
-            onTestRunFinished(summary);
+            if(onTestRunFinished)
+                onTestRunFinished();
         }
     }
 
