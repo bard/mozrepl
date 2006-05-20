@@ -52,7 +52,8 @@ function constructor(instream, outstream, server, hostContext) {
 
     this._inputTerminators = {
         line:      /\n/m,
-        multiline: /\n--end-remote-input\n/m
+        multiline: /\n--end-remote-input\n/m,
+        syntax:    /\n$/m
     }
     this.inputMode = 'line';
 
@@ -130,20 +131,18 @@ function inspect(obj, name, maxDepth, curDepth) {
 }
 
 function _feed(input) {
-    var code;
-    this._inputBuffer += input;
-    
-    switch(this.inputMode) {
-    case 'line':
-    case 'multiline':
-        var match = this._inputBuffer.match(this._inputTerminators[this.inputMode]);
-        if(match) 
-            code = this._inputBuffer.substr(0, match.index);
-        break;
-    case 'syntax':
-        code = this._inputBuffer;
-        break;
+    if(input.match(/^\s*$/) &&
+       this._inputBuffer.match(/^\s*$/)) {
+        this.prompt();
+        return;
     }
+        
+    this._inputBuffer += input;
+
+    var match, code;
+    match = this._inputBuffer.match(this._inputTerminators[this.inputMode]);
+    if(match) 
+        code = this._inputBuffer.substr(0, match.index);    
 
     if(code) {
         try { 
