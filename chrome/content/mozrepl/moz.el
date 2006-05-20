@@ -63,7 +63,11 @@ started as needed)."
   (comint-send-region (inferior-moz-process)
                       start end)
   (comint-send-string (inferior-moz-process)
-                      "repl.inputMode = repl._savedInputMode; undefined;\n--end-remote-input\n")
+                      "\n--end-remote-input\n")
+  (comint-send-string (inferior-moz-process)
+                      "repl.inputMode = repl._savedInputMode; undefined;")
+  (comint-send-string (inferior-moz-process)
+                      "\n--end-remote-input\n")
   (display-buffer (process-buffer (inferior-moz-process))))
 
 (defun moz-send-defun ()
@@ -91,8 +95,19 @@ started as needed)."
 
 (define-derived-mode inferior-moz-mode comint-mode "Inf-Mozilla"
   "Major mode for interacting with a Mozilla browser."
-  :syntax-table js-mode-syntax-table)
+  :syntax-table js-mode-syntax-table
+  (setq comint-input-sender 'inferior-moz-input-sender))
 
+(defun inferior-moz-input-sender (proc string)
+  "Custom function to send input with comint-send-input.
+Instead of sending input and newline separately like in
+comint-simple-send, here we *first* concatenate input and
+newline, then send it all together.  This prevents newline to be
+interpreted on its own."
+  (if comint-input-sender-no-newline
+      (comint-send-string proc string)
+    (comint-send-string proc (concat string "\n"))))
+    
 (defun inferior-moz-switch-to-mozilla ()
   "Show the inferior mozilla buffer.  Start the process if
 needed."
