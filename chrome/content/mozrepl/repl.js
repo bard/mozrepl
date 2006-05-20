@@ -81,7 +81,7 @@ function enter(newContext) {
     this._currentContext = newContext;
 }
         
-function leave() {
+function back() {
     var previousContext = this._contextHistory.pop();
     if(previousContext)
         this._currentContext = previousContext;
