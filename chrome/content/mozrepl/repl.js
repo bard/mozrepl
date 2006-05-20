@@ -163,7 +163,8 @@ function _feed(input) {
     function evaluate(code) {
         var result = repl.load('data:application/x-javascript,' +
                                encodeURIComponent(code));
-        repl.print(result + '\n');
+        if(result != undefined)
+            repl.print(result + '\n');
         repl.prompt();
     }
 
