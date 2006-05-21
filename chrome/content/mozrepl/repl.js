@@ -75,9 +75,8 @@ function constructor(instream, outstream, server, context) {
 }
 
 function print(data, appendNewline) {
-    var string = data.toString();
-    if(appendNewline != false)
-        string += '\n';
+    var string = data +
+        (appendNewline == false ? '' : '\n');
 
     this._outstream.write(string, string.length);
 }
