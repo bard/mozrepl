@@ -18,27 +18,32 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-function constructor(instream, outstream, server, hostContext) {
-    var repl = this;
+function constructor(instream, outstream, server, context) {
+    var _this = this;
+
     this._instream = instream;
     this._outstream = outstream;
     this._server = server;
-    this._hostContext = hostContext;
-    
+
+    this._name            = _chooseName1('repl', context);
+    this._creationContext = context;
+    this._hostContext     = context;
+    this._workContext     = context;
+    this._creationContext[this._name] = this;
+
     this._loader = Components
         .classes['@mozilla.org/moz/jssubscript-loader;1']
         .getService(Components.interfaces.mozIJSSubScriptLoader);
     this._contextHistory = [];
-    this._currentContext = this._hostContext;
     this._inputBuffer = '';
     this._networkListener = {
         onStartRequest: function(request, context) {
         },
         onStopRequest: function(request, context, status) {
-            repl.exit();
+            _this.quit();
         },
         onDataAvailable: function(request, context, inputStream, offset, count) {
-            repl._feed(repl._instream.read(count));
+            _this._feed(_this._instream.read(count));
         }
     }
     this._inputSeparators = {
@@ -48,8 +53,6 @@ function constructor(instream, outstream, server, hostContext) {
     }
     this._inputMode = 'line';
 
-    this._name = _chooseName1('repl', this._hostContext);
-    this._hostContext[this._name] = this;
 
     this.__defineSetter__(
         'inputMode', function(mode) {
@@ -85,28 +88,29 @@ function prompt() {
         
 function load(url, arbitraryContext) {
     return this._loader.loadSubScript(
-        url, arbitraryContext || this._currentContext);
+        url, arbitraryContext || this._workContext);
 }
         
 function enter(newContext) {
-    this._contextHistory.push(this._currentContext);
+    this._contextHistory.push(this._workContext);
     if(newContext instanceof Window)
         this._cloneTo(newContext);
     
-    this._currentContext = newContext;
-    return this._currentContext;
+    this._workContext = newContext;
+    return this._workContext;
 }
         
 function leave() {
     var previousContext = this._contextHistory.pop();
     if(previousContext) 
-        this._currentContext = previousContext;        
+        this._workContext = previousContext;        
 
-    return this._currentContext;
+    return this._workContext;
 }
 
 function quit() {
     delete this._hostContext[this._name];
+    delete this._creationContext[this._name];
     this._instream.close();
     this._outstream.close();
     this._server.removeSession(this);
@@ -114,11 +118,15 @@ function quit() {
 
 function rename(name) {
     if(name in this._hostContext) 
-        this.print('Sorry, name already taken.');
+        this.print('Sorry, name already exists in the context repl is hosted in.');
+    else if(name in this._creationContext)
+        this.print('Sorry, name already exists in the context was created.')
     else {
+        delete this._creationContext[this._name];
         delete this._hostContext[this._name];
         this._name = name;
-        this._hostContext[name] = this;
+        this._creationContext[this._name] = this;
+        this._hostContext[this._name] = this;        
     } 
 }
 
@@ -156,11 +164,11 @@ function inspect(obj, maxDepth, name, curDepth) {
 }
 
 function lookAround() {
-    this.inspect(this._currentContext, 0, '<place>');
+    this.inspect(this._workContext, 0, '<place>');
 }
 
 function whereAmI() {
-    return this._currentContext;
+    return this._workContext;
 }
 
 /* Private functions */
