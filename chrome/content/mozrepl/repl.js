@@ -135,7 +135,7 @@ function rename(name) {
 
 function inspect(obj, maxDepth, name, curDepth) {
     if(name == undefined)
-        name = '<obj>';
+        name = '<' + typeof(obj) + '>'
     if(maxDepth == undefined)
         maxDepth = 0;
     if(curDepth == undefined)
@@ -163,8 +163,8 @@ function inspect(obj, maxDepth, name, curDepth) {
         this.print(name + " is empty");    
 }
 
-function lookAround() {
-    this.inspect(this._workContext, 0, '<place>');
+function look() {
+    this.inspect(this._workContext, 0);
 }
 
 function whereAmI() {
