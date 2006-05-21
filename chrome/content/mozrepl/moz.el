@@ -40,12 +40,6 @@ started as needed)."
 
 (defalias 'run-mozilla 'inferior-moz-switch-to-mozilla)
 
-(defun moz-send (string)
-  "Send a string for evaluation to the inferior Mozilla process."
-  (comint-send-string (inferior-moz-process) string)
-  (comint-send-string moz-input-separator)
-  (display-buffer (process-buffer (inferior-moz-process))))
-
 (defvar moz-repl-name "repl"
   "The current name of the repl.")
 
