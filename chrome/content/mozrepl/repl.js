@@ -91,7 +91,7 @@ function load(url, arbitraryContext) {
 function enter(newContext) {
     this._contextHistory.push(this._currentContext);
     if(newContext instanceof Window)
-        this._migrate(newContext);
+        this._cloneTo(newContext);
     
     this._currentContext = newContext;
     return this._currentContext;
@@ -99,11 +99,9 @@ function enter(newContext) {
         
 function leave() {
     var previousContext = this._contextHistory.pop();
-    if(previousContext) {
-        if(previousContext instanceof Window)
-            this._migrate(previousContext)
+    if(previousContext) 
         this._currentContext = previousContext;        
-    }
+
     return this._currentContext;
 }
 
@@ -115,12 +113,13 @@ function quit() {
 }
 
 function rename(name) {
-    if(!(name in this._hostContext)) {
+    if(name in this._hostContext) 
+        this.print('Sorry, name already taken.');
+    else {
         delete this._hostContext[this._name];
         this._name = name;
         this._hostContext[name] = this;
-    } else
-        this.print('Sorry, name already taken.');
+    } 
 }
 
 // adapted from ddumpObject() at
@@ -158,6 +157,10 @@ function inspect(obj, maxDepth, name, curDepth) {
 
 function lookAround() {
     this.inspect(this._currentContext, 0, '<place>');
+}
+
+function whereAmI() {
+    return this._currentContext;
 }
 
 /* Private functions */
@@ -212,9 +215,9 @@ function _feed(input) {
     }
 }
 
-function _migrate(context) {
-    context.repl = this;
-    delete this._currentContext.repl;
+function _cloneTo(context) {
+    context[this._name] = this;
+    this._hostContext = context;
 }
 
 /* private, side-effects free functions */
