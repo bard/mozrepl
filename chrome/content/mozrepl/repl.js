@@ -171,6 +171,10 @@ function whereAmI() {
     return this._workContext;
 }
 
+function goHome() {
+    return this.enter(this._creationContext);
+}
+
 /* Private functions */
 
 function _feed(input) {
