@@ -101,12 +101,18 @@ started as needed)."
   "Major mode for interacting with a Mozilla browser."
   :syntax-table js-mode-syntax-table
   (setq comint-input-sender 'inferior-moz-input-sender)
+  (define-key inferior-moz-mode-map (kbd ",") 'inferior-moz-self-insert-or-repl-name)
   (add-hook 'comint-output-filter-functions 'inferior-moz-track-repl-name nil t))
             
 (defun inferior-moz-track-repl-name (comint-output)
   (when (string-match "\\(\\w+\\)> $" comint-output)
     (setq moz-repl-name (match-string 1 comint-output))))
 
+(defun inferior-moz-self-insert-or-repl-name ()
+  (interactive)
+  (if (looking-back "\\(\\w+\\)> $")
+      (insert moz-repl-name ".")
+    (insert last-command-char)))
 
 (defun inferior-moz-input-sender (proc string)
   "Custom function to send input with comint-send-input.
