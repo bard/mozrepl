@@ -43,12 +43,13 @@ started as needed)."
 (defun moz-send (string)
   "Send a string for evaluation to the inferior Mozilla process."
   (comint-send-string (inferior-moz-process) string)
-  (comint-send-string moz-input-terminator)
+  (comint-send-string moz-input-separator)
   (display-buffer (process-buffer (inferior-moz-process))))
 
-(defvar moz-temporary-file nil)
+(defvar moz-repl-name "repl"
+  "The current name of the repl.")
 
-(defvar moz-input-terminator "\n--end-remote-input\n")
+(defvar moz-input-separator "\n--end-remote-input\n")
 
 (defun moz-temporary-file ()
   (if (and moz-temporary-file
@@ -59,13 +60,18 @@ started as needed)."
 (defun moz-send-region (start end)
   (interactive "r")
   (comint-send-string (inferior-moz-process)
-                      "repl._savedInputMode = repl.inputMode; repl.inputMode = 'multiline'; undefined;\n")
+                      (concat moz-repl-name "._savedInputMode = "
+                              moz-repl-name ".inputMode; "
+                              moz-repl-name ".inputMode = 'multiline'; "
+                              "undefined; \n"))
   (comint-send-region (inferior-moz-process)
                       start end)
   (comint-send-string (inferior-moz-process)
                       "\n--end-remote-input\n")
   (comint-send-string (inferior-moz-process)
-                      "repl.inputMode = repl._savedInputMode; undefined;")
+                      (concat moz-repl-name ".inputMode ="
+                              moz-repl-name "._savedInputMode; "
+                              "undefined; "))
   (comint-send-string (inferior-moz-process)
                       "\n--end-remote-input\n")
   (display-buffer (process-buffer (inferior-moz-process))))
@@ -80,12 +86,16 @@ started as needed)."
   (interactive)
   (save-buffer)
   (comint-send-string (inferior-moz-process)
-                      "repl._savedInputMode = repl.inputMode; repl.inputMode = 'line'; undefined;\n")
+                      (concat moz-repl-name "._savedInputMode = "
+                              moz-repl-name ".inputMode; "
+                              moz-repl-name ".inputMode = 'line'; "
+                              "undefined\n"))
   (comint-send-string (inferior-moz-process)
-                      (concat "repl._evaluationResult = repl.load('file://localhost/"
-                              (buffer-file-name)
-                              "');"
-                              "repl.inputMode = repl._savedInputMode; repl._evaluationResult;\n"))
+                      (concat moz-repl-name "._evaluationResult = "
+                              moz-repl-name ".load('file://localhost/" (buffer-file-name) "'); "
+                              moz-repl-name ".inputMode = "
+                              moz-repl-name "._savedInputMode; "
+                              moz-repl-name "._evaluationResult; \n"))
   (display-buffer (process-buffer (inferior-moz-process))))
 
 ;;; Inferior Mode
@@ -96,7 +106,13 @@ started as needed)."
 (define-derived-mode inferior-moz-mode comint-mode "Inf-Mozilla"
   "Major mode for interacting with a Mozilla browser."
   :syntax-table js-mode-syntax-table
-  (setq comint-input-sender 'inferior-moz-input-sender))
+  (setq comint-input-sender 'inferior-moz-input-sender)
+  (add-hook 'comint-output-filter-functions 'inferior-moz-track-repl-name nil t))
+            
+(defun inferior-moz-track-repl-name (comint-output)
+  (when (string-match "^\\(.+?\\)> $" comint-output)
+    (setq moz-repl-name (match-string 1 comint-output))))
+
 
 (defun inferior-moz-input-sender (proc string)
   "Custom function to send input with comint-send-input.
@@ -109,8 +125,7 @@ interpreted on its own."
     (comint-send-string proc (concat string "\n"))))
     
 (defun inferior-moz-switch-to-mozilla ()
-  "Show the inferior mozilla buffer.  Start the process if
-needed."
+  "Show the inferior mozilla buffer.  Start the process if needed."
   (interactive)
   (pop-to-buffer (process-buffer (inferior-moz-process))))
 
