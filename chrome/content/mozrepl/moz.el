@@ -63,7 +63,7 @@ started as needed)."
   (comint-send-string (inferior-moz-process)
                       "\n--end-remote-input\n")
   (comint-send-string (inferior-moz-process)
-                      (concat moz-repl-name ".inputMode ="
+                      (concat moz-repl-name ".inputMode = "
                               moz-repl-name "._savedInputMode; "
                               "undefined; "))
   (comint-send-string (inferior-moz-process)
@@ -104,7 +104,7 @@ started as needed)."
   (add-hook 'comint-output-filter-functions 'inferior-moz-track-repl-name nil t))
             
 (defun inferior-moz-track-repl-name (comint-output)
-  (when (string-match "^\\(.+?\\)> $" comint-output)
+  (when (string-match "\\(\\w+\\)> $" comint-output)
     (setq moz-repl-name (match-string 1 comint-output))))
 
 
