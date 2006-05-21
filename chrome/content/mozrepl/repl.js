@@ -63,19 +63,24 @@ function constructor(instream, outstream, server, hostContext) {
             return this._inputMode;
         });
 
-    if(this._name != 'repl')
-        this.print('Hmmm, seems like other repl\'s are running in this context.\n' +
-                   'To avoid conflicts, yours will be named "' + this._name + '".\n\n');
+    if(this._name != 'repl') {
+        this.print('Hmmm, seems like other repl\'s are running in this context.');
+        this.print('To avoid conflicts, yours will be named "' + this._name + '".');
+    }
+    
     this.prompt();
 }
 
-function print(data) {
+function print(data, appendNewline) {
     var string = data.toString();
+    if(appendNewline != false)
+        string += '\n';
+
     this._outstream.write(string, string.length);
 }
 
 function prompt() {
-    this.print('> ');
+    this.print(this._name + '> ', false);
 }
         
 function load(url, arbitraryContext) {
@@ -109,14 +114,19 @@ function quit() {
     this._server.removeSession(this);
 }
 
+function rename(name) {
+    if(!(name in this._hostContext)) {
+        delete this._hostContext[this._name];
+        this._name = name;
+        this._hostContext[name] = this;
+    } else
+        this.print('Sorry, name already taken.');
+}
+
 // adapted from ddumpObject() at
 // http://lxr.mozilla.org/mozilla/source/extensions/sroaming/resources/content/transfer/utility.js
 
 function inspect(obj, maxDepth, name, curDepth) {
-    function print(text) {
-        repl.print(text + "\n");
-    }
-
     if(name == undefined)
         name = '<obj>';
     if(maxDepth == undefined)
@@ -131,23 +141,23 @@ function inspect(obj, maxDepth, name, curDepth) {
         i++;
         if (typeof(obj[prop]) == "object") {
             if (obj[prop] && obj[prop].length != undefined)
-                print(name + "." + prop + "=[probably array, length "
-                      + obj[prop].length + "]");
+                this.print(name + "." + prop + "=[probably array, length "
+                           + obj[prop].length + "]");
             else
-                print(name + "." + prop + "=[" + typeof(obj[prop]) + "]");
+                this.print(name + "." + prop + "=[" + typeof(obj[prop]) + "]");
             inspect(obj[prop], maxDepth, name + "." + prop, curDepth+1);
         }
         else if (typeof(obj[prop]) == "function")
-            print(name + "." + prop + "=[function]");
+            this.print(name + "." + prop + "=[function]");
         else
-            print(name + "." + prop + "=" + obj[prop]);
+            this.print(name + "." + prop + "=" + obj[prop]);
     }
     if(!i)
-        print(name + " is empty");    
+        this.print(name + " is empty");    
 }
 
 function lookAround() {
-    this.inspect(this._currentContext, 0, '');
+    this.inspect(this._currentContext, 0, '<place>');
 }
 
 /* Private functions */
@@ -158,20 +168,19 @@ function _feed(input) {
         return;
     }
     
-    repl = this;
-
+    var _this = this;
     function evaluate(code) {
-        var result = repl.load('data:application/x-javascript,' +
-                               encodeURIComponent(code));
+        var result = _this.load('data:application/x-javascript,' +
+                                encodeURIComponent(code));
         if(result != undefined)
-            repl.print(result + '\n');
-        repl.prompt();
+            _this.print(result);
+        _this.prompt();
     }
 
     function handleError(e) {
-        repl.print(_formatStackTrace1(e));
-        repl.print('!!! ' + e.toString() + '\n\n');
-        repl.prompt();        
+        _this.print(_formatStackTrace1(e));
+        _this.print('!!! ' + e.toString() + '\n');
+        _this.prompt();        
     }
 
     switch(this.inputMode) {
