@@ -47,8 +47,8 @@ function constructor(instream, outstream, server, context) {
         }
     }
     this._inputSeparators = {
-        line:      /\n/gm,
-        multiline: /\n--end-remote-input\n/gm,
+        line:      /\n/m,
+        multiline: /\n--end-remote-input\n/m,
         syntax:    /\n$/m
     }
     this._inputMode = 'line';
@@ -197,19 +197,30 @@ function _feed(input) {
         _this.prompt();        
     }
 
+    function scan(string, separator) {
+        var match = string.match(separator);
+        if(match)
+            return [string.substring(0, match.index),
+                    string.substr(match.index + match[0].length)];
+        else
+            return [null, string];
+    }
+
+
     switch(this.inputMode) {
     case 'line':
     case 'multiline':
-        this._inputBuffer = _eachChunk(
-            this._inputBuffer + input,
-            this._inputSeparators[this.inputMode],
-            function(inputChunk) {
-                try {
-                    evaluate(inputChunk);
-                } catch(e) {
-                    handleError(e);
-                };
-            });
+        this._inputBuffer += input;
+        var res = scan(this._inputBuffer, this._inputSeparators[this._inputMode]);
+        while(res[0]) {
+            try {
+                evaluate(res[0]);
+            } catch(e) {
+                handleError(e);
+            }
+            res = scan(res[1], this._inputSeparators[this._inputMode]);
+        }
+        this._inputBuffer = res[1];
         break;
     case 'syntax':
         this._inputBuffer += input;
