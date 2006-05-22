@@ -275,7 +275,7 @@ function _formatStackTrace1(exception) {
 function _chooseName1(basename, context) {
     return (basename in context) ?
         (function() {
-            var i = 1;
+            var i = 0;
             do { i++ } while(basename + i in context);
             return basename + i;
         })()
