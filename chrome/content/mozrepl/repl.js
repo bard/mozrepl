@@ -194,7 +194,21 @@ function whereAmI() {
     return this._workContext;
 }
 
-function goHome() {
+function lookup(criteria, context) {
+    context = context || this._hostContext;
+    
+    var matcher;
+    if(typeof(criteria) == 'function')
+        matcher = criteria;
+    else
+        matcher = function(name) { return name == criteria; }
+    
+    for(var name in context)
+        if(matcher(name))
+            this.print(name);
+}
+
+function home() {
     return this.enter(this._creationContext);
 }
 
