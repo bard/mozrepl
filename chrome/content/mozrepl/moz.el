@@ -35,7 +35,8 @@ started as needed)."
   nil
   " Moz"
   '(("\C-c\C-s" . run-mozilla)
-    ("\C-c\C-c" . moz-send-defun)
+    ("\C-\M-x"  . moz-send-defun)
+    ("\C-c\C-c" . moz-send-defun-and-go)
     ("\C-c\C-r" . moz-send-region)
     ("\C-c\C-l" . moz-save-buffer-and-send)))
 
@@ -55,7 +56,7 @@ started as needed)."
 (defun moz-send-region (start end)
   (interactive "r")
   (comint-send-string (inferior-moz-process)
-                      (concat moz-repl-name ".pushenv('printPrompt', 'inputMode); "
+                      (concat moz-repl-name ".pushenv('printPrompt', 'inputMode'); "
                               moz-repl-name ".setenv('printPrompt', false); "
                               moz-repl-name ".setenv('inputMode', 'multiline'); "
                               "undefined; \n"))
@@ -64,7 +65,7 @@ started as needed)."
   (comint-send-string (inferior-moz-process)
                       "\n--end-remote-input\n")
   (comint-send-string (inferior-moz-process)
-                      (concat moz-repl-name ".popenv('inputMode', 'printPrompt); "
+                      (concat moz-repl-name ".popenv('inputMode', 'printPrompt'); "
                               "undefined; \n"))
   (comint-send-string (inferior-moz-process)
                       "\n--end-remote-input\n")
@@ -76,19 +77,25 @@ started as needed)."
     (c-mark-function)
     (moz-send-region (point) (mark))))
 
+(defun moz-send-defun-and-go ()
+  (interactive)
+  (moz-send-defun)
+  (inferior-moz-switch-to-mozilla))
+
 (defun moz-save-buffer-and-send ()
   (interactive)
   (save-buffer)
   (comint-send-string (inferior-moz-process)
-                      (concat moz-repl-name ".pushenv('printPrompt', 'inputMode); "
+                      (concat moz-repl-name ".pushenv('printPrompt', 'inputMode'); "
                               moz-repl-name ".setenv('printPrompt', false); "
                               moz-repl-name ".setenv('inputMode', 'multiline'); "
                               "undefined; \n"))
   (comint-send-string (inferior-moz-process)
                       (concat moz-repl-name "._evaluationResult = "
                               moz-repl-name ".load('file://localhost/" (buffer-file-name) "'); "
-                              moz-repl-name ".popenv('inputMode', 'printPrompt); "
-                              moz-repl-name "._evaluationResult; \n"))
+                              moz-repl-name ".popenv('inputMode', 'printPrompt'); "
+                              moz-repl-name "._evaluationResult; "
+                              "\n--end-remote-input\n"))
   (display-buffer (process-buffer (inferior-moz-process))))
 
 ;;; Inferior Mode
@@ -101,6 +108,7 @@ started as needed)."
   :syntax-table js-mode-syntax-table
   (setq comint-input-sender 'inferior-moz-input-sender)
   (define-key inferior-moz-mode-map (kbd ",") 'inferior-moz-self-insert-or-repl-name)
+  (define-key inferior-moz-mode-map "\C-cc" (lambda () (interactive) (insert moz-repl-name ".")))
   (add-hook 'comint-output-filter-functions 'inferior-moz-track-repl-name nil t))
             
 (defun inferior-moz-track-repl-name (comint-output)
