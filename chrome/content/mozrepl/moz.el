@@ -55,18 +55,17 @@ started as needed)."
 (defun moz-send-region (start end)
   (interactive "r")
   (comint-send-string (inferior-moz-process)
-                      (concat moz-repl-name "._savedInputMode = "
-                              moz-repl-name ".inputMode; "
-                              moz-repl-name ".inputMode = 'multiline'; "
+                      (concat moz-repl-name ".pushenv('printPrompt', 'inputMode); "
+                              moz-repl-name ".setenv('printPrompt', false); "
+                              moz-repl-name ".setenv('inputMode', 'multiline'); "
                               "undefined; \n"))
   (comint-send-region (inferior-moz-process)
                       start end)
   (comint-send-string (inferior-moz-process)
                       "\n--end-remote-input\n")
   (comint-send-string (inferior-moz-process)
-                      (concat moz-repl-name ".inputMode = "
-                              moz-repl-name "._savedInputMode; "
-                              "undefined; "))
+                      (concat moz-repl-name ".popenv('inputMode', 'printPrompt); "
+                              "undefined; \n"))
   (comint-send-string (inferior-moz-process)
                       "\n--end-remote-input\n")
   (display-buffer (process-buffer (inferior-moz-process))))
@@ -81,15 +80,14 @@ started as needed)."
   (interactive)
   (save-buffer)
   (comint-send-string (inferior-moz-process)
-                      (concat moz-repl-name "._savedInputMode = "
-                              moz-repl-name ".inputMode; "
-                              moz-repl-name ".inputMode = 'line'; "
-                              "undefined\n"))
+                      (concat moz-repl-name ".pushenv('printPrompt', 'inputMode); "
+                              moz-repl-name ".setenv('printPrompt', false); "
+                              moz-repl-name ".setenv('inputMode', 'multiline'); "
+                              "undefined; \n"))
   (comint-send-string (inferior-moz-process)
                       (concat moz-repl-name "._evaluationResult = "
                               moz-repl-name ".load('file://localhost/" (buffer-file-name) "'); "
-                              moz-repl-name ".inputMode = "
-                              moz-repl-name "._savedInputMode; "
+                              moz-repl-name ".popenv('inputMode', 'printPrompt); "
                               moz-repl-name "._evaluationResult; \n"))
   (display-buffer (process-buffer (inferior-moz-process))))
 

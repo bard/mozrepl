@@ -51,27 +51,50 @@ function constructor(instream, outstream, server, context) {
         multiline: /\n--end-remote-input\n/m,
         syntax:    /\n$/m
     }
-    this._inputMode = 'line';
-
-
-    this.__defineSetter__(
-        'inputMode', function(mode) {
-            if(mode.match(/^(line|syntax|multiline)$/)) 
-                this._inputMode = mode;
-            else
-                repl.print('Input mode must be one of line, syntax, multiline.');
-        });
-    this.__defineGetter__(
-        'inputMode', function() {
-            return this._inputMode;
-        });
 
     if(this._name != 'repl') {
         this.print('Hmmm, seems like other repl\'s are running in this context.');
         this.print('To avoid conflicts, yours will be named "' + this._name + '".');
     }
+
+    this._env = {};
+    this._savedEnv = {};
+    this.setenv('printPrompt', true);
+    this.setenv('inputMode', 'line');
     
     this.prompt();
+}
+
+function setenv(name, value) {
+    this._env[name] = value;
+    return value;
+}
+
+function getenv(name) {
+    return this._env[name];
+}
+
+function pushenv() {
+    var name;
+    for(var i=0, l=arguments.length; i<l; i++) {
+        name = arguments[i];
+        this._savedEnv[name] = this._env[name];
+    }
+    
+    return this._env[name];
+}
+
+function popenv() {
+    var name;
+    for(var i=0, l=arguments.length; i<l; i++) {
+        name = arguments[i];
+        if(name in this._savedEnv) {
+            this._env[name] = this._savedEnv[name];
+            delete this._savedEnv[name];
+        }        
+    }
+
+    return this._env[name];
 }
 
 function print(data, appendNewline) {
@@ -82,7 +105,8 @@ function print(data, appendNewline) {
 }
 
 function prompt() {
-    this.print(this._name + '> ', false);
+    if(this.getenv('printPrompt'))
+        this.print(this._name + '> ', false);
 }
         
 function load(url, arbitraryContext) {
@@ -207,18 +231,18 @@ function _feed(input) {
     }
 
 
-    switch(this.inputMode) {
+    switch(this._env['inputMode']) {
     case 'line':
     case 'multiline':
         this._inputBuffer += input;
-        var res = scan(this._inputBuffer, this._inputSeparators[this._inputMode]);
+        var res = scan(this._inputBuffer, this._inputSeparators[this._env['inputMode']]);
         while(res[0]) {
             try {
                 evaluate(res[0]);
             } catch(e) {
                 handleError(e);
             }
-            res = scan(res[1], this._inputSeparators[this._inputMode]);
+            res = scan(res[1], this._inputSeparators[this._env['inputMode']]);
         }
         this._inputBuffer = res[1];
         break;
