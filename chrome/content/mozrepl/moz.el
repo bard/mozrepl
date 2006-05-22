@@ -34,7 +34,8 @@ region or buffer to an inferior mozilla process (which will be
 started as needed)."
   nil
   " Moz"
-  '(("\C-c\C-c" . moz-send-defun)
+  '(("\C-c\C-s" . run-mozilla)
+    ("\C-c\C-c" . moz-send-defun)
     ("\C-c\C-r" . moz-send-region)
     ("\C-c\C-l" . moz-save-buffer-and-send)))
 
