@@ -131,6 +131,11 @@ function leave() {
     return this._workContext;
 }
 
+function content() {
+    if(this._hostContext['content'])
+        return this.enter(this._hostContext['content']);
+}
+
 function quit() {
     delete this._hostContext[this._name];
     delete this._creationContext[this._name];
