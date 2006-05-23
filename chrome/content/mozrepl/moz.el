@@ -134,7 +134,8 @@ interpreted on its own."
 (defun inferior-moz-switch-to-mozilla ()
   "Show the inferior mozilla buffer.  Start the process if needed."
   (interactive)
-  (pop-to-buffer (process-buffer (inferior-moz-process))))
+  (pop-to-buffer (process-buffer (inferior-moz-process)))
+  (goto-char (process-mark (inferior-moz-process))))
 
 (defun inferior-moz-process ()
   "Return inferior mozilla process.  Start it if necessary."
