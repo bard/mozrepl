@@ -217,6 +217,37 @@ function home() {
     return this.enter(this._creationContext);
 }
 
+function doc(thing) {
+    function xulPlanetUrl(elementName) {
+        return 'http://www.xulplanet.com/references/elemref/ref_' + elementName + '.html';
+    }
+    function xulPlanetCss(document) {
+        var cssLink = document.createElementNS(
+            'http://www.w3.org/1999/xhtml', 'link');
+        cssLink.rel = 'stylesheet';
+        cssLink.type = 'text/css';
+        cssLink.href = 'data:text/css,#sidebar, #header, #navigatebar, ' +
+            '.navlinks-pnc { display: none; } ' +
+            '#content { margin-left: 0; }';
+        document.getElementsByTagName('head')[0].appendChild(cssLink);
+    }
+    
+    var helpUrl;
+    if(thing instanceof XULElement)
+        helpUrl = xulPlanetUrl(thing.nodeName);
+    else if(typeof(thing) == 'string')
+        helpUrl = xulPlanetUrl(thing);
+
+    repl = this;
+    if(helpUrl) 
+        Components
+            .classes["@mozilla.org/embedcomp/window-watcher;1"]
+            .getService(Components.interfaces.nsIWindowWatcher)
+            .openWindow(null, helpUrl, 'help',
+                        'width=640,height=600,scrollbars=yes,menubars=no,' +
+                        'toolbar=no,location=no,status=no,resizable=yes', null);
+}
+
 /* Private functions */
 
 function _feed(input) {
