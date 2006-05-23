@@ -19,5 +19,5 @@
 */
 
 this.assertions    = module.require('package', 'assertions');
-this.TestSuite     = module.require('class',   'test_suite');
-this.Specification = this.TestSuite;
+this.TestCase      = module.require('class',   'test_case');
+this.Specification = this.TestCase;

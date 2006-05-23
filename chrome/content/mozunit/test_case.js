@@ -1,27 +1,30 @@
-// Copyright (C) 2006 by Massimiliano Mirra
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-//
-// Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
+/**
+ * Copyright (C) 2006 by Massimiliano Mirra
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ *
+ * Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
+ *
+ */
 
 const fsm = module.require('package', 'lib/fsm');
 
-/*
+/**
  * Invocation:
- *     var suite = new TestSuite();
- *     var suite = new TestSuite({runStrategy: 'async'});
+ *     var case = new TestCase();
+ *     var case = new TestCase({runStrategy: 'async'});
  *
  * Use async run strategy when test cases mustn't be run immediately
  * after test setup, for example when during setup a document is
@@ -32,8 +35,6 @@ const fsm = module.require('package', 'lib/fsm');
  *     var spec = new Specification();
  *
  */
-
-
 
 function constructor(opts) {
     opts = opts || {};
@@ -90,11 +91,11 @@ function constructor(opts) {
         });
 }
 
-/*
+/**
  * Define test cases, optionally with setup and teardown.
  *
- *     var suite = new TestSuite();
- *     suite.tests = {
+ *     var case = new TestCase();
+ *     case.tests = {
  *         setUp: function() {
  *             this.plusFactor = 4;
  *         },
@@ -108,12 +109,12 @@ function constructor(opts) {
  *         }
  *     }
  *
- * Every test is run in a context created ex-novo and accessible via
- * the 'this' identifier.
+ * Every test is run in a context created ex-novo and accessible from
+ * the test itself via the 'this' identifier.
  *
- * Aliases: setTests(), stateThat.  'setUp' is also aliased to
- * 'given'.  The latter two allow a more Behaviour-Driven Development
- * style.
+ * Aliases: setTests(), 'stateThat'.  'setUp' is also aliased to
+ * 'given'.  'stateThat' and 'given' allow a more Behaviour-Driven
+ * Development style.
  *
  *     var spec = new Specification();
  *     spec.stateThat = {
@@ -143,18 +144,12 @@ function setTests(hash) {
                 code: hash[desc]});
 }
 
-/*
+/**
  * Runs tests with strategy defined at construction time.
  *
- *    var suite = new TestSuite();
- *    suite.tests = { ... };
- *    suite.run();
- *
- * Alias: verify();
- *
- *    var spec = new Specification();
- *    spec.stateThat = { ... };
- *    spec.verify();
+ *    var case = new TestCase();
+ *    case.tests = { ... };
+ *    case.run();
  *
  */
 
@@ -163,23 +158,20 @@ function run() {
         this._tests, this._setUp, this._tearDown, this._reportHandler);
 }
 
+/**
+ * BDD-style alias for run().
+ *
+ *    var spec = new Specification();
+ *    spec.stateThat = { ... };
+ *    spec.verify();
+ *
+ */
+
 function verify() {
     this.run();
 }
 
-/*
- * Outputs a human-readable of test descriptions.  Useful if you named
- * test with long strings.
- *
- */
-
-function describe() {
-    this._output('Specification\n\n')
-        for each(var test in this._tests)
-            this._output('  * ' + test.desc + '\n\n');
-}
-
-/*
+/**
  * Alternative style for defining setup.
  *
  */
@@ -188,11 +180,16 @@ function setUp(fn) {
     this._setUp = fn;
 }
 
+/**
+ * BDD-alias for setUp().
+ *
+ */
+
 function given(fn) {
     this.setUp(fn);
 }
 
-/*
+/**
  * Alternative style for defining teardown.
  *
  */
@@ -201,7 +198,7 @@ function tearDown(fn) {
     this._tearDown = fn;
 }
 
-/*
+/**
  * Alternative style for defining tests.  Can be called multiple
  * times.
  *
@@ -211,16 +208,22 @@ function test(desc, code) {
     this._tests.push([desc, code]);
 }
 
+/**
+ * BDD-style alias for test().
+ *
+ */
+
 function states(desc, fn) {
     this.test(desc, fn);
 }
 
-/* Side effect-free functions. They're the ones who do the real job. :-) */
+/*  Side effect-free functions. They're the ones who do the real job. :-) */
+  
 
 function _formatStackTrace1(exception) {
     function comesFromFramework(call) {
         return (call.match(/@chrome:\/\/devbox\/content\/lib\/fsm\.js:/) ||
-                call.match(/@chrome:\/\/devbox\/content\/mozunit\/test_suite\.js:/) ||
+                call.match(/@chrome:\/\/devbox\/content\/mozunit\/test_case\.js:/) ||
                 // Following is VERY kludgy
                 call.match(/\(function \(exitResult\) \{if \(eventHandlers/))
     }
