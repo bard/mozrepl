@@ -18,7 +18,7 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-var devbox = (new ModuleHelper(['chrome://devbox/content'])).require('package', 'package');
+var devbox = (new ModuleManager(['chrome://devbox/content'])).require('package', 'package');
 
 (function(){
     devbox.mozrepl.server = new devbox.mozrepl.Server();

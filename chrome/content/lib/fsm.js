@@ -1,5 +1,5 @@
-//if(typeof(Module) == 'object')
-//Module.declare('package');
+//if(typeof(module) == 'object')
+//module.declare('package');
 
 function go(stateName, context, stateHandlers, stateTransitions, eventHandlers) {
     if(eventHandlers['state/enter'])

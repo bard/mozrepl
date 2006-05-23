@@ -18,7 +18,7 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-const REPL = Module.require('class', 'repl');
+const REPL = module.require('class', 'repl');
 
 function constructor() {}
 

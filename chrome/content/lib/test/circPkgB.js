@@ -1,6 +1,6 @@
-devbox.mozrepl.dump('started loading package B\n');
+repl.print('started loading package B');
 
-devbox.mozrepl.dump('requiring package A from B\n');
-Module.require('package', 'circPkgA');
+repl.print('requiring package A from B');
+module.require('package', 'circPkgA');
 
-devbox.mozrepl.dump('finished loading package B\n');
+repl.print('finished loading package B');

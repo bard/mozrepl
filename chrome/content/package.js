@@ -18,6 +18,6 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-this.mozrepl = Module.require('package', 'mozrepl/package');
-this.mozunit = Module.require('package', 'mozunit/package');
+this.mozrepl = module.require('package', 'mozrepl/package');
+this.mozunit = module.require('package', 'mozunit/package');
     

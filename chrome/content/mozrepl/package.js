@@ -18,5 +18,5 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-this.Server = Module.require('class', 'server');
-this.UI     = Module.require('class', 'ui');
+this.Server = module.require('class', 'server');
+this.UI     = module.require('class', 'ui');

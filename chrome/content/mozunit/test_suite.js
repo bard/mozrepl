@@ -16,7 +16,7 @@
 //
 // Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
-const fsm = Module.require('package', 'lib/fsm');
+const fsm = module.require('package', 'lib/fsm');
 
 /*
  * Invocation:
@@ -32,6 +32,8 @@ const fsm = Module.require('package', 'lib/fsm');
  *     var spec = new Specification();
  *
  */
+
+
 
 function constructor(opts) {
     opts = opts || {};

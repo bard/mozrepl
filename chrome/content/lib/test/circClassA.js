@@ -1,6 +1,6 @@
-devbox.mozrepl.dump('started loading class A\n');
+repl.print('started loading class A');
 
-devbox.mozrepl.dump('requiring class B from A\n');
-Module.require('class', 'circClassB');
+repl.print('requiring class B from A');
+module.require('class', 'circClassB');
 
-devbox.mozrepl.dump('finished loading class A\n');
+repl.print('finished loading class A');

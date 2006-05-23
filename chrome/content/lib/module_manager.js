@@ -18,7 +18,7 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-function ModuleHelper(searchPath, suffixList) {
+function ModuleManager(searchPath, suffixList) {
     this._searchPath = [];
 
     var pathItem;
@@ -37,7 +37,7 @@ function ModuleHelper(searchPath, suffixList) {
     this._requireCache = {};
 }
 
-ModuleHelper.prototype = {
+ModuleManager.prototype = {
     require: function(type, logicalUrl) {
 
         var directoryOfCaller = Components.stack.caller.filename.replace(/\/[^/]+$/, '');
@@ -74,7 +74,7 @@ ModuleHelper.prototype = {
         var classConstructor = this._requireCache[cacheKey];
         if(!classConstructor) {
             var proto = {
-                Module: this
+                module: this
             };
             classConstructor = function() {
                 if(proto.constructor)
@@ -105,7 +105,7 @@ ModuleHelper.prototype = {
         var _loader = this._loader;
         var _module = this;
         return function() {
-            this.Module = _module;
+            this.module = _module;
             _loader.loadSubScript(realUrl, this);
             this.constructor.apply(this, arguments);
         }
@@ -116,7 +116,7 @@ ModuleHelper.prototype = {
         var pkg = this._requireCache[cacheKey];
         if(!pkg) {
             pkg = {
-                Module: this
+                module: this
             };
             this._requireCache[cacheKey] = pkg;
 
@@ -175,11 +175,11 @@ ModuleHelper.prototype = {
     }
 };
 
-ModuleHelper.testBasic = function() {
-    MozRepl_dump('\n***** Verifying class loader functionality (private class) *****\n\n');
+ModuleManager.testBasic = function() {
+    repl.print('\n***** Verifying class loader functionality (private class) *****\n');
 
-    var Module = new ModuleHelper(['.']);
-    var Test = Module.require('class_p', 'test/classPrivateEnv');
+    var module = new ModuleManager(['.']);
+    var Test = module.require('class_p', 'test/classPrivateEnv');
     
     var t1 = new Test();
     var t2 = new Test();
@@ -187,13 +187,13 @@ ModuleHelper.testBasic = function() {
     t1.setVar(4);
     t2.setVar(5);
 
-    MozRepl_dump(t1.getVar() + '\n');
-    MozRepl_dump(t2.getVar() + '\n');    
+    repl.print(t1.getVar() + '\n');
+    repl.print(t2.getVar() + '\n');    
 }
 
 
-ModuleHelper.benchmark = function() {
-    var Module = new ModuleHelper();
+ModuleManager.benchmark = function() {
+    var module = new ModuleManager();
 
     function benchmark(fn) {
         var start, end;
@@ -205,29 +205,29 @@ ModuleHelper.benchmark = function() {
         return end.getTime() - start.getTime();
     }
 
-    MozRepl_dump('\n***** Benchmarking instantiation of 1000 loaded class vs. normal class *****\n\n');
+    repl.print('\n***** Benchmarking instantiation of 1000 loaded class vs. normal class *****\n');
 
-    MozRepl_dump(
+    repl.print(
         'Class in private environment: ' +
         benchmark(
             function() {
-                var Test = Module.require('class_p', 'test/classPrivateEnv');
+                var Test = module.require('class_p', 'test/classPrivateEnv');
                 for(var i=0; i<1000; i++)
                     new Test();
             }) +
-        ' msecs.\n');
+        ' msecs.');
 
-    MozRepl_dump(
+    repl.print(
         'Class in shared environment: ' +
         benchmark(
             function() {
-                var Test = Module.require('class', 'test/classSharedEnv');
+                var Test = module.require('class', 'test/classSharedEnv');
                 for(var i=0; i<1000; i++)
                     new Test();
             }) +
-        ' msecs.\n');
+        ' msecs.');
 
-    MozRepl_dump(
+    repl.print(
         'Native definition: ' +
         benchmark(
             function() {
@@ -235,24 +235,24 @@ ModuleHelper.benchmark = function() {
                 for (var i=0; i<1000; i++)
                     new Test();
             }) +
-        ' msecs.\n');    
+        ' msecs.');    
 }
 
-ModuleHelper.testCircular = function() {
-    MozRepl_dump('\n***** Handling circular dependencies *****\n\n');
+ModuleManager.testCircular = function() {
+    repl.print('\n***** Handling circular dependencies *****\n');
 
-    var Module = new ModuleHelper();
+    var module = new ModuleManager();
 
-    MozRepl_dump('Circular packages\n');
-    var pkgA = Module.require('package', 'test/circPkgA');
+    repl.print('CIRCULAR PACKAGES');
+    var pkgA = module.require('package', 'test/circPkgA');
 
-    MozRepl_dump('Circular classes\n');
-    var classA = Module.require('class', 'test/circClassA');
+    repl.print('CIRCULAR CLASSES');
+    var classA = module.require('class', 'test/circClassA');
 };
 
 /*
-  ModuleHelper.testBasic();
-  ModuleHelper.testCircular();
-  ModuleHelper.benchmark();
+  ModuleManager.testBasic();
+  ModuleManager.testCircular();
+  ModuleManager.benchmark();
 */
 
