@@ -1,2 +1,2 @@
-content devbox chrome/content/
-overlay chrome://browser/content/browser.xul chrome://devbox/content/overlay.xul
+content mozlab chrome/content/
+overlay chrome://browser/content/browser.xul chrome://mozlab/content/overlay.xul

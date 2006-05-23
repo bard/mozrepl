@@ -18,12 +18,12 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-var devbox = (new ModuleManager(['chrome://devbox/content'])).require('package', 'package');
+var mozlab = (new ModuleManager(['chrome://mozlab/content'])).require('package', 'package');
 
 (function(){
-    devbox.mozrepl.server = new devbox.mozrepl.Server();
-    devbox.mozrepl.ui = new devbox.mozrepl.UI(devbox.mozrepl.server);
-    devbox.mozrepl.dump = function(text) {
+    mozlab.mozrepl.server = new mozlab.mozrepl.Server();
+    mozlab.mozrepl.ui = new mozlab.mozrepl.UI(mozlab.mozrepl.server);
+    mozlab.mozrepl.dump = function(text) {
         repl.print(text);
     }    
 })();

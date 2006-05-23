@@ -22,7 +22,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 -->
 
 <!DOCTYPE overlay>
-<overlay id="devbox-overlay"
+<overlay id="mozlab-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script type="application/x-javascript" src="lib/module_manager.js"/>
@@ -32,11 +32,15 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
     <command id="mozrepl-command-toggle"
              label="Start Repl"
              accesskey="R"
-             oncommand="devbox.mozrepl.ui.toggleServer();"/>
+             oncommand="mozlab.mozrepl.ui.toggleServer();"/>
+    <command id="mozlab-command-open-mozunit"
+             label="MozUnit"
+             accesskey="U"
+             oncommand="content.location.href = 'chrome://mozlab/content/mozunit/ui.xul'"/>
   </commandset>
 
   <menupopup id="menu_ToolsPopup">
-    <menu label="DevBox">
+    <menu label="MozLab">
       <menupopup>
         <menuitem command="mozrepl-command-toggle"/>
       </menupopup>
@@ -44,11 +48,12 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
   </menupopup>
 
   <toolbox id="navigator-toolbox">    
-    <toolbar id="devbox-toolbar" toolbarname="Devbox Toolbar" 
+    <toolbar id="mozlab-toolbar" toolbarname="MozLab Toolbar" 
              class="chromeclass-toolbar" context="toolbar-context-menu" 
              hidden="false" persist="hidden">
       
       <toolbarbutton command="mozrepl-command-toggle"/>
+      <toolbarbutton command="mozlab-command-open-mozunit"/>
     </toolbar>
   </toolbox>
 </overlay>

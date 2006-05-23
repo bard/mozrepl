@@ -190,8 +190,8 @@ function states(desc, fn) {
 
 function _formatStackTrace1(exception) {
     function comesFromFramework(call) {
-        return (call.match(/@chrome:\/\/devbox\/content\/lib\/fsm\.js:/) ||
-                call.match(/@chrome:\/\/devbox\/content\/mozunit\/test_case\.js:/) ||
+        return (call.match(/@chrome:\/\/mozlab\/content\/lib\/fsm\.js:/) ||
+                call.match(/@chrome:\/\/mozlab\/content\/mozunit\/test_case\.js:/) ||
                 // Following is VERY kludgy
                 call.match(/\(function \(exitResult\) \{if \(eventHandlers/))
     }
