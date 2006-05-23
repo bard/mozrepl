@@ -37,8 +37,7 @@ function constructor(instream, outstream, server, context) {
     this._contextHistory = [];
     this._inputBuffer = '';
     this._networkListener = {
-        onStartRequest: function(request, context) {
-        },
+        onStartRequest: function(request, context) {},
         onStopRequest: function(request, context, status) {
             _this.quit();
         },
@@ -62,17 +61,27 @@ function constructor(instream, outstream, server, context) {
     this.setenv('printPrompt', true);
     this.setenv('inputMode', 'line');
     
-    this.prompt();
+    this._prompt();
 }
+
 
 function setenv(name, value) {
     this._env[name] = value;
     return value;
 }
+setenv.doc =
+    'Takes a name and a value and stores them so that \
+they can be later retrieved via setenv(). Some, such as \
+"printPrompt"/boolean, affect there way the REPL works.';
+
 
 function getenv(name) {
     return this._env[name];
 }
+getenv.doc =
+    'Given a name, returns a value previously stored via \
+setenv().';
+
 
 function pushenv() {
     var name;
@@ -83,6 +92,11 @@ function pushenv() {
     
     return this._env[name];
 }
+pushenv.doc =
+    'Takes one or more names of values previously stored \
+via setenv(), and stores them so that they can be later \
+restored via popenv().';
+
 
 function popenv() {
     var name;
@@ -96,6 +110,10 @@ function popenv() {
 
     return this._env[name];
 }
+popenv.doc =
+    'Takes one or more names of values previously pushed \
+via popenv() and restores them, overwriting the current ones.';
+
 
 function print(data, appendNewline) {
     var string = data +
@@ -103,16 +121,19 @@ function print(data, appendNewline) {
 
     this._outstream.write(string, string.length);
 }
+print.doc =
+    'Converts an object to a string and prints the string. \
+Appends a newline unless false is given as second parameter.';
 
-function prompt() {
-    if(this.getenv('printPrompt'))
-        this.print(this._name + '> ', false);
-}
-        
+
 function load(url, arbitraryContext) {
     return this._loader.loadSubScript(
         url, arbitraryContext || this._workContext);
 }
+load.doc =
+    'Loads a chrome:// or file:// script into the current context, \
+or optionally into an arbitrary context passed as a second parameter.';
+
         
 function enter(newContext) {
     this._contextHistory.push(this._workContext);
@@ -122,7 +143,13 @@ function enter(newContext) {
     this._workContext = newContext;
     return this._workContext;
 }
-        
+load.doc =
+    'Makes a new context the current one.  After this, new definitions \
+(variables, functions etc.) will be members of the new context. \
+Remembers the previous context, so that you can get back to it with \
+leave().';
+
+
 function leave() {
     var previousContext = this._contextHistory.pop();
     if(previousContext) 
@@ -130,11 +157,24 @@ function leave() {
 
     return this._workContext;
 }
+leave.doc =
+    'Returns to the previous context.';
+
 
 function content() {
     if(this._hostContext['content'])
         return this.enter(this._hostContext['content']);
 }
+content.doc =
+    'If the current context has a "content" object, enters it.';
+
+
+function home() {
+    return this.enter(this._creationContext);
+}
+home.doc =
+    'Returns to the context where the REPL was created.';
+
 
 function quit() {
     delete this._hostContext[this._name];
@@ -143,6 +183,9 @@ function quit() {
     this._outstream.close();
     this._server.removeSession(this);
 }
+quit.doc =
+    'Ends the session.';
+
 
 function rename(name) {
     if(name in this._hostContext) 
@@ -157,11 +200,21 @@ function rename(name) {
         this._hostContext[this._name] = this;        
     } 
 }
+rename.doc =
+    'Renames the session.';
 
+
+function inspect(obj, maxDepth, name, curDepth) {
 // adapted from ddumpObject() at
 // http://lxr.mozilla.org/mozilla/source/extensions/sroaming/resources/content/transfer/utility.js
 
-function inspect(obj, maxDepth, name, curDepth) {
+    function crop(string, max) {
+        string = string.match(/^(.+?)(\n|$)/m)[1];
+        max = max || 70;
+        return (string.length > max-3) ?
+            string.slice(0, max-3)  +'...' : string;
+    }
+
     if(name == undefined)
         name = '<' + typeof(obj) + '>'
     if(maxDepth == undefined)
@@ -180,24 +233,37 @@ function inspect(obj, maxDepth, name, curDepth) {
                            + obj[prop].length + "]");
             else
                 this.print(name + "." + prop + "=[" + typeof(obj[prop]) + "]");
-            inspect(obj[prop], maxDepth, name + "." + prop, curDepth+1);
+            
+            this.inspect(obj[prop], maxDepth, name + "." + prop, curDepth+1);
         }
         else if (typeof(obj[prop]) == "function")
             this.print(name + "." + prop + "=[function]");
         else
             this.print(name + "." + prop + "=" + obj[prop]);
+
+        if(obj[prop] && obj[prop].doc && typeof(obj[prop].doc) == 'string')
+            this.print('    ' + crop(obj[prop].doc));
     }
     if(!i)
         this.print(name + " is empty");    
 }
+inspect.doc =
+    'Lists members of a given object.';
+
 
 function look() {
-    this.inspect(this._workContext, 0);
+    this.inspect(this._workContext, 0, 'this');
 }
+look.doc =
+    'Lists objects in the current context.';
+
 
 function whereAmI() {
     return this._workContext;
 }
+whereAmI.doc =
+    'Returns a string representation of the current context.';
+
 
 function lookup(criteria, context) {
     context = context || this._hostContext;
@@ -212,10 +278,10 @@ function lookup(criteria, context) {
         if(matcher(name))
             this.print(name);
 }
-
-function home() {
-    return this.enter(this._creationContext);
-}
+lookup.doc =
+    'Searches for a member in the current context, or optionally in an \
+arbitrary given as a second parameter.';
+    
 
 function doc(thing) {
     function xulPlanetUrl(elementName) {
@@ -233,6 +299,9 @@ function doc(thing) {
     }
     
     var helpUrl;
+    if(thing.doc && typeof(thing.doc) == 'string') 
+        this.print((typeof(thing)).toUpperCase() + '\n\n' +
+                   thing.doc + '\n')
     if(thing instanceof XULElement)
         helpUrl = xulPlanetUrl(thing.nodeName);
     else if(typeof(thing) == 'string')
@@ -247,12 +316,20 @@ function doc(thing) {
                         'width=640,height=600,scrollbars=yes,menubars=no,' +
                         'toolbar=no,location=no,status=no,resizable=yes', null);
 }
+doc.doc =
+    'Looks up documentation for a given object, either in the doc string \
+(if present) or on XULPlanet.com.'
 
 /* Private functions */
 
+function _prompt() {
+    if(this.getenv('printPrompt'))
+        this.print(this._name + '> ', false);
+}
+        
 function _feed(input) {
     if(input.match(/^\s*$/) && this._inputBuffer.match(/^\s*$/)) {
-        this.prompt();
+        this._prompt();
         return;
     }
     
@@ -262,15 +339,15 @@ function _feed(input) {
                                 encodeURIComponent(code));
         if(result != undefined)
             _this.print(result);
-        _this.prompt();
+        _this._prompt();
     }
 
     function handleError(e) {
         if(e) 
             _this.print(_formatStackTrace1(e));
         
-        _this.print('!!! ' + e + '\n');
-        _this.prompt();        
+        _this.print('!!! ' + e.toString() + '\n');
+        _this._prompt();        
     }
 
     function scan(string, separator) {
@@ -281,7 +358,6 @@ function _feed(input) {
         else
             return [null, string];
     }
-
 
     switch(this._env['inputMode']) {
     case 'line':
@@ -319,16 +395,6 @@ function _cloneTo(context) {
 }
 
 /* private, side-effects free functions */
-
-function _eachChunk(string, separator, chunkHandler) {
-    var start = 0;
-    var match;
-    while(match = separator.exec(string)) {
-        chunkHandler(string.substring(start, match.index));
-        start = separator.lastIndex;
-    }
-    return string.substring(start, string.length);
-}
 
 function _formatStackTrace1(exception) {
     var trace = '';                
