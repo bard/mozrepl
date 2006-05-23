@@ -2,11 +2,16 @@ NAME=$(shell basename $(shell pwd))
 VERSION=$(shell darcs changes | grep '^  tagged ' | sed 's/  tagged //' | head -1)
 BUILD=$(shell date +%Y%m%d%H)
 FILE=$(NAME)-$(VERSION).$(BUILD).xpi
-URL=http://repo.hyperstruct.net/mozrepl/$(FILE)
+EXTID=$(NAME)@hyperstruct.net
 
 dist: $(FILE)
 
-$(FILE):
+install.rdf:
+	sed -e 's|<em:version></em:version>|<em:version>$(VERSION).$(BUILD)</em:version>|' \
+		-e 's|<em:id></em:id>|<em:id>$(EXTID)</em:id>|' \
+		install.rdf.template >install.rdf
+
+$(FILE): install.rdf
 	rm -rf dist
 	mkdir dist dist/chrome
 	cd chrome && zip -y -r ../dist/chrome/$(NAME).jar .
@@ -21,7 +26,7 @@ $(FILE):
 	rm -rf dist
 
 upload: dist
-	scp $(FILE) update.rdf cube.hyperstruct.net:/var/www/repo.hyperstruct.net/public/mozrepl/
+	scp $(FILE) update.rdf cube.hyperstruct.net:/var/www/repo.hyperstruct.net/public/mozlab/
 
 clean:
 	rm -rf dist *.xpi update.rdf
