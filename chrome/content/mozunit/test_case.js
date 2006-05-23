@@ -41,43 +41,11 @@ function constructor(opts) {
 
     this._runStrategy = opts.runStrategy;
     this._tests = [];
-    this._reportHandler = function(report) {
-        if(report.result == 'success')
-            return;
-        
-        var printout = '';
-        printout += 'Test ' + report.testIndex + '/' + report.testCount + ': ';
-        printout += report.testDescription + '\n';
-        
-        printout += report.result.toUpperCase();
-        if(report.additionalInfo)
-            printout += ': ' + report.additionalInfo;
-        printout += '\n';
-        
-        if(report.result == 'error')
-            printout += report.stackTrace.replace(/^/mg, '\t') + '\n';
-
-        printout += ('\n');
-
-        if(typeof(repl) == 'object')
-            repl.print(printout);
-        else
-            dump(printout);
-    }
+    this._reportHandler = _defaultReportHandler;
 
     this.__defineSetter__(
         'tests', function(value) {
             this.setTests(hash);
-        });
-
-    this.__defineGetter__(
-        'outputter', function() {
-            return this.__outputter;
-        });
-
-    this.__defineSetter__(
-        'outputter', function(fn) {
-            this.__outputter = fn;
         });
 
     this.__defineSetter__(
@@ -344,4 +312,26 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
     }
 
     fsm.go('start', {}, stateHandlers, stateTransitions, []);
+}
+
+function _defaultReportHandler(report) {
+    if(report.result == 'success')
+        return;
+        
+    var printout = '';
+    printout += 'Test ' + report.testIndex + '/' + report.testCount + ': ';
+    printout += report.testDescription + '\n';
+        
+    printout += report.result.toUpperCase();
+    if(report.additionalInfo)
+        printout += ': ' + report.additionalInfo;
+    printout += '\n';
+        
+    if(report.result == 'error')
+        printout += report.stackTrace.replace(/^/mg, '\t') + '\n';
+
+    if(typeof(repl) == 'object')
+        repl.print(printout);
+    else
+        dump(printout);
 }
