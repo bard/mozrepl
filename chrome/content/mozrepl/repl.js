@@ -266,8 +266,10 @@ function _feed(input) {
     }
 
     function handleError(e) {
-        _this.print(_formatStackTrace1(e));
-        _this.print('!!! ' + e.toString() + '\n');
+        if(e) 
+            _this.print(_formatStackTrace1(e));
+        
+        _this.print('!!! ' + e + '\n');
         _this.prompt();        
     }
 
