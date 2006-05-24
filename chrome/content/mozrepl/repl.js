@@ -299,7 +299,7 @@ whereAmI.doc =
 
 
 function lookup(criteria, context) {
-    context = context || this._hostContext;
+    context = context || this._workContext;
     
     var matcher;
     if(typeof(criteria) == 'function')
