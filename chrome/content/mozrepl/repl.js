@@ -248,18 +248,51 @@ function inspect(obj, maxDepth, name, curDepth) {
         this.print(name + " is empty");    
 }
 inspect.doc =
-    'Lists members of a given object.';
+    "Lists members of a given object.";
 
 
 function look() {
     this.inspect(this._workContext, 0, 'this');
 }
 look.doc =
-    'Lists objects in the current context.';
+    "Lists objects in the current context.";
+
+
+function highlight(context, time) {
+    context = context || this._workContext;
+    time = time || 1000;
+    if(!context.QueryInterface)
+        return;
+
+    const Timer = Components.classes['@mozilla.org/timer;1'];
+    const nsITimer = Components.interfaces.nsITimer;
+    const nsIDOMXULElement = Components.interfaces.nsIDOMXULElement;
+    const NS_NOINTERFACE = 0x80004002;
+    
+    try {
+        context.QueryInterface(nsIDOMXULElement);
+        var savedBorder = context.style.border;
+        context.style.border = 'thick dotted red';
+        Timer.createInstance(nsITimer).initWithCallback(
+            {notify: function() { context.style.border = savedBorder; }},
+            time, nsITimer.TYPE_ONE_SHOT);
+    } catch(e if e.result == NS_NOINTERFACE) {}
+}
+highlight.doc =
+    "Highlights the passed context (or the current, if none given) if it is \
+a XUL element."
 
 
 function whereAmI() {
-    return this._workContext;
+    var context = this._workContext;
+    var desc = '';
+    desc += context;
+    if(context.document && context.document.title)
+        desc += ' - Document title: "' + context.document.title + '"';
+    if(context.nodeName)
+        desc += ' - ' + context.nodeName;
+    this.print(desc);
+    this.highlight();
 }
 whereAmI.doc =
     'Returns a string representation of the current context.';
