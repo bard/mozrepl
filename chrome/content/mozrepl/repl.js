@@ -150,14 +150,14 @@ Remembers the previous context, so that you can get back to it with \
 leave().';
 
 
-function leave() {
+function back() {
     var previousContext = this._contextHistory.pop();
     if(previousContext) 
         this._workContext = previousContext;        
 
     return this._workContext;
 }
-leave.doc =
+back.doc =
     'Returns to the previous context.';
 
 
