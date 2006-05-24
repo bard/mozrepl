@@ -51,6 +51,9 @@ function start(port) {
             pump.init(stream, -1, -1, 0, 0, false);
             pump.asyncRead(session._networkListener, null);
             server.addSession(session);
+        },
+        onStopListening: function(serv, status) {
+            
         }
     };
 
