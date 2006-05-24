@@ -36,9 +36,10 @@ const fsm = module.require('package', 'lib/fsm');
  *
  */
 
-function constructor(opts) {
+function constructor(title, opts) {
     opts = opts || {};
 
+    this._title = title;
     this._runStrategy = opts.runStrategy;
     this._tests = [];
     this._reportHandler = _defaultReportHandler;
@@ -56,6 +57,11 @@ function constructor(opts) {
     this.__defineSetter__(
         'reportHandler', function(callback) {
             this._reportHandler = callback;
+        });
+
+    this.__defineGetter__(
+        'title', function() {
+            return this._title;
         });
 }
 
