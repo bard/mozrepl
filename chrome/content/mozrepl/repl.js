@@ -160,13 +160,13 @@ function back() {
 back.doc =
     'Returns to the previous context.';
 
-
-function content() {
-    if(this._hostContext['content'])
-        return this.enter(this._hostContext['content']);
-}
-content.doc =
-    'If the current context has a "content" object, enters it.';
+// This messes with XPCNativeWrappers somehow, while repl.enter(content) is fine
+//function content() {
+//    if(this._hostContext['content'])
+//        return this.enter(this._hostContext['content']);
+//}
+//content.doc =
+//    'If the current context has a "content" object, enters it.';
 
 
 function home() {
