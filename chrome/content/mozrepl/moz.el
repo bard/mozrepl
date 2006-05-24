@@ -87,15 +87,11 @@ started as needed)."
   (save-buffer)
   (comint-send-string (inferior-moz-process)
                       (concat moz-repl-name ".pushenv('printPrompt', 'inputMode'); "
-                              moz-repl-name ".setenv('printPrompt', false); "
-                              moz-repl-name ".setenv('inputMode', 'multiline'); "
-                              "undefined; \n"))
+                              moz-repl-name ".setenv('inputMode', 'line'); "
+                              moz-repl-name ".setenv('printPrompt', false); undefined; "))
   (comint-send-string (inferior-moz-process)
-                      (concat moz-repl-name "._evaluationResult = "
-                              moz-repl-name ".load('file://localhost/" (buffer-file-name) "'); "
-                              moz-repl-name ".popenv('inputMode', 'printPrompt'); "
-                              moz-repl-name "._evaluationResult; "
-                              "\n--end-remote-input\n"))
+                      (concat moz-repl-name ".load('file://localhost/" (buffer-file-name) "');\n"
+                              moz-repl-name ".popenv('inputMode', 'printPrompt'); undefined;\n"))
   (display-buffer (process-buffer (inferior-moz-process))))
 
 ;;; Inferior Mode
