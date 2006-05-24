@@ -18,38 +18,52 @@
 
 function equals(x, y) {
     if(y != x)
-        throw new AssertionFailed('Expected ' + x + ', got ' + y + '.');
+        throw new AssertionFailed(
+            'Expected ' + x + ', got ' + y + '.',
+            Components.stack.caller);
 }
 
 function notEquals(x, y) {
     if(y == x)
-        throw new AssertionFailed('Expected ' + x + ' and ' + y + ' to be different, but they are equal.');
+        throw new AssertionFailed(
+            'Expected ' + x + ' and ' + y + ' to be different, but they are equal.',
+            Components.stack.caller);
 }
 
 function isTrue(x) {
     if(!x)
-        throw new AssertionFailed('Expected true or equivalent, got ' + x);
+        throw new AssertionFailed(
+            'Expected true or equivalent, got ' + x,
+            Components.stack.caller);
 }
 
 function isDefined(x) {
     if(x == null ||
        x == undefined)
-        throw new AssertionFailed('Expected value to be defined, was undefined');
+        throw new AssertionFailed(
+            'Expected value to be defined, was undefined',
+            Components.stack.caller);
 }
 
 function isUndefined(x) {
     if(x != undefined)
-        throw new AssertionFailed('Expected value to be undefined, was defined');        
+        throw new AssertionFailed(
+            'Expected value to be undefined, was defined',
+            Components.stack.caller);
 }
 
 function isFalse(x) {
     if(x)
-        throw new AssertionFailed('Expected false or equivalent, got ' + x);
+        throw new AssertionFailed(
+            'Expected false or equivalent, got ' + x,
+            Components.stack.caller);
 }
 
 function isNull(x) {
     if(x != null)
-        throw new AssertionFailed('Expected null, got ' + x);
+        throw new AssertionFailed(
+            'Expected null, got ' + x,
+            Components.stack.caller);
 }
 
 function raises(exception, code, context) {
@@ -62,20 +76,25 @@ function raises(exception, code, context) {
         raised = true;
     }
     if(!raised)
-        throw new AssertionFailed('Expected to raise ' + exception + ', not raised');
+        throw new AssertionFailed(
+            'Expected to raise ' + exception + ', not raised',
+            Components.stack.caller);
 }
 
 function matches(pattern, string) {
     if(!(string.match(pattern)))
-        throw new AssertionFailed('Expected something matching ' + pattern + ', got "' + string + '"');
+        throw new AssertionFailed(
+            'Expected something matching ' + pattern + ', got "' + string + '"',
+            Components.stack.caller);
 }
 
 function fail(message) {
-    throw new AssertionFailed(message);
+    throw new AssertionFailed(message, Components.stack.caller);
 }
 
-function AssertionFailed(message) {
-    this.message = message;
+function AssertionFailed(message, caller) {
     this.name = 'AssertionFailed';
+    this.message = message;
+    this.caller = caller;
 }
 AssertionFailed.prototype = new Error();
