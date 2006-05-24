@@ -223,9 +223,9 @@ function _formatStackTrace1(exception) {
 
 function _exec1(code, setUp, tearDown, context) {
     var report = {
-        result:         undefined,
-        additionalInfo: undefined,
-        stackTrace:     undefined,        
+        result:    undefined,
+        exception: undefined,
+        caller:    undefined
     };
 
     try {
@@ -240,11 +240,10 @@ function _exec1(code, setUp, tearDown, context) {
         report.result = 'success';
     } catch(exception if exception.name == 'AssertionFailed') {
         report.result = 'failure';
-        report.additionalInfo = (exception.message || exception);
-    } catch(exception){
+        report.exception = exception;
+    } catch(exception) {
         report.result = 'error';
-        report.additionalInfo = exception.toString();
-        report.stackTrace = _formatStackTrace1(exception);
+        report.exception = exception;
     }
 
     return report;
@@ -256,7 +255,9 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
         test = tests[i];
         context = {};
         report = _exec1(test.code, setUp, tearDown, context);
+        report.testOwner = this;
         report.testDescription = test.desc;
+        report.testCode = test.code;
         report.testIndex = i+1;
         report.testCount = l;
         reportHandler(report);
@@ -276,6 +277,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
         finished:   { }
     }
 
+    _this = this;
     var stateHandlers = {
         start: function(continuation) {
             continuation('ok')
@@ -292,7 +294,9 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
             var test, report;
             test = tests[testIndex];
             report = _exec1(test.code, null, null, context);
+            report.testOwner = _this;
             report.testDescription = test.desc;
+            report.testCode = test.code;
             report.testIndex = testIndex + 1;
             report.testCount = tests.length;
             reportHandler(report);
@@ -329,12 +333,14 @@ function _defaultReportHandler(report) {
     printout += report.testDescription + '\n';
         
     printout += report.result.toUpperCase();
-    if(report.additionalInfo)
-        printout += ': ' + report.additionalInfo;
+    if(report.exception) {
+        printout += ': ' + report.exception + '\n';
+        if(report.exception.caller)
+            printout += report.exception.caller + '\n';
+        printout += _formatStackTrace1(report.exception);
+    }
     printout += '\n';
         
-    if(report.result == 'error')
-        printout += report.stackTrace.replace(/^/mg, '\t') + '\n';
 
     if(typeof(repl) == 'object')
         repl.print(printout);
