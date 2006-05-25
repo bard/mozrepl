@@ -18,6 +18,9 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
+var util = module.require('package', 'util');
+
+
 function constructor(instream, outstream, server, context) {
     var _this = this;
 
@@ -158,7 +161,7 @@ function back() {
     return this._workContext;
 }
 back.doc =
-    'Returns to the previous context.';
+    "Returns to the previous context.";
 
 // This messes with XPCNativeWrappers somehow, while repl.enter(content) is fine
 //function content() {
@@ -295,10 +298,10 @@ function whereAmI() {
     this.highlight();
 }
 whereAmI.doc =
-    'Returns a string representation of the current context.';
+    "Returns a string representation of the current context.";
 
 
-function lookup(criteria, context) {
+function search(criteria, context) {
     context = context || this._workContext;
     
     var matcher;
@@ -311,41 +314,20 @@ function lookup(criteria, context) {
         if(matcher(name))
             this.print(name);
 }
-lookup.doc =
-    'Searches for a member in the current context, or optionally in an \
-arbitrary given as a second parameter.';
+search.doc =
+    "Searches for a member in the current context, or optionally in an \
+arbitrary given as a second parameter.";
     
 
 function doc(thing) {
-    function xulPlanetUrl(elementName) {
-        return 'http://www.xulplanet.com/references/elemref/ref_' + elementName + '.html';
-    }
-    function xulPlanetCss(document) {
-        var cssLink = document.createElementNS(
-            'http://www.w3.org/1999/xhtml', 'link');
-        cssLink.rel = 'stylesheet';
-        cssLink.type = 'text/css';
-        cssLink.href = 'data:text/css,#sidebar, #header, #navigatebar, ' +
-            '.navlinks-pnc { display: none; } ' +
-            '#content { margin-left: 0; }';
-        document.getElementsByTagName('head')[0].appendChild(cssLink);
-    }
-    
-    var helpUrl;
-    if(thing.doc && typeof(thing.doc) == 'string') 
-        this.print((typeof(thing)).toUpperCase() + '\n\n' +
-                   thing.doc + '\n')
-    if(thing instanceof XULElement)
-        helpUrl = xulPlanetUrl(thing.nodeName);
-    else if(typeof(thing) == 'string')
-        helpUrl = xulPlanetUrl(thing);
+    this.print(util.docFor(thing));
 
-    repl = this;
-    if(helpUrl) 
+    var url = util.helpUrlFor(thing);
+    if(url)
         Components
             .classes["@mozilla.org/embedcomp/window-watcher;1"]
             .getService(Components.interfaces.nsIWindowWatcher)
-            .openWindow(null, helpUrl, 'help',
+            .openWindow(null, url, 'help',
                         'width=640,height=600,scrollbars=yes,menubars=no,' +
                         'toolbar=no,location=no,status=no,resizable=yes', null);
 }
