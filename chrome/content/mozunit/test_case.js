@@ -45,7 +45,7 @@ function constructor(title, opts) {
     this._reportHandler = _defaultReportHandler;
 
     this.__defineSetter__(
-        'tests', function(value) {
+        'tests', function(hash) {
             this.setTests(hash);
         });
 
