@@ -59,6 +59,12 @@ function constructor(instream, outstream, server, context) {
         this.print('To avoid conflicts, yours will be named "' + this._name + '".');
     }
 
+
+    this._emergencyExit = function(event) {
+        _this.print('Host context unloading! Going back to creation context.')
+        _this.home();
+    }
+
     this._env = {};
     this._savedEnv = {};
     this.setenv('printPrompt', true);
@@ -138,27 +144,36 @@ load.doc =
 or optionally into an arbitrary context passed as a second parameter.';
 
         
-function enter(newContext) {
-    this._contextHistory.push(this._workContext);
-    if(newContext instanceof Window)
-        this._cloneTo(newContext);
+function history() {
     
-    this._workContext = newContext;
+}
+
+function enter(context) {
+    this._contextHistory.push(this._workContext);
+
+    var repl = this;
+    if(context instanceof Window)
+        this._migrateTopLevel(context);
+    this._workContext = context;
+
     return this._workContext;
 }
-load.doc =
+enter.doc =
     'Makes a new context the current one.  After this, new definitions \
 (variables, functions etc.) will be members of the new context. \
 Remembers the previous context, so that you can get back to it with \
 leave().';
 
-
 function back() {
-    var previousContext = this._contextHistory.pop();
-    if(previousContext) 
-        this._workContext = previousContext;        
-
-    return this._workContext;
+    // do sanity check to prevent re-entering stale contextes
+    
+    var context = this._contextHistory.pop();
+    if(context) {
+        if(context instanceof Window)
+            _migrateTopLevel(context);
+        this._workContext = context;
+        return this._workContext;
+    }
 }
 back.doc =
     "Returns to the previous context.";
@@ -339,6 +354,14 @@ doc.doc =
 
 /* Private functions */
 
+function _migrateTopLevel(context) {
+    this._hostContext.removeEventListener('unload', this._emergencyExit, false);
+    this._hostContext[this._name] = undefined;
+    this._hostContext = context;
+    this._hostContext[this._name] = this;
+    this._hostContext.addEventListener('unload', this._emergencyExit, false);
+}
+
 function _prompt() {
     if(this.getenv('printPrompt'))
         this.print(this._name + '> ', false);
@@ -404,11 +427,6 @@ function _feed(input) {
         }
         break;
     }
-}
-
-function _cloneTo(context) {
-    context[this._name] = this;
-    this._hostContext = context;
 }
 
 /* private, side-effects free functions */
