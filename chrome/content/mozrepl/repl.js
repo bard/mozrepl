@@ -323,13 +323,15 @@ function doc(thing) {
     this.print(util.docFor(thing));
 
     var url = util.helpUrlFor(thing);
-    if(url)
+    if(url) {
+        this.print('Online help found, displaying...');
         Components
             .classes["@mozilla.org/embedcomp/window-watcher;1"]
             .getService(Components.interfaces.nsIWindowWatcher)
             .openWindow(null, url, 'help',
                         'width=640,height=600,scrollbars=yes,menubars=no,' +
                         'toolbar=no,location=no,status=no,resizable=yes', null);
+    }
 }
 doc.doc =
     'Looks up documentation for a given object, either in the doc string \
