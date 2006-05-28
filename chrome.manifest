@@ -1,2 +1,4 @@
 content mozlab chrome/content/
+skin mozlab classic/1.0 chrome/skin/classic/
+
 overlay chrome://browser/content/browser.xul chrome://mozlab/content/overlay.xul

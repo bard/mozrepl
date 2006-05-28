@@ -1,0 +1,62 @@
+.test-failure
+{
+  list-style-image: url("chrome://mozlab/skin/mozunit/bug.png");
+  -moz-image-region: rect(0px 35px 45px 0px);
+  }
+
+.test-error
+{
+  list-style-image: url("chrome://mozlab/skin/mozunit/bomb.png");
+  }
+
+.test-success
+{
+  }
+
+.testcase-fine
+{
+  background-color: green;
+  }
+
+.testcase-problems
+{
+  background-color: red;
+  }
+
+.testcase-summary
+{
+  border: threedshadow;
+  }
+
+.testcase-title
+{
+  font-size: 1.4em;
+  font-family: serif;
+  text-align: center;
+  }
+
+.testcase-title:hover
+{
+  background-color: white;
+  }
+
+*[role=result]
+{
+  font-weight: bold;
+  }
+
+*[role=description]
+{
+  font-style: italic;
+  font-size: 1.2em;
+  }
+
+*[role=additionalInfo]
+{
+  font-size: 1.5em;
+  }
+
+*[role=result-box]
+{
+  width: 72px;
+  }

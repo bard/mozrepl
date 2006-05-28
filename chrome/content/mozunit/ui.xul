@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://mozlab/skin/mozunit/style.css" type="text/css"?>
+
+<!--
+Copyright (C) 2006 by Massimiliano Mirra
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
+Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
+-->
+
+<!DOCTYPE window>
+<window id="mozunit" title="MozUnit"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:hy="http://hyperstruct.net/"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        onload="init();" onunload="finish();"
+        orient="vertical"
+        width="800" height="600"
+        persist="width height">
+
+  <script type="application/x-javascript" src="chrome://mozlab/content/lib/module_manager.js"/>
+  <script type="application/x-javascript" src="chrome://mozlab/content/mozunit/ui.js"/>
+
+  <!-- COMMANDS -->
+
+  <commandset>
+    <command id="run" label="Run" accesskey="R"
+             oncommand="run();"/>
+    <command id="toggle-content" oncommand="toggleContent();"
+             label="Toggle Content" accesskey="C"/>
+    <command id="open" label="Open..." accesskey="O"
+             oncommand="openTestCase();"/>
+    <command id="new" label="New..." accesskey="N"
+             oncommand="newTestCase();"/>
+    <command id="edit" label="Edit" accesskey="E"
+             oncommand="openInEditor(_('file').value);"/>
+    <command id="quit" label="Quit" accesskey="Q"
+             oncommand="window.close"/>
+  </commandset>
+
+  <!-- KEYBINDINGS -->
+
+  <keyset>
+    <key id="key-new" command="new" key="n" modifiers="control"/>
+    <key id="key-open" command="open" key="o" modifiers="control"/>
+    <key id="key-run" command="run" key="r" modifiers="control"/>
+  </keyset>
+
+  <!-- BLUEPRINTS -->
+  
+  <box id="blueprints" hidden="true">
+    <vbox role="testcase-report" class="inset" style="margin-bottom: 1em;">
+      <vbox class="outset"
+            onclick="this.nextSibling.hidden = !this.nextSibling.hidden">
+        <label role="title" class="testcase-title"/>
+        <hbox>
+          <progressmeter role="bar" mode="determined" value="0%" flex="1"/> 
+          <label value="Successes:"/>
+          <label role="success-counter" value="0"/>
+          <label value="/"/>
+          <label role="total-counter" value="0"/>
+        </hbox>
+      </vbox>
+      <vbox role="test-reports" style="padding-left: 5px; padding-right: 5px;"/>
+    </vbox>
+
+    <hbox role="test-report" class="inset" style="margin-top: 10px; margin-bottom: 10px; ">
+      <vbox role="result-box" pack="start" align="center">
+        <hbox style="margin-top: 10px;">
+          <image role="icon"/> 
+        </hbox>
+        <label role="result"/> 
+      </vbox>
+      <vbox flex="1">
+        <label role="description"/>
+        <description role="additionalInfo" crop="right"/>
+
+        <listbox hidden="true" role="stack-trace"
+                 flex="1" rows="5" class="inset"
+                 style="font-size: 0.8em;"
+                 onselect="showSource(this.selectedItem.label);"/>
+      </vbox>
+    </hbox>
+  </box>
+
+  <!-- MENUS -->
+
+  <toolbox>
+    <menubar>
+      <menu id="file-menu" label="File" accesskey="F">
+        <menupopup>
+          <menuitem command="new" key="key-new"/>
+          <menuitem command="open" key="key-open"/>
+          <menuitem command="edit"/>
+          <menuseparator/>
+          <menuitem command="run" key="key-run"/>
+          <menuseparator/>
+          <menuitem command="quit"/>
+        </menupopup>
+      </menu>
+      <menu id="view-menu" label="View" accesskey="V">
+        <menupopup>
+          <menuitem command="toggle-content"/>
+        </menupopup>
+      </menu>
+    </menubar>
+  </toolbox>
+
+  <!-- MAIN -->
+
+  <hbox flex="1">
+    <vbox flex="1">
+      <toolbar>
+        <toolbaritem flex="1" align="center">
+          <label value="Working on:"/>
+          <label id="file" flex="1" value="" style="font-weight: bold;"/>
+        </toolbaritem>
+        <toolbarbutton command="edit"/>
+      </toolbar>
+      <toolbar>
+        <toolbarbutton command="run" flex="1" style="font-weight: bold;"/>
+      </toolbar>
+
+      <hbox flex="1">
+        <vbox flex="1" style="padding-top: 1em;">
+          <vbox id="prerun-report">
+            <label role="error" hidden="true" class="header" crop="right"/>
+            <listbox hidden="true" role="stack-trace"
+                     flex="1" rows="5" class="inset"
+                     style="font-size: 0.8em;"
+                     onselect="showSource(this.selectedItem.label);"/>
+          </vbox>
+          
+          <vbox id="testcase-reports" flex="1" style="overflow: auto;"/>
+          
+          <splitter id="content-splitter" hidden="true"
+                    collapse="after" resizeafter="closest"/>
+
+          <browser id="content"
+                   type="content-primary"
+                   flex="1"
+                   src="about:blank" class="inset"
+                   style="background-color: white;"
+                   collapsed="true"/>          
+        </vbox>
+
+        <splitter id="source-splitter" hidden="true"/>
+
+        <vbox id="source-viewer" width="300" collapsed="true">
+          <toolbar align="center">
+            <toolbaritem flex="1">
+              <label value="Source" class="header" flex="1"/>
+            </toolbaritem>
+
+            <toolbarbutton label="Close" accesskey="l"
+                           oncommand="hideSource();"/>
+          </toolbar>
+
+          <iframe role="source" flex="1" persist="width"
+                  src="about:blank" class="box-inset"/>
+        </vbox>
+      </hbox>
+    </vbox>
+  </hbox>
+
+  <statusbar/>
+</window>
+
