@@ -29,31 +29,32 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
   <script type="application/x-javascript" src="main.js"/>
 
   <commandset id="mainCommandSet">
-    <command id="mozrepl-command-toggle"
+    <command id="mozlab-command-toggle-mozrepl"
              label="Start Repl"
              accesskey="R"
-             oncommand="mozlab.mozrepl.ui.toggleServer();"/>
+             oncommand="mozlab.mozrepl.ui.toggleServer(this);"/>
     <command id="mozlab-command-open-mozunit"
-             label="MozUnit"
+             label="Open MozUnit Runner"
              accesskey="U"
-             oncommand="content.location.href = 'chrome://mozlab/content/mozunit/ui.xul'"/>
+             oncommand="window.open('chrome://mozlab/content/mozunit/ui.xul', 'mozunit', 'chrome');"/>
   </commandset>
 
   <menupopup id="menu_ToolsPopup">
-    <menu label="MozLab">
+    <menu label="MozLab" position="1" accesskey="L">
       <menupopup>
-        <menuitem command="mozrepl-command-toggle"/>
+        <menuitem command="mozlab-command-toggle-mozrepl"/>
+        <menuitem command="mozlab-command-open-mozunit"/>
       </menupopup>
     </menu>
   </menupopup>
 
-  <toolbox id="navigator-toolbox">    
-    <toolbar id="mozlab-toolbar" toolbarname="MozLab Toolbar" 
-             class="chromeclass-toolbar" context="toolbar-context-menu" 
-             hidden="false" persist="hidden">
+<!--   <toolbox id="navigator-toolbox">     -->
+<!--     <toolbar id="mozlab-toolbar" toolbarname="MozLab Toolbar"  -->
+<!--              class="chromeclass-toolbar" context="toolbar-context-menu"  -->
+<!--              hidden="false" persist="hidden"> -->
       
-      <toolbarbutton command="mozrepl-command-toggle"/>
-      <toolbarbutton command="mozlab-command-open-mozunit"/>
-    </toolbar>
-  </toolbox>
+<!--       <toolbarbutton command="mozlab-command-toggle-mozrepl"/> -->
+<!--       <toolbarbutton command="mozlab-command-open-mozunit"/> -->
+<!--     </toolbar> -->
+<!--   </toolbox> -->
 </overlay>

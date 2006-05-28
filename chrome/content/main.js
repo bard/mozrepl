@@ -20,10 +20,3 @@
 
 var mozlab = (new ModuleManager(['chrome://mozlab/content'])).require('package', 'package');
 
-(function(){
-    mozlab.mozrepl.server = new mozlab.mozrepl.Server();
-    mozlab.mozrepl.ui = new mozlab.mozrepl.UI(mozlab.mozrepl.server);
-    mozlab.mozrepl.dump = function(text) {
-        repl.print(text);
-    }    
-})();

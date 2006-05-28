@@ -22,16 +22,14 @@ function constructor(server) {
     this._server = server;
 }
 
-function toggleServer() {
-    var command = document.getElementById('mozrepl-command-toggle');
-
+function toggleServer(sourceCommand) {
     if(this._server.isActive()) {
         this._server.stop();        
-        command.setAttribute('label', 'Start Repl');
+        sourceCommand.setAttribute('label', 'Start Repl');
     }
     else {
         this._server.start();
-        command.setAttribute('label', 'Stop Repl');
+        sourceCommand.setAttribute('label', 'Stop Repl');
     }
 }
 

@@ -20,7 +20,6 @@
 
 var util = module.require('package', 'util');
 
-
 function constructor(instream, outstream, server, context) {
     var _this = this;
 
