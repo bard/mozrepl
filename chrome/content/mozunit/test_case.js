@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2006 by Massimiliano Mirra
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,8 @@ const fsm = module.require('package', 'lib/fsm');
 
 /**
  * Invocation:
- *     var case = new TestCase();
- *     var case = new TestCase({runStrategy: 'async'});
+ *     var case = new TestCase('Widget tests');
+ *     var case = new TestCase('Widget tests', {runStrategy: 'async'});
  *
  * Use async run strategy when test cases mustn't be run immediately
  * after test setup, for example when during setup a document is
@@ -109,7 +109,7 @@ function constructor(title, opts) {
  *         tearDown: function() {
  *             // release resources if necessary
  *         }
- *
+ *     }
  */
 
 function setTests(hash) {
@@ -139,43 +139,12 @@ function run() {
 }
 
 /**
- * BDD-style alias for run().
- *
- *    var spec = new Specification();
- *    spec.stateThat = { ... };
- *    spec.verify();
- *
- */
-
-function verify() {
-    this.run();
-}
-
-/**
  * Alternative style for defining setup.
  *
  */
 
 function setUp(fn) {
     this._setUp = fn;
-}
-
-/**
- * BDD-alias for setUp().
- *
- */
-
-function given(fn) {
-    this.setUp(fn);
-}
-
-/**
- * Alternative style for defining teardown.
- *
- */
-
-function tearDown(fn) {
-    this._tearDown = fn;
 }
 
 /**
@@ -189,6 +158,37 @@ function test(desc, code) {
 }
 
 /**
+ * Alternative style for defining teardown.
+ *
+ */
+
+function tearDown(fn) {
+    this._tearDown = fn;
+}
+
+/**
+ * BDD-style alias for run().
+ *
+ *    var spec = new Specification();
+ *    spec.stateThat = { ... };
+ *    spec.verify();
+ *
+ */
+
+function verify() {
+    this.run();
+}
+
+/**
+ * BDD-alias for setUp().
+ *
+ */
+
+function given(fn) {
+    this.setUp(fn);
+}
+
+/**
  * BDD-style alias for test().
  *
  */
@@ -197,8 +197,7 @@ function states(desc, fn) {
     this.test(desc, fn);
 }
 
-/*  Side effect-free functions. They're the ones who do the real job. :-) */
-  
+/*  Side effect-free functions. They're the ones who do the real job. :-) */  
 
 function _formatStackTrace1(exception) {
     function comesFromFramework(call) {
