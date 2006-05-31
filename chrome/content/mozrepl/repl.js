@@ -68,6 +68,8 @@ function constructor(instream, outstream, server, context) {
     this._savedEnv = {};
     this.setenv('printPrompt', true);
     this.setenv('inputMode', 'line');
+
+    this.reloadInit();
     
     this._prompt();
 }
@@ -349,7 +351,24 @@ function doc(thing) {
 }
 doc.doc =
     'Looks up documentation for a given object, either in the doc string \
-(if present) or on XULPlanet.com.'
+(if present) or on XULPlanet.com.';
+
+
+function reloadInit() {
+    try {
+        var initUrl = Components
+            .classes["@mozilla.org/preferences-service;1"]
+            .getService(Components.interfaces.nsIPrefBranch)
+            .getCharPref('extensions.mozlab.mozrepl.initUrl');
+
+        if(initUrl)
+            this.load(initUrl, this);
+        
+    } catch(e) {
+        this.print('Could not load initialization script ' +
+                   initUrl + ': ' + e);
+    }
+}
 
 /* Private functions */
 
