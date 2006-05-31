@@ -171,7 +171,7 @@ function back() {
     var context = this._contextHistory.pop();
     if(context) {
         if(context instanceof Window)
-            _migrateTopLevel(context);
+            this._migrateTopLevel(context);
         this._workContext = context;
         return this._workContext;
     }
