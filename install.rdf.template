@@ -12,14 +12,14 @@
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
         <em:minVersion>1.5</em:minVersion>
-        <em:maxVersion>1.6.0.*</em:maxVersion>
+        <em:maxVersion>1.5.0.*</em:maxVersion>
       </Description>
     </em:targetApplication>
    
     <em:name>MozLab</em:name>
     <em:description>Collection of tools for Mozilla developers</em:description>
     <em:creator>Massimiliano Mirra</em:creator>
-    <em:homepageURL>http://repo.hyperstruct.net/mozlab</em:homepageURL>
-    <em:updateURL>http://repo.hyperstruct.net/mozlab/update.rdf</em:updateURL>
+    <em:homepageURL>http://dev.hyperstruct.net/mozlab</em:homepageURL>
+    <em:updateURL>http://dev.hyperstruct.net/download/update.rdf</em:updateURL>
   </Description>      
 </RDF>

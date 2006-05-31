@@ -4,7 +4,11 @@ BUILD=$(shell date +%Y%m%d%H)
 FILE=$(NAME)-$(VERSION).$(BUILD).xpi
 EXTID=$(NAME)@hyperstruct.net
 
-dist: $(FILE)
+dist: xpi
+	mv $(FILE) web/download
+	cd web/download && ln -sf $(FILE) $(NAME).xpi
+
+xpi: $(FILE)
 
 install.rdf:
 	sed -e 's|<em:version></em:version>|<em:version>$(VERSION).$(BUILD)</em:version>|' \
@@ -18,17 +22,11 @@ $(FILE): install.rdf
 	sed -e 's|chrome/|jar:chrome/$(NAME).jar!/|g' chrome.manifest >dist/chrome.manifest
 	sed -e 's|<em:version></em:version>|<em:version>$(VERSION).$(BUILD)</em:version>|' \
 		install.rdf.template >dist/install.rdf
-	sed -e 's|<version></version>|<version>$(VERSION).$(BUILD)</version>|g' \
-		-e 's|<updateLink></updateLink>|<updateLink>$(URL)</updateLink>|g' \
-		update.rdf.template > update.rdf
-	cp -a defaults dist
+	cp -a defaults install.rdf dist
 	cd dist && zip -r ../$(FILE) *
 	rm -rf dist
 
-upload: dist
-	scp $(FILE) update.rdf cube.hyperstruct.net:/var/www/repo.hyperstruct.net/public/mozlab/
-
 clean:
-	rm -rf dist *.xpi update.rdf
+	rm -rf dist *.xpi 
 
-.PHONY: dist clean upload
+.PHONY: dist clean upload install.rdf
