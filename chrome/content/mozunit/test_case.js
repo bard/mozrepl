@@ -31,6 +31,12 @@ const fsm = module.require('package', 'lib/fsm');
  * loaded into the browser and the browser will signal when the
  * document has finished loading through a callback.
  *
+ * Note: code inside tests will still run sequentially.  In some
+ * cases, e.g. testing interfaces, this means you will do something to
+ * affect the interface and then test the effect, before the interface
+ * thread has had a chance to apply your request.  Control of flow
+ * inside tests is work in progress.
+ *
  * Alias:
  *     var spec = new Specification();
  *
