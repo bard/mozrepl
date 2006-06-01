@@ -272,11 +272,13 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
 function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
     var testIndex = 0;
     var context;
+    var report;
 
     var stateTransitions = {
         start:      { ok: 'doSetUp' },
-        doSetUp:    { ok: 'doTest', ko: 'doTearDown' },
-        doTest:     { ok: 'doTearDown' },
+        doSetUp:    { ok: 'doTest', ko: 'doReport' },
+        doTest:     { ok: 'doReport' },
+        doReport:   { ok: 'doTearDown' },
         doTearDown: { ok: 'nextTest', ko: 'nextTest' },
         nextTest:   { ok: 'doSetUp', ko: 'finished' },
         finished:   { }
@@ -289,19 +291,25 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
         },
         doSetUp: function(continuation) {
             context = {};
+            report = {};
             try {
                 setUp.call(context, continuation);
             } catch(e) {
+                report.result = 'error';
+                report.exception = e;
+                report.testDescription = 'Setup';
                 continuation('ko');
             }
         },
         doTest: function(continuation) {
-            var test, report;
+            var test;
             test = tests[testIndex];
             report = _exec1(test.code, null, null, context);
-            report.testOwner = _this;
             report.testDescription = test.desc;
-            report.testCode = test.code;
+            continuation('ok');
+        },
+        doReport: function(continuation) {
+            report.testOwner = _this;
             report.testIndex = testIndex + 1;
             report.testCount = tests.length;
             reportHandler(report);
@@ -340,8 +348,6 @@ function _defaultReportHandler(report) {
     printout += report.result.toUpperCase();
     if(report.exception) {
         printout += ': ' + report.exception + '\n';
-        if(report.exception.caller)
-            printout += report.exception.caller + '\n';
         printout += _formatStackTrace1(report.exception);
     }
     printout += '\n';
