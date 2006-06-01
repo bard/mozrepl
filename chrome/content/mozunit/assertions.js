@@ -95,5 +95,6 @@ function fail(message) {
 function AssertionFailed(message, caller) {
     this.name = 'AssertionFailed';
     this.message = message;
+    this.stack += '()@' + caller.filename + ':' + caller.lineNumber + '\n';
 }
 AssertionFailed.prototype = new Error();
