@@ -229,8 +229,7 @@ function _formatStackTrace1(exception) {
 function _exec1(code, setUp, tearDown, context) {
     var report = {
         result:    undefined,
-        exception: undefined,
-        caller:    undefined
+        exception: undefined
     };
 
     try {

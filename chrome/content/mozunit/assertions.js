@@ -95,6 +95,5 @@ function fail(message) {
 function AssertionFailed(message, caller) {
     this.name = 'AssertionFailed';
     this.message = message;
-    this.caller = caller;
 }
 AssertionFailed.prototype = new Error();
