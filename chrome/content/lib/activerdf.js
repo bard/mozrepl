@@ -637,3 +637,89 @@ ActiveRDF.prototype.mold = function(object, schema) {
     };
 };
 
+// ----------------------------------------------------------------------
+// Datasource logger to see what's happening behind the scenes.  Not
+// something you would ordinarily need, but nice to have during
+// development of ActiveRDF itself.  Use it like:
+//
+//   dsLogger = new DataSourceLogger(datasource);
+//   dsLogger.enable();
+//   ...code expected to operate on the datasource...
+//   dsLogger.disable();
+//
+// ----------------------------------------------------------------------
+
+function DataSourceLogger(datasource) {
+    this.__datasource = datasource;
+}
+
+DataSourceLogger.prototype.enable = function() {
+    this.__datasource.AddObserver(this);
+};
+
+DataSourceLogger.prototype.disable = function() {
+    this.__datasource.RemoveObserver(this);
+};
+
+DataSourceLogger.prototype.__defineSetter__(
+    'outputter', function(fn) {
+        this.__outputter = fn;
+    });
+
+DataSourceLogger.prototype.onAssert = function(ds, source, predicate, target) {
+    try {
+        target.QueryInterface(Ci.nsIRDFLiteral);
+    } catch(e) {
+        target.QueryInterface(Ci.nsIRDFResource);
+    }
+
+    this.__output('Asserting: ' +
+                  source.Value + ' - ' +
+                  predicate.Value + ' - ' +
+                  target.Value + '\n');
+
+};
+
+DataSourceLogger.prototype.onUnassert = function(ds, source, predicate, target) {
+    try {
+        target.QueryInterface(Ci.nsIRDFLiteral);
+    } catch(e) {
+        target.QueryInterface(Ci.nsIRDFResource);
+    }
+
+    this.__output('Unasserting: ' +
+                  source.Value + ' - ' +
+                  predicate.Value + ' - ' +
+                  target.Value + '\n');
+};
+
+DataSourceLogger.prototype.onChange = function(ds, source, predicate, oldTarget, newTarget) {
+    try {
+        newTarget.QueryInterface(Ci.nsIRDFLiteral);
+    } catch(e) {
+        newTarget.QueryInterface(Ci.nsIRDFResource);
+    }
+
+    try {
+        oldTarget.QueryInterface(Ci.nsIRDFLiteral);
+    } catch(e) {
+        oldTarget.QueryInterface(Ci.nsIRDFResource);
+    }
+
+    this.__output('Changing: ' +
+                  source.Value + ' - ' +
+                  predicate.Value + ' - ' +
+                  oldTarget.Value + ' -> ' +
+                  newTarget.Value + '\n');
+};
+
+DataSourceLogger.prototype.__output = function(message) {
+    if(this.__outputter)
+        this.__outputter(message);
+    else if(typeof(MozRepl_Server) == 'object' &&
+            MozRepl_Server.isActive())
+        MozRepl_dump(message);
+    else
+        dump(message);
+};
+    
