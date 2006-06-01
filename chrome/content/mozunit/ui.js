@@ -166,13 +166,16 @@ function testReportHandler(report) {
 
     var wTestReport = clone('test-report');
     _(wTestReport, 'result').value = report.result.toUpperCase();
+    _(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
     _(wTestReport, 'description').value = report.testDescription;
     _(wTestReport, 'description').setAttribute('tooltiptext', report.testDescription);
-    _(wTestReport, 'additionalInfo').value = report.exception.message;
-    _(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
-
-    displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
-    _(wTestReport, 'stack-trace').hidden = false;
+    if(report.exception) {
+        _(wTestReport, 'additionalInfo').value = report.exception.message;
+        if(report.exception.stack) {
+            displayStackTrace(report.exception.stack, _(wTestReport, 'stack-trace'));
+            _(wTestReport, 'stack-trace').hidden = false;
+        }
+    }
 
     _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
 }
