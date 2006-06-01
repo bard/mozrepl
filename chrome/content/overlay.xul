@@ -34,9 +34,13 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
              accesskey="R"
              oncommand="mozlab.mozrepl.ui.toggleServer(this);"/>
     <command id="mozlab-command-open-mozunit"
-             label="Open MozUnit Runner"
+             label="Open MozUnit Runner..."
              accesskey="U"
              oncommand="window.open('chrome://mozlab/content/mozunit/ui.xul', 'mozunit', 'chrome');"/>
+    <command id="mozlab-command-help"
+             label="Help..."
+             accesskey="H"
+             oncommand="content.location.href = 'http://dev.hyperstruct.net/mozlab'"/>
   </commandset>
 
   <menupopup id="menu_ToolsPopup">
@@ -44,6 +48,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
       <menupopup>
         <menuitem command="mozlab-command-toggle-mozrepl"/>
         <menuitem command="mozlab-command-open-mozunit"/>
+        <menuitem command="mozlab-command-help"/>
       </menupopup>
     </menu>
   </menupopup>

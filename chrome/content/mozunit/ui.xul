@@ -177,6 +177,8 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
     </vbox>
   </hbox>
 
-  <statusbar/>
+  <statusbar>
+    <statusbarpanel flex="1"/>
+  </statusbar>
 </window>
 
