@@ -48,7 +48,7 @@ ModuleManager.prototype = {
 
         if(realUrl)
             switch(type) {
-            case 'class_p':
+            case 'class_p': // DEPRECATED
                 return this._loadClassPrivateEnv(realUrl);
                 break;
             case 'class':
@@ -125,7 +125,7 @@ ModuleManager.prototype = {
     },
 
     _loadPackage: function(realUrl) {
-        var cacheKey = ['package', realUrl]
+        var cacheKey = ['package', realUrl] // BUG
         var pkg = this._requireCache[cacheKey];
         if(!pkg) {
             pkg = {
