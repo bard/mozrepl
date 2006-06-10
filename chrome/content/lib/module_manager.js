@@ -66,6 +66,19 @@ ModuleManager.prototype = {
         return null;
     },
 
+    inject: function(logicalUrl, target) {
+        var directoryOfCaller = Components.stack.caller.filename.replace(/\/[^/]+$/, '');
+        var realUrl = this._locate(
+            logicalUrl,
+            [directoryOfCaller].concat(this._searchPath),
+            this._suffixList);
+
+        if(realUrl)
+            this._loader.loadSubScript(realUrl, target);
+        else
+            throw new Error('No script with given logical URL available. (' + logicalUrl + ')');        
+    },
+
     /* Internals */
 
     _loadClassSharedEnv: function(realUrl) {
