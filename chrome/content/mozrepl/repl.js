@@ -153,7 +153,7 @@ function enter(context) {
     this._contextHistory.push(this._workContext);
 
     var repl = this;
-    if(context instanceof Window)
+    if(context instanceof Components.interfaces.nsIDOMWindow)
         this._migrateTopLevel(context);
     this._workContext = context;
 
@@ -170,7 +170,7 @@ function back() {
     
     var context = this._contextHistory.pop();
     if(context) {
-        if(context instanceof Window)
+        if(context instanceof Components.interfaces.nsIDOMWindow)
             this._migrateTopLevel(context);
         this._workContext = context;
         return this._workContext;

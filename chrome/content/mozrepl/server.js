@@ -18,13 +18,16 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
+Components.classes['@mozilla.org/moz/jssubscript-loader;1']
+.getService(Components.interfaces.mozIJSSubScriptLoader)
+    .loadSubScript('chrome://mozlab/content/lib/module_manager.js');
+
+const module = new ModuleManager(['chrome://mozlab/content']);
 const REPL = module.require('class', 'repl');
 
 function constructor() {}
 
 function start(port) {
-    if(!port)
-        port = 4242;
     var server = this;
 
     var socketListener = {
@@ -41,6 +44,11 @@ function start(port) {
                 dump('MozRepl: Error: ' + e + '\n');
             }
             dump('MozRepl: Accepted connection.\n');
+
+            var window = Components
+            .classes["@mozilla.org/appshell/window-mediator;1"]
+            .getService(Components.interfaces.nsIWindowMediator)
+            .getMostRecentWindow("navigator:browser");
 
             var session = new REPL(instream, outstream, server, window);
 

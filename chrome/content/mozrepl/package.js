@@ -18,5 +18,7 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-this.Server = module.require('class', 'server');
 this.UI     = module.require('class', 'ui');
+this.server = Components
+    .classes['@hyperstruct.net/mozlab/mozrepl;1']
+    .getService(Components.interfaces.nsIMozRepl);

@@ -20,3 +20,4 @@
 
 var mozlab = (new ModuleManager(['chrome://mozlab/content'])).require('package', 'package');
 
+

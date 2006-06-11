@@ -28,7 +28,7 @@ function toggleServer(sourceCommand) {
         sourceCommand.setAttribute('label', 'Start Repl');
     }
     else {
-        this._server.start();
+        this._server.start(4242);
         sourceCommand.setAttribute('label', 'Stop Repl');
     }
 }
