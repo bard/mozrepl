@@ -57,6 +57,21 @@ dbSpec.stateThat = {
         assert.isNull(db.get({type: 'none'}));
     },
 
+    'Call hook before insertion of new objects based on pattern': function() {
+        var db = new database.DB();
+
+        var personSeenInHook, personSeenInDB;
+        db.before(
+            {type: 'person'}, function(person) {
+                personSeenInHook = person;
+                personSeenInDB = db.get({type: 'person'});
+            });
+
+        db.put({type: 'person', name: 'joe'})
+        assert.isDefined(personSeenInHook);
+        assert.isUndefined(personSeenInDB);
+    },
+
     'Watch insertion of new objects based on pattern': function() {
         var db = new database.DB();
 

@@ -1,13 +1,15 @@
 
 function DB() {
     this._storage = [];
-    this._watches = [];
+    this._preWatches = [];
+    this._postWatches = [];
 }
 
 DB.prototype = {
     put: function(object) {
+        _handle1(object, this._preWatches, _match1);
         _put1(object, this._storage);
-        _handle1(object, this._watches, _match1);
+        _handle1(object, this._postWatches, _match1);
         return object;
     },
 
@@ -16,8 +18,12 @@ DB.prototype = {
         return _get1(count, pattern, this._storage, _match1);
     },
 
+    before: function(pattern, handler) {
+        this._preWatches.push({pattern: pattern, handler: handler});
+    },
+
     on: function(pattern, handler) {
-        this._watches.push({pattern: pattern, handler: handler});
+        this._postWatches.push({pattern: pattern, handler: handler});
     },
 
     dump: function() {
