@@ -22,7 +22,7 @@ $(FILE): install.rdf
 	sed -e 's|chrome/|jar:chrome/$(NAME).jar!/|g' chrome.manifest >dist/chrome.manifest
 	sed -e 's|<em:version></em:version>|<em:version>$(VERSION).$(BUILD)</em:version>|' \
 		install.rdf.template >dist/install.rdf
-	cp -a defaults install.rdf dist
+	cp -a defaults components install.rdf dist
 	cd dist && zip -r ../$(FILE) *
 	rm -rf dist
 
