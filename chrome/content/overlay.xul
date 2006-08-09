@@ -52,14 +52,4 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
       </menupopup>
     </menu>
   </menupopup>
-
-<!--   <toolbox id="navigator-toolbox">     -->
-<!--     <toolbar id="mozlab-toolbar" toolbarname="MozLab Toolbar"  -->
-<!--              class="chromeclass-toolbar" context="toolbar-context-menu"  -->
-<!--              hidden="false" persist="hidden"> -->
-      
-<!--       <toolbarbutton command="mozlab-command-toggle-mozrepl"/> -->
-<!--       <toolbarbutton command="mozlab-command-open-mozunit"/> -->
-<!--     </toolbar> -->
-<!--   </toolbox> -->
 </overlay>

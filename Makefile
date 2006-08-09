@@ -18,7 +18,7 @@ install.rdf:
 $(FILE): install.rdf
 	rm -rf dist
 	mkdir dist dist/chrome
-	cd chrome && zip -y -r ../dist/chrome/$(NAME).jar .
+	cd chrome && zip -y -r ../dist/chrome/$(NAME).jar . -x content/lab/\*
 	sed -e 's|chrome/|jar:chrome/$(NAME).jar!/|g' chrome.manifest >dist/chrome.manifest
 	sed -e 's|<em:version></em:version>|<em:version>$(VERSION).$(BUILD)</em:version>|' \
 		install.rdf.template >dist/install.rdf

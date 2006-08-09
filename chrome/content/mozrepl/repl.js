@@ -236,11 +236,11 @@ function inspect(obj, maxDepth, name, curDepth) {
         string = string.match(/^(.+?)(\n|$)/m)[1];
         max = max || 70;
         return (string.length > max-3) ?
-            string.slice(0, max-3)  +'...' : string;
+            string.slice(0, max-3) + '...' : string;
     }
 
     if(name == undefined)
-        name = '<' + typeof(obj) + '>'
+        name = '<' + typeof(obj) + '>';
     if(maxDepth == undefined)
         maxDepth = 0;
     if(curDepth == undefined)
