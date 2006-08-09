@@ -36,7 +36,10 @@ var Factory = {
     createInstance: function(aOuter, aIID) {
         if(aOuter != null)
             throw Cr.NS_ERROR_NO_AGGREGATION;
-        return (new Component()).QueryInterface(aIID);
+        var component = new Component();
+        component.init();
+
+        return component.QueryInterface(aIID);
     }
 };
 

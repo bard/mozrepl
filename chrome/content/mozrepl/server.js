@@ -24,8 +24,15 @@ Components.classes['@mozilla.org/moz/jssubscript-loader;1']
 
 const module = new ModuleManager(['chrome://mozlab/content']);
 const REPL = module.require('class', 'repl');
+const pref = Components
+    .classes['@mozilla.org/preferences-service;1']
+    .getService(Components.interfaces.nsIPrefService)
+    .getBranch('extensions.mozlab.mozrepl.');
 
-function constructor() {}
+function init() {
+    if(pref.getBoolPref('autoStart'))
+        this.start(pref.getIntPref('port'));
+}
 
 function start(port) {
     var server = this;
