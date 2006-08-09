@@ -250,23 +250,27 @@ function inspect(obj, maxDepth, name, curDepth) {
 
     var i = 0;
     for(var prop in obj) {
-        i++;
-        if (typeof(obj[prop]) == "object") {
-            if (obj[prop] && obj[prop].length != undefined)
-                this.print(name + "." + prop + "=[probably array, length "
-                           + obj[prop].length + "]");
-            else
-                this.print(name + "." + prop + "=[" + typeof(obj[prop]) + "]");
+        try {
+            i++;
+            if (typeof(obj[prop]) == "object") {
+                if (obj[prop] && obj[prop].length != undefined)
+                    this.print(name + "." + prop + "=[probably array, length "
+                               + obj[prop].length + "]");
+                else
+                    this.print(name + "." + prop + "=[" + typeof(obj[prop]) + "]");
             
-            this.inspect(obj[prop], maxDepth, name + "." + prop, curDepth+1);
-        }
-        else if (typeof(obj[prop]) == "function")
-            this.print(name + "." + prop + "=[function]");
-        else
-            this.print(name + "." + prop + "=" + obj[prop]);
+                this.inspect(obj[prop], maxDepth, name + "." + prop, curDepth+1);
+            }
+            else if (typeof(obj[prop]) == "function")
+                this.print(name + "." + prop + "=[function]");
+            else
+                this.print(name + "." + prop + "=" + obj[prop]);
 
-        if(obj[prop] && obj[prop].doc && typeof(obj[prop].doc) == 'string')
-            this.print('    ' + crop(obj[prop].doc));
+            if(obj[prop] && obj[prop].doc && typeof(obj[prop].doc) == 'string')
+                this.print('    ' + crop(obj[prop].doc));
+        } catch(e) {
+            this.print(name + '.' + prop + ' - Exception while inspecting.');
+        }
     }
     if(!i)
         this.print(name + " is empty");    
