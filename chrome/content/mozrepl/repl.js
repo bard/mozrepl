@@ -64,6 +64,11 @@ function constructor(instream, outstream, server, context) {
         _this.home();
     }
 
+    this.__defineGetter__(
+        'repl', function() {
+            return this;
+        });
+
     this._env = {};
     this._savedEnv = {};
     this.setenv('printPrompt', true);
