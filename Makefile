@@ -5,8 +5,8 @@ FILE=$(NAME)-$(VERSION).$(BUILD).xpi
 EXTID=$(NAME)@hyperstruct.net
 
 dist: xpi
-	mv $(FILE) web/download
-	cd web/download && ln -sf $(FILE) $(NAME).xpi
+	mv $(FILE) ../dev.hyperstruct.net/download
+	cd ../dev.hyperstruct.net/download && ln -sf $(FILE) $(NAME).xpi
 
 xpi: $(FILE)
 
