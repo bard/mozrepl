@@ -1,4 +1,4 @@
-;;; inf-moz.el --- Interaction with an inferior remote Mozilla process.
+;;; js-mode.el --- Javascript Mode
 
 ;; Copyright (C) 2006 by Massimiliano Mirra
 ;;
@@ -50,9 +50,7 @@
   "Keymap used in js-mode buffers.")
 (if js-mode-map
     nil
-  (setq js-mode-map (c-make-inherited-keymap))
-  ;; add bindings which are only usefus for Javascript
-  )
+  (setq js-mode-map (c-make-inherited-keymap)))
 
 (defun js-mode ()
   "Major mode for editing Javascript code.
@@ -71,8 +69,8 @@ initialization, then `js-mode-hook'.
 Key bindings:
 \\{js-mode-map}"
   (interactive)
-  (kill-all-local-variables)
   (c-initialize-cc-mode t)
+  (kill-all-local-variables)
   (set-syntax-table js-mode-syntax-table)
   (setq major-mode 'js-mode
         mode-name "Javascript"
@@ -85,12 +83,7 @@ Key bindings:
   (cc-imenu-init cc-imenu-java-generic-expression)
   (c-run-mode-hooks 'c-mode-common-hook 'js-mode-hook)
   (c-update-modeline)
-
   (c-set-offset 'label 0)
-
-  ;; Taken from Xemacs's javascript-mode.el
-;  (set (make-local-variable 'c-opt-lambda-key) "function")
-;  (c-set-offset 'inlambda 0)
 
   ;; XXX Study indentation engine and Do Things Right Here Please (tm)
   (setq c-special-indent-hook
