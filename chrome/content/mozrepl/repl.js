@@ -389,9 +389,12 @@ function _migrateTopLevel(context) {
     this._hostContext.addEventListener('unload', this._emergencyExit, false);
 }
 
-function _prompt() {
+function _prompt(prompt) {
     if(this.getenv('printPrompt'))
-        this.print(this._name + '> ', false);
+        if(prompt)
+            this.print(prompt, false);
+        else 
+            this.print(this._name + '> ', false);
 }
         
 function _feed(input) {
