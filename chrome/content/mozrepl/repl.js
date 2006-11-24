@@ -72,7 +72,7 @@ function constructor(instream, outstream, server, context) {
     this._env = {};
     this._savedEnv = {};
     this.setenv('printPrompt', true);
-    this.setenv('inputMode', 'line');
+    this.setenv('inputMode', 'syntax');
 
     this.reloadInit();
     
@@ -131,8 +131,9 @@ via popenv() and restores them, overwriting the current ones.';
 
 
 function print(data, appendNewline) {
-    var string = data +
-        (appendNewline == false ? '' : '\n');
+    var string = data == undefined ?
+        '\n' :
+        data + (appendNewline == false ? '' : '\n');
 
     this._outstream.write(string, string.length);
 }
@@ -445,17 +446,27 @@ function _feed(input) {
         this._inputBuffer = res[1];
         break;
     case 'syntax':
-        this._inputBuffer += input;
-        try {
-            evaluate(this._inputBuffer);
+        if(/^\s*;\s*$/.test(input)) {
+            try {
+                evaluate(this._inputBuffer);
+            } catch(e) {
+                handleError(e);
+            }
             this._inputBuffer = '';
-        } catch(e if e.name == 'SyntaxError') {
-            // ignore and keep filling the buffer
-        } catch(e) {
-            handleError(e);
-            this._inputBuffer = '';
+        } else {
+            this._inputBuffer += input;
+            try {
+                evaluate(this._inputBuffer);
+                this._inputBuffer = '';
+            } catch(e if e.name == 'SyntaxError') {
+                // ignore and keep filling the buffer
+                this._prompt(this._name.replace(/./g, '.') + '> ');
+            } catch(e) {
+                handleError(e);
+                this._inputBuffer = '';
+            }
+            break;
         }
-        break;
     }
 }
 
