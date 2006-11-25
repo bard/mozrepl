@@ -53,9 +53,9 @@ function start(port) {
             dump('MozRepl: Accepted connection.\n');
 
             var window = Components
-            .classes["@mozilla.org/appshell/window-mediator;1"]
+            .classes['@mozilla.org/appshell/window-mediator;1']
             .getService(Components.interfaces.nsIWindowMediator)
-            .getMostRecentWindow("navigator:browser");
+            .getMostRecentWindow('');
 
             var session = new REPL(instream, outstream, server, window);
 

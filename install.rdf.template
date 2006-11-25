@@ -15,6 +15,14 @@
         <em:maxVersion>2.0.0.*</em:maxVersion>
       </Description>
     </em:targetApplication>
+
+    <em:targetApplication>
+      <Description>
+        <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
+        <em:minVersion>1.5</em:minVersion>
+        <em:maxVersion>1.5.0.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
    
     <em:name>MozLab</em:name>
     <em:description>Collection of tools for Mozilla developers</em:description>
