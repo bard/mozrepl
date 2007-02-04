@@ -49,7 +49,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
     <command id="edit" label="Edit" accesskey="E"
              oncommand="openInEditor(_('file').value);"/>
     <command id="quit" label="Quit" accesskey="Q"
-             oncommand="window.close"/>
+             oncommand="window.close();"/>
   </commandset>
 
   <!-- KEYBINDINGS -->
