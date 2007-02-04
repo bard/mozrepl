@@ -60,6 +60,9 @@ started as needed)."
                               moz-repl-name ".setenv('printPrompt', false); "
                               moz-repl-name ".setenv('inputMode', 'multiline'); "
                               "undefined; \n"))
+  ;; Give the previous line a chance to be evaluated on its own.  If
+  ;; it gets concatenated to the following ones, we are doomed.
+  (sleep-for 0 1)
   (comint-send-region (inferior-moz-process)
                       start end)
   (comint-send-string (inferior-moz-process)
@@ -147,6 +150,7 @@ and setting up the inferior-mozilla buffer."
   (interactive)
   (setq inferior-moz-buffer
         (apply 'make-comint "Moz" '("localhost" . 4242) nil nil))
+  (sleep-for 0 100)
   (with-current-buffer inferior-moz-buffer
     (inferior-moz-mode)
     (run-hooks 'inferior-moz-hook)))
