@@ -18,7 +18,19 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
+// GLOBAL DEFINITIONS
+// ----------------------------------------------------------------------
+
 var util = module.require('package', 'util');
+
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+const loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
+    .getService(Ci.mozIJSSubScriptLoader);
+
+
+// CORE
+// ----------------------------------------------------------------------
 
 function constructor(instream, outstream, server, context) {
     var _this = this;
@@ -27,15 +39,12 @@ function constructor(instream, outstream, server, context) {
     this._outstream = outstream;
     this._server = server;
 
-    this._name            = _chooseName1('repl', context);
+    this._name            = chooseName('repl', context);
     this._creationContext = context;
     this._hostContext     = context;
     this._workContext     = context;
     this._creationContext[this._name] = this;
 
-    this._loader = Components
-        .classes['@mozilla.org/moz/jssubscript-loader;1']
-        .getService(Components.interfaces.mozIJSSubScriptLoader);
     this._contextHistory = [];
     this._inputBuffer = '';
     this._networkListener = {
@@ -53,12 +62,6 @@ function constructor(instream, outstream, server, context) {
         syntax:    /\n$/m
     }
 
-    if(this._name != 'repl') {
-        this.print('Hmmm, seems like other repl\'s are running in this context.');
-        this.print('To avoid conflicts, yours will be named "' + this._name + '".');
-    }
-
-
     this._emergencyExit = function(event) {
         _this.print('Host context unloading! Going back to creation context.')
         _this.home();
@@ -74,11 +77,24 @@ function constructor(instream, outstream, server, context) {
     this.setenv('printPrompt', true);
     this.setenv('inputMode', 'syntax');
 
-    this.reloadInit();
+    this.loadInit();
+
+    this.print('Current input mode is: ' + this._env['inputMode']);
+    this.print('');
+    this.print('If you get stuck at the "...>" prompt, enter a colon (;) at the beginning of the line to force evaluation.');
+    this.print('');
     
+    if(this._name != 'repl') {
+        this.print('Hmmm, seems like other repl\'s are running in this context.');
+        this.print('To avoid conflicts, yours will be named "' + this._name + '".');
+    }
+
     this._prompt();
 }
 
+
+// ENVIRONMENT HANDLING
+// ----------------------------------------------------------------------
 
 function setenv(name, value) {
     this._env[name] = value;
@@ -130,6 +146,9 @@ popenv.doc =
 via popenv() and restores them, overwriting the current ones.';
 
 
+// OUTPUT
+// ----------------------------------------------------------------------
+
 function print(data, appendNewline) {
     var string = data == undefined ?
         '\n' :
@@ -142,24 +161,42 @@ print.doc =
 Appends a newline unless false is given as second parameter.';
 
 
+// SCRIPT HANDLING
+// ----------------------------------------------------------------------
+
+function loadInit() {
+    try {
+        var initUrl = Cc['@mozilla.org/preferences-service;1']
+            .getService(Ci.nsIPrefBranch)
+            .getCharPref('extensions.mozlab.mozrepl.initUrl');
+
+        if(initUrl) {
+            this.print('Loading ' + initUrl + '...');
+            this.load(initUrl, this);
+        }
+        
+    } catch(e) {
+        this.print('Could not load initialization script ' +
+                   initUrl + ': ' + e);
+    }
+}
+
 function load(url, arbitraryContext) {
-    return this._loader.loadSubScript(
+    return loader.loadSubScript(
         url, arbitraryContext || this._workContext);
 }
 load.doc =
     'Loads a chrome:// or file:// script into the current context, \
 or optionally into an arbitrary context passed as a second parameter.';
 
-        
-function history() {
-    
-}
+
+// CONTEXT NAVIGATION
+// ----------------------------------------------------------------------
 
 function enter(context) {
     this._contextHistory.push(this._workContext);
 
-    var repl = this;
-    if(context instanceof Components.interfaces.nsIDOMWindow)
+    if(context instanceof Ci.nsIDOMWindow)
         this._migrateTopLevel(context);
     this._workContext = context;
 
@@ -176,7 +213,7 @@ function back() {
     
     var context = this._contextHistory.pop();
     if(context) {
-        if(context instanceof Components.interfaces.nsIDOMWindow)
+        if(context instanceof Ci.nsIDOMWindow)
             this._migrateTopLevel(context);
         this._workContext = context;
         return this._workContext;
@@ -185,14 +222,6 @@ function back() {
 back.doc =
     "Returns to the previous context.";
 
-// This messes with XPCNativeWrappers somehow, while repl.enter(content) is fine
-//function content() {
-//    if(this._hostContext['content'])
-//        return this.enter(this._hostContext['content']);
-//}
-//content.doc =
-//    'If the current context has a "content" object, enters it.';
-
 
 function home() {
     return this.enter(this._creationContext);
@@ -200,6 +229,9 @@ function home() {
 home.doc =
     'Returns to the context where the REPL was created.';
 
+
+// MISC
+// ----------------------------------------------------------------------
 
 function quit() {
     delete this._hostContext[this._name];
@@ -228,6 +260,9 @@ function rename(name) {
 rename.doc =
     'Renames the session.';
 
+
+// CONTEXT EXPLORING
+// ----------------------------------------------------------------------
 
 function inspect(obj, maxDepth, name, curDepth) {
 // adapted from ddumpObject() at
@@ -300,23 +335,23 @@ function highlight(context, time) {
     if(!context.QueryInterface)
         return;
 
-    const Timer = Components.classes['@mozilla.org/timer;1'];
-    const nsITimer = Components.interfaces.nsITimer;
-    const nsIDOMXULElement = Components.interfaces.nsIDOMXULElement;
     const NS_NOINTERFACE = 0x80004002;
     
     try {
-        context.QueryInterface(nsIDOMXULElement);
+        context.QueryInterface(Ci.nsIDOMXULElement);
         var savedBorder = context.style.border;
         context.style.border = 'thick dotted red';
-        Timer.createInstance(nsITimer).initWithCallback(
-            {notify: function() { context.style.border = savedBorder; }},
-            time, nsITimer.TYPE_ONE_SHOT);
+        Cc['@mozilla.org/timer;1']
+            .createInstance(Ci.nsITimer)
+            .initWithCallback(
+                {notify: function() {
+                        context.style.border = savedBorder;
+                    }}, time, Ci.nsITimer.TYPE_ONE_SHOT);
     } catch(e if e.result == NS_NOINTERFACE) {}
 }
 highlight.doc =
     "Highlights the passed context (or the current, if none given) if it is \
-a XUL element."
+a XUL element.";
 
 
 function whereAmI() {
@@ -358,9 +393,8 @@ function doc(thing) {
     var url = util.helpUrlFor(thing);
     if(url) {
         this.print('Online help found, displaying...');
-        Components
-            .classes["@mozilla.org/embedcomp/window-watcher;1"]
-            .getService(Components.interfaces.nsIWindowWatcher)
+        Cc['@mozilla.org/embedcomp/window-watcher;1']
+            .getService(Ci.nsIWindowWatcher)
             .openWindow(null, url, 'help',
                         'width=640,height=600,scrollbars=yes,menubars=no,' +
                         'toolbar=no,location=no,status=no,resizable=yes', null);
@@ -371,23 +405,8 @@ doc.doc =
 (if present) or on XULPlanet.com.';
 
 
-function reloadInit() {
-    try {
-        var initUrl = Components
-            .classes["@mozilla.org/preferences-service;1"]
-            .getService(Components.interfaces.nsIPrefBranch)
-            .getCharPref('extensions.mozlab.mozrepl.initUrl');
-
-        if(initUrl)
-            this.load(initUrl, this);
-        
-    } catch(e) {
-        this.print('Could not load initialization script ' +
-                   initUrl + ': ' + e);
-    }
-}
-
-/* Private functions */
+// INTERNALS
+// ----------------------------------------------------------------------
 
 function _migrateTopLevel(context) {
     this._hostContext.removeEventListener('unload', this._emergencyExit, false);
@@ -422,7 +441,7 @@ function _feed(input) {
 
     function handleError(e) {
         if(e) 
-            _this.print(_formatStackTrace1(e));
+            _this.print(formatStackTrace(e));
         
         _this.print('!!! ' + e.toString() + '\n');
         _this._prompt();        
@@ -477,9 +496,11 @@ function _feed(input) {
     }
 }
 
-/* private, side-effects free functions */
 
-function _formatStackTrace1(exception) {
+// UTILITIES
+// ----------------------------------------------------------------------
+
+function formatStackTrace(exception) {
     var trace = '';                
     if(exception.stack) {
         var calls = exception.stack.split('\n');
@@ -497,15 +518,13 @@ function _formatStackTrace1(exception) {
     return trace;
 }
 
-function _chooseName1(basename, context) {
-    return (basename in context) ?
-        (function() {
-            var i = 0;
-            do { i++ } while(basename + i in context);
-            return basename + i;
-        })()
-        :
-        basename;
+function chooseName(basename, context) {
+    if(basename in context) {
+        var i = 0;
+        do { i++ } while(basename + i in context);
+        return basename + i;
+    } else
+        return basename;
 }
 
 

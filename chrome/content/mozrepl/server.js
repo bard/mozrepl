@@ -18,16 +18,26 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-Components.classes['@mozilla.org/moz/jssubscript-loader;1']
-.getService(Components.interfaces.mozIJSSubScriptLoader)
-    .loadSubScript('chrome://mozlab/content/lib/module_manager.js');
+
+// GLOBAL DEFINITIONS
+// ----------------------------------------------------------------------
+
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+const loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
+    .getService(Ci.mozIJSSubScriptLoader);
+const pref = Cc['@mozilla.org/preferences-service;1']
+    .getService(Ci.nsIPrefService)
+    .getBranch('extensions.mozlab.mozrepl.');
+
+loader.loadSubScript('chrome://mozlab/content/lib/module_manager.js');
 
 const module = new ModuleManager(['chrome://mozlab/content']);
 const REPL = module.require('class', 'repl');
-const pref = Components
-    .classes['@mozilla.org/preferences-service;1']
-    .getService(Components.interfaces.nsIPrefService)
-    .getBranch('extensions.mozlab.mozrepl.');
+
+
+// CODE
+// ----------------------------------------------------------------------
 
 function init() {
     if(pref.getBoolPref('autoStart'))
@@ -42,26 +52,23 @@ function start(port) {
             try {
                 var outstream = transport.openOutputStream(0, 0, 0);
                 var stream = transport.openInputStream(0, 0, 0);
-                var instream = Components
-                .classes['@mozilla.org/scriptableinputstream;1']
-                .createInstance(Components.interfaces.nsIScriptableInputStream);
+                var instream = Cc['@mozilla.org/scriptableinputstream;1']
+                .createInstance(Ci.nsIScriptableInputStream);
 
                 instream.init(stream);
             } catch(e) {
-                dump('MozRepl: Error: ' + e + '\n');
+                log('MozRepl: Error: ' + e);
             }
-            dump('MozRepl: Accepted connection.\n');
+            log('MozRepl: Accepted connection.');
 
-            var window = Components
-            .classes['@mozilla.org/appshell/window-mediator;1']
-            .getService(Components.interfaces.nsIWindowMediator)
+            var window = Cc['@mozilla.org/appshell/window-mediator;1']
+            .getService(Ci.nsIWindowMediator)
             .getMostRecentWindow('');
 
             var session = new REPL(instream, outstream, server, window);
 
-            var pump = Components
-            .classes['@mozilla.org/network/input-stream-pump;1']
-            .createInstance(Components.interfaces.nsIInputStreamPump);
+            var pump = Cc['@mozilla.org/network/input-stream-pump;1']
+            .createInstance(Ci.nsIInputStreamPump);
 
             pump.init(stream, -1, -1, 0, 0, false);
             pump.asyncRead(session._networkListener, null);
@@ -74,22 +81,21 @@ function start(port) {
 
     this._sessions = [];
     try {
-        this._serv = Components
-            .classes['@mozilla.org/network/server-socket;1']
-            .createInstance(Components.interfaces.nsIServerSocket);
+        this._serv = Cc['@mozilla.org/network/server-socket;1']
+            .createInstance(Ci.nsIServerSocket);
         this._serv.init(port, true, -1);
         this._serv.asyncListen(socketListener);
-        dump('MozRepl: Listening...\n');
+        log('MozRepl: Listening...');
     } catch(e) {
-        dump('MozRepl: Exception: ' + e);
+        log('MozRepl: Exception: ' + e);
     }    
 }
 
 function stop() {
-    dump('MozRepl: Closing...\n');
+    log('MozRepl: Closing...');
     this._serv.close();
     for each(var session in this._sessions)
-        session.close();
+        session.quit();
     this._sessions.splice(0, this._sessions.length);
 
     delete this._serv;
@@ -112,4 +118,12 @@ function removeSession(session) {
 
 function getSession(index) {
     return this._sessions[index];
+}
+
+
+// UTILITIES
+// ----------------------------------------------------------------------
+
+function log(msg) {
+    dump(msg + '\n');
 }
