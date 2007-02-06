@@ -125,9 +125,7 @@ Instead of sending input and newline separately like in
 comint-simple-send, here we *first* concatenate input and
 newline, then send it all together.  This prevents newline to be
 interpreted on its own."
-  (if comint-input-sender-no-newline
-      (comint-send-string proc string)
-    (comint-send-string proc (concat string "\n"))))
+  (comint-send-string proc (concat string "\n")))
     
 (defun inferior-moz-switch-to-mozilla ()
   "Show the inferior mozilla buffer.  Start the process if needed."
