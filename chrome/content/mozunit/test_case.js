@@ -19,8 +19,6 @@
  *
  */
 
-const fsm = module.require('package', 'lib/fsm');
-
 /**
  * Invocation:
  *     var case = new TestCase('Widget tests');
@@ -268,6 +266,8 @@ function _syncRun1(tests, setUp, tearDown, reportHandler) {
     }
 }
 
+if(false) {
+    // asynchronous running is not ready, don't make it available.
 function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
     var testIndex = 0;
     var context;

@@ -26,12 +26,13 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
   <script type="application/x-javascript" src="lib/module_manager.js"/>
   <script type="application/x-javascript" src="main.js"/>
+  <script type="application/x-javascript" src="overlay.js"/>
 
   <commandset id="mainCommandSet">
     <command id="mozlab-command-toggle-mozrepl"
              label="Start Repl"
              accesskey="R"
-             oncommand="mozlab.mozrepl.ui.toggleServer(this);"/>
+             oncommand="mozrepl.toggleServer(this);"/>
     <command id="mozlab-command-open-mozunit"
              label="Open MozUnit Runner..."
              accesskey="U"

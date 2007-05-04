@@ -30,10 +30,8 @@ const pref = Cc['@mozilla.org/preferences-service;1']
     .getService(Ci.nsIPrefService)
     .getBranch('extensions.mozlab.mozrepl.');
 
-loader.loadSubScript('chrome://mozlab/content/lib/module_manager.js');
-
-const module = new ModuleManager(['chrome://mozlab/content']);
-const REPL = module.require('class', 'repl');
+function REPL() { this.constructor.apply(this, arguments); }
+loader.loadSubScript('chrome://mozlab/content/mozrepl/repl.js', REPL.prototype);
 
 
 // CODE

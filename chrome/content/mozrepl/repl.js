@@ -21,12 +21,13 @@
 // GLOBAL DEFINITIONS
 // ----------------------------------------------------------------------
 
-var util = module.require('package', 'util');
-
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
     .getService(Ci.mozIJSSubScriptLoader);
+
+var util = {};
+loader.loadSubScript('chrome://mozlab/content/mozrepl/util.js', util);
 
 
 // CORE

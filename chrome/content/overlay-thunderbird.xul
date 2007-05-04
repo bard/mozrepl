@@ -26,6 +26,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 
   <script type="application/x-javascript" src="lib/module_manager.js"/>
   <script type="application/x-javascript" src="main.js"/>
+  <script type="application/x-javascript" src="overlay.js"/>
 
   <commandset id="tasksCommands">
     <command id="mozlab-command-toggle-mozrepl"
