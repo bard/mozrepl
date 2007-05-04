@@ -447,7 +447,7 @@ function _feed(input) {
         if(e) 
             _this.print(formatStackTrace(e));
         
-        _this.print('!!! ' + e.toString() + '\n');
+        _this.print('!!! ' + e + '\n');
         _this._prompt();        
     }
 
