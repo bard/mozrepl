@@ -335,6 +335,7 @@ function _asyncRun1(tests, setUp, tearDown, reportHandler, onTestRunFinished) {
 
     fsm.go('start', {}, stateHandlers, stateTransitions, []);
 }
+}
 
 function _defaultReportHandler(report) {
     if(report.result == 'success')
