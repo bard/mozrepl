@@ -196,7 +196,7 @@ or optionally into an arbitrary context passed as a second parameter.';
 function enter(context) {
     this._contextHistory.push(this._workContext);
 
-    if(context instanceof Ci.nsIDOMWindow)
+    if(isTopLevel(context))
         this._migrateTopLevel(context);
     this._workContext = context;
 
@@ -213,7 +213,7 @@ function back() {
     
     var context = this._contextHistory.pop();
     if(context) {
-        if(context instanceof Ci.nsIDOMWindow)
+        if(isTopLevel(context))
             this._migrateTopLevel(context);
         this._workContext = context;
         return this._workContext;
@@ -409,11 +409,15 @@ doc.doc =
 // ----------------------------------------------------------------------
 
 function _migrateTopLevel(context) {
-    this._hostContext.removeEventListener('unload', this._emergencyExit, false);
+    if(this._hostContext instanceof Ci.nsIDOMWindow)
+        this._hostContext.removeEventListener('unload', this._emergencyExit, false);
+    
     this._hostContext[this._name] = undefined;
     this._hostContext = context;
     this._hostContext[this._name] = this;
-    this._hostContext.addEventListener('unload', this._emergencyExit, false);
+
+    if(this._hostContext instanceof Ci.nsIDOMWindow)
+        this._hostContext.addEventListener('unload', this._emergencyExit, false);
 }
 
 function _prompt(prompt) {
@@ -527,4 +531,8 @@ function chooseName(basename, context) {
         return basename;
 }
 
-
+function isTopLevel(object) {
+    return (object instanceof Ci.nsIDOMWindow ||
+            'wrappedJSObject' in object ||
+            'NSGetModule' in object)
+}
