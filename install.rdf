@@ -5,22 +5,46 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>mozlab@hyperstruct.net</em:id>
-    <em:version></em:version>
+    <em:version>42.0.0</em:version>
     <em:type>2</em:type>
    
+    <!-- firefox -->
+
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>1.5</em:minVersion>
+        <em:maxVersion>3.0.0.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <!-- flock -->
+
+    <em:targetApplication>
+      <Description>
+        <em:id>{a463f10c-3994-11da-9945-000d60ca027b}</em:id>
+        <em:maxVersion>1.0</em:maxVersion>
+        <em:minVersion>0.4</em:minVersion>
+      </Description>
+    </em:targetApplication>
+
+    <!-- thunderbird -->
+    
+    <em:targetApplication>
+      <Description>
+        <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
         <em:minVersion>1.5</em:minVersion>
         <em:maxVersion>2.0.0.*</em:maxVersion>
       </Description>
     </em:targetApplication>
 
+    <!-- songbird -->
+    
     <em:targetApplication>
       <Description>
-        <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
-        <em:minVersion>1.5</em:minVersion>
-        <em:maxVersion>1.5.0.*</em:maxVersion>
+        <em:id>songbird@songbirdnest.com</em:id>
+        <em:minVersion>0.2</em:minVersion>
+        <em:maxVersion>1.0+</em:maxVersion>
       </Description>
     </em:targetApplication>
    
