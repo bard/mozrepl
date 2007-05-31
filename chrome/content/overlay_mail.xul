@@ -32,7 +32,7 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
     <command id="mozlab-command-toggle-mozrepl"
              label="Start Repl"
              accesskey="R"
-             oncommand="mozlab.mozrepl.ui.toggleServer(this);"/>
+             oncommand="mozrepl.toggleServer(this);"/>
     <command id="mozlab-command-open-mozunit"
              label="Open MozUnit Runner..."
              accesskey="U"
