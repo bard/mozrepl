@@ -30,7 +30,7 @@ const pref = Cc['@mozilla.org/preferences-service;1']
     .getService(Ci.nsIPrefService)
     .getBranch('extensions.mozlab.mozrepl.');
 
-function REPL() { this.constructor.apply(this, arguments); }
+function REPL() {};
 loader.loadSubScript('chrome://mozlab/content/mozrepl/repl.js', REPL.prototype);
 
 
@@ -63,7 +63,8 @@ function start(port) {
             .getService(Ci.nsIWindowMediator)
             .getMostRecentWindow('');
 
-            var session = new REPL(instream, outstream, server, window);
+            var session = new REPL();
+            session.init(instream, outstream, server, window);
 
             var pump = Cc['@mozilla.org/network/input-stream-pump;1']
             .createInstance(Ci.nsIInputStreamPump);

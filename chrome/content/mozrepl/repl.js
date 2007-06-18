@@ -33,7 +33,7 @@ loader.loadSubScript('chrome://mozlab/content/mozrepl/util.js', util);
 // CORE
 // ----------------------------------------------------------------------
 
-function constructor(instream, outstream, server, context) {
+function init(instream, outstream, server, context) {
     var _this = this;
 
     this._instream = instream;
