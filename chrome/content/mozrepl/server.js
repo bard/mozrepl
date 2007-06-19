@@ -34,90 +34,113 @@ function REPL() {};
 loader.loadSubScript('chrome://mozlab/content/mozrepl/repl.js', REPL.prototype);
 
 
+// STATE
+// ----------------------------------------------------------------------
+
+var serv;
+
+
 // CODE
 // ----------------------------------------------------------------------
 
+var sessions = {
+    _list: [],
+    
+    add: function(session) {
+        this._list.push(session);
+    },
+
+    remove: function(session) {
+        var index = this._list.indexOf(session);
+        if(index != -1)
+            this._list.splice(index, 1);
+    },
+
+    get: function(index) {
+        return this._list[index];
+    }
+};
+
+
 function init() {
     if(pref.getBoolPref('autoStart'))
-        this.start(pref.getIntPref('port'));
+        start(pref.getIntPref('port'));
 }
 
 function start(port) {
-    var server = this;
-
-    var socketListener = {
-        onSocketAccepted: function(serv, transport) {
-            try {
-                var outstream = transport.openOutputStream(0, 0, 0);
-                var stream = transport.openInputStream(0, 0, 0);
-                var instream = Cc['@mozilla.org/scriptableinputstream;1']
-                .createInstance(Ci.nsIScriptableInputStream);
-
-                instream.init(stream);
-            } catch(e) {
-                log('MozRepl: Error: ' + e);
-            }
-            log('MozRepl: Accepted connection.');
-
-            var window = Cc['@mozilla.org/appshell/window-mediator;1']
-            .getService(Ci.nsIWindowMediator)
-            .getMostRecentWindow('');
-
-            var session = new REPL();
-            session.init(instream, outstream, server, window);
-
-            var pump = Cc['@mozilla.org/network/input-stream-pump;1']
-            .createInstance(Ci.nsIInputStreamPump);
-
-            pump.init(stream, -1, -1, 0, 0, false);
-            pump.asyncRead(session._networkListener, null);
-            server.addSession(session);
-        },
-        onStopListening: function(serv, status) {
-            
-        }
-    };
-
-    this._sessions = [];
     try {
-        this._serv = Cc['@mozilla.org/network/server-socket;1']
+        serv = Cc['@mozilla.org/network/server-socket;1']
             .createInstance(Ci.nsIServerSocket);
-        this._serv.init(port, true, -1);
-        this._serv.asyncListen(socketListener);
+        serv.init(port, true, -1);
+        serv.asyncListen(this);
         log('MozRepl: Listening...');
     } catch(e) {
         log('MozRepl: Exception: ' + e);
     }    
 }
 
+function onSocketAccepted(serv, transport) {
+    try {
+        var outstream = transport.openOutputStream(0, 0, 0);
+        var stream = transport.openInputStream(0, 0, 0);
+        var instream = Cc['@mozilla.org/scriptableinputstream;1']
+            .createInstance(Ci.nsIScriptableInputStream);
+
+        instream.init(stream);
+    } catch(e) {
+        log('MozRepl: Error: ' + e);
+    }
+    log('MozRepl: Accepted connection.');
+
+    var window = Cc['@mozilla.org/appshell/window-mediator;1']
+        .getService(Ci.nsIWindowMediator)
+        .getMostRecentWindow('');
+
+    var session = new REPL();
+    session.onOutput = function(string) {
+        outstream.write(string, string.length);
+    };
+    session.onQuit = function() {
+        instream.close();
+        outstream.close();
+        sessions.remove(session);
+    };
+    session.init(window);
+
+    var pump = Cc['@mozilla.org/network/input-stream-pump;1']
+        .createInstance(Ci.nsIInputStreamPump);
+    pump.init(stream, -1, -1, 0, 0, false);
+    pump.asyncRead({
+        onStartRequest: function(request, context) {},
+        onStopRequest: function(request, context, status) {
+                session.quit();
+            },
+        onDataAvailable: function(request, context, inputStream, offset, count) {
+                session.receive(instream.read(count));
+            }
+        }, null);  
+
+    sessions.add(session);
+}
+
+function onStopListening(serv, status) {
+}
+
+
 function stop() {
     log('MozRepl: Closing...');
-    this._serv.close();
-    for each(var session in this._sessions)
+    serv.close();
+    for each(var session in sessions)
         session.quit();
-    this._sessions.splice(0, this._sessions.length);
+    sessions.splice(0, sessions.length);
 
-    delete this._serv;
+    delete serv;
 }
  
 function isActive() {
-    if(this._serv)
+    if(serv)
         return true;
-}
- 
-function addSession(session) {
-    this._sessions.push(session);
-}
-
-function removeSession(session) {
-    var index = this._sessions.indexOf(session);
-    if(index != -1)
-        this._sessions.splice(index, 1);
-}
-
-function getSession(index) {
-    return this._sessions[index];
-}
+} 
 
 
 // UTILITIES

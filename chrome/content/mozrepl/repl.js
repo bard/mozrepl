@@ -33,12 +33,16 @@ loader.loadSubScript('chrome://mozlab/content/mozrepl/util.js', util);
 // CORE
 // ----------------------------------------------------------------------
 
-function init(instream, outstream, server, context) {
-    var _this = this;
+function onOutput() {
+    throw new Error('onInput callback must be assigned.');
+}
 
-    this._instream = instream;
-    this._outstream = outstream;
-    this._server = server;
+function onQuit() {
+    throw new Error('onQuit callback must be assigned.');
+}
+
+function init(context) {
+    var _this = this;
 
     this._name            = chooseName('repl', context);
     this._creationContext = context;
@@ -48,15 +52,7 @@ function init(instream, outstream, server, context) {
 
     this._contextHistory = [];
     this._inputBuffer = '';
-    this._networkListener = {
-        onStartRequest: function(request, context) {},
-        onStopRequest: function(request, context, status) {
-            _this.quit();
-        },
-        onDataAvailable: function(request, context, inputStream, offset, count) {
-            _this._feed(_this._instream.read(count));
-        }
-    }
+
     this._inputSeparators = {
         line:      /\n/m,
         multiline: /\n--end-remote-input\n/m,
@@ -155,7 +151,7 @@ function print(data, appendNewline) {
         '\n' :
         data + (appendNewline == false ? '' : '\n');
 
-    this._outstream.write(string, string.length);
+    this.onOutput(string);
 }
 print.doc =
     'Converts an object to a string and prints the string. \
@@ -237,9 +233,7 @@ home.doc =
 function quit() {
     delete this._hostContext[this._name];
     delete this._creationContext[this._name];
-    this._instream.close();
-    this._outstream.close();
-    this._server.removeSession(this);
+    this.onQuit();
 }
 quit.doc =
     'Ends the session.';
@@ -429,7 +423,7 @@ function _prompt(prompt) {
             this.print(this._name + '> ', false);
 }
         
-function _feed(input) {
+function receive(input) {
     if(input.match(/^\s*$/) && this._inputBuffer.match(/^\s*$/)) {
         this._prompt();
         return;
