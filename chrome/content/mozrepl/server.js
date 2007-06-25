@@ -58,6 +58,12 @@ var sessions = {
 
     get: function(index) {
         return this._list[index];
+    },
+
+    quit: function() {
+        this._list.forEach(
+            function(session) { session.quit; });
+        this._list.splice(0, this._list.length);
     }
 };
 
@@ -131,11 +137,8 @@ function onStopListening(serv, status) {
 function stop() {
     log('MozRepl: Closing...');
     serv.close();
-    for each(var session in sessions)
-        session.quit();
-    sessions.splice(0, sessions.length);
-
-    delete serv;
+    sessions.quit();
+    serv = undefined;
 }
  
 function isActive() {
