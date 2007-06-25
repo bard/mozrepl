@@ -81,7 +81,8 @@ function start(port) {
 
 function onSocketAccepted(serv, transport) {
     try {
-        var outstream = transport.openOutputStream(0, 0, 0);
+        var outstream = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING , 0, 0);
+
         var stream = transport.openInputStream(0, 0, 0);
         var instream = Cc['@mozilla.org/scriptableinputstream;1']
             .createInstance(Ci.nsIScriptableInputStream);
