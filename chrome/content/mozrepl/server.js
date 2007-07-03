@@ -77,7 +77,7 @@ function start(port) {
     try {
         serv = Cc['@mozilla.org/network/server-socket;1']
             .createInstance(Ci.nsIServerSocket);
-        serv.init(port, true, -1);
+        serv.init(port, pref.getBoolPref('loopbackOnly'), -1);
         serv.asyncListen(this);
         log('MozRepl: Listening...');
     } catch(e) {
