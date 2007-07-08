@@ -18,38 +18,13 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
-var mozrepl = {
-    init: function() {
-        this._server = Components
-        .classes['@hyperstruct.net/mozlab/mozrepl;1']
-        .getService(Components.interfaces.nsIMozRepl);
 
-        var server = this._server;
-        window.addEventListener(
-            'load', function(event) {
-                document
-                    .getElementById('mozrepl-command-toggle')
-                    .setAttribute('label',
-                                  server.isActive() ? 'Stop Repl' : 'Start Repl');
-            }, false);
-    },
+window.addEventListener(
+    'load', function(event) { mozrepl.initOverlay(); }, false);
 
-    toggleServer: function(sourceCommand) {
-        var port = Components
-        .classes['@mozilla.org/preferences-service;1']
-        .getService(Components.interfaces.nsIPrefService)
-        .getBranch('extensions.mozlab.mozrepl.')
-        .getIntPref('port');
-        
-        if(this._server.isActive()) {
-            this._server.stop();        
-            sourceCommand.setAttribute('label', 'Start Repl');
-        }
-        else {
-            this._server.start(port);
-            sourceCommand.setAttribute('label', 'Stop Repl');
-        }
-    }
-};
+var mozrepl = {};
 
-mozrepl.init();
+Components
+.classes['@mozilla.org/moz/jssubscript-loader;1']
+.getService(Components.interfaces.mozIJSSubScriptLoader)
+    .loadSubScript('chrome://mozlab/content/mozrepl/overlay_impl.js', mozrepl);

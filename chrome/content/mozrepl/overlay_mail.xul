@@ -21,22 +21,41 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 -->
 
 <!DOCTYPE overlay>
-<overlay id="mozrepl-overlay"
-         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script type="application/x-javascript" src="overlay.js"/>
 
   <commandset id="tasksCommands">
     <command id="mozrepl-command-toggle"
-             label="Start Repl"
-             accesskey="R"
-             oncommand="mozrepl.toggleServer(this);"/>
+             label="Start"
+             accesskey="S"
+             oncommand="mozrepl.toggleServer();"/>
+    <command id="mozrepl-command-help"
+             label="Help..."
+             accesskey="H"
+             oncommand="mozrepl.openHelp();"/>
+    <command id="mozrepl-command-listen-external"
+             label="Allow outside connections"
+             accesskey="A"
+             oncommand="mozrepl.togglePref('loopbackOnly');"/>
+    <command id="mozrepl-command-autostart"
+             label="Activate on startup"
+             accesskey="s"
+             oncommand="mozrepl.togglePref('autoStart');"/>
+    <command id="mozrepl-command-change-port"
+             label="Change port"
+             accesskey="p"
+             oncommand="mozrepl.changePort();"/>
   </commandset>
 
   <menupopup id="taskPopup">
     <menu label="MozRepl" position="1" accesskey="R">
-      <menupopup>
+      <menupopup onpopupshowing="mozrepl.updateMenu(this);">
         <menuitem command="mozrepl-command-toggle"/>
+        <menuitem command="mozrepl-command-help"/>
+        <menuitem command="mozrepl-command-autostart" type="checkbox"/>
+        <menuitem command="mozrepl-command-listen-external" type="checkbox"/>
+        <menuitem command="mozrepl-command-change-port"/>
       </menupopup>
     </menu>
   </menupopup>
