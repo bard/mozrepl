@@ -52,6 +52,6 @@
     <em:description>Collection of tools for Mozilla developers</em:description>
     <em:creator>Massimiliano Mirra</em:creator>
     <em:homepageURL>http://dev.hyperstruct.net/mozlab</em:homepageURL>
-    <em:updateURL>http://dev.hyperstruct.net/download/update.rdf</em:updateURL>
+    <em:updateURL>http://repo.hyperstruct.net/mozlab/update.rdf</em:updateURL>
   </Description>      
 </RDF>
