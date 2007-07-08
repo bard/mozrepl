@@ -21,23 +21,22 @@ Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 -->
 
 <!DOCTYPE overlay>
-<overlay id="mozunit-overlay"
+<overlay id="mozrepl-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-  <script type="application/x-javascript" src="../lib/module_manager.js"/>
-  <script type="application/x-javascript" src="main.js"/>
+  <script type="application/x-javascript" src="overlay.js"/>
 
   <commandset id="tasksCommands">
-    <command id="mozunit-command-open"
-             label="Open Test Runner..."
-             accesskey="U"
-             oncommand="window.open('chrome://mozlab/content/mozunit/ui.xul', 'mozunit', 'chrome');"/>
+    <command id="mozrepl-command-toggle"
+             label="Start Repl"
+             accesskey="R"
+             oncommand="mozrepl.toggleServer(this);"/>
   </commandset>
 
   <menupopup id="taskPopup">
-    <menu label="MozUnit" position="1" accesskey="U">
+    <menu label="MozRepl" position="1" accesskey="R">
       <menupopup>
-        <menuitem command="mozunit-command-open"/>
+        <menuitem command="mozrepl-command-toggle"/>
       </menupopup>
     </menu>
   </menupopup>
