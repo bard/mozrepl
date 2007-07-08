@@ -2,8 +2,9 @@ var loader = Components
     .classes['@mozilla.org/moz/jssubscript-loader;1']
     .getService(Components.interfaces.mozIJSSubScriptLoader);
 var module = new ModuleManager(['chrome://mozlab/content']);
-var mozlab = module.require('package', '../package');
-var util = module.require('package', 'util');
+var mozlab = {
+    mozunit: module.require('package', 'package')
+};
 
 /* UTILITIES */
 
@@ -68,7 +69,7 @@ function pickFile(mode) {
         .createInstance(nsIFilePicker);
     picker.defaultExtension = 'js';
 
-    picker.init(window, null, nsIFilePicker[mode]);
+    picker.init(window, 'New test file', nsIFilePicker[mode]);
     picker.appendFilter('Javascript Files', '*.js');
     picker.appendFilters(nsIFilePicker.filterAll);
     var result = picker.show();
@@ -80,11 +81,47 @@ function pickFile(mode) {
 function pickFileUrl(mode) {
     var file = pickFile(mode);
     if(file)
-        return util.fileToFileUrl(file);
+        return fileToFileUrl(file);
 }
 
 function barOf(progressmeter) {
     return document.getAnonymousNodes(progressmeter)[0];
+}
+
+function fileToFileUrl(file) {
+    return Components
+        .classes['@mozilla.org/network/io-service;1']
+        .getService(Components.interfaces.nsIIOService)
+        .getProtocolHandler('file')
+        .QueryInterface(Components.interfaces.nsIFileProtocolHandler)
+        .getURLSpecFromFile(file); 
+}
+
+function fileUrlToPath(fileUrl) {
+    return Components
+        .classes['@mozilla.org/network/io-service;1'] 
+        .getService(Components.interfaces.nsIIOService)
+        .getProtocolHandler('file')
+        .QueryInterface(Components.interfaces.nsIFileProtocolHandler)
+        .getFileFromURLSpec(fileUrl)
+        .path;
+}
+
+function removeChildrenOf(element) {
+    while(element.lastChild)
+        element.removeChild(element.lastChild);
+}
+
+function padLeft(thing, width, padder) {
+    var paddedString = '';
+    var string = thing.toString();
+    return (string.length < width) ?
+        (function() {
+            for(var i=0, l=width-string.length; i<l; i++)
+                paddedString += padder;
+            return paddedString + string;
+        })() :
+        string;
 }
 
 /* DOMAIN */
@@ -127,7 +164,7 @@ function newTestCase() {
     var url = pickFileUrl('save');
     if(url) {
          _('file').value = url;
-         writeTemplate(util.fileUrlToPath(url));
+         writeTemplate(fileUrlToPath(url));
          openInEditor(url, 4, 24);
     }
 }
@@ -205,8 +242,8 @@ function hideSource() {
 function reset() {
     _('prerun-report', 'error').hidden = true;
     _('prerun-report', 'stack-trace').hidden = true;
-    util.removeChildrenOf(_('prerun-report', 'stack-trace'));
-    util.removeChildrenOf(_('testcase-reports'))
+    removeChildrenOf(_('prerun-report', 'stack-trace'));
+    removeChildrenOf(_('testcase-reports'))
     hideSource();
 }
 
@@ -299,7 +336,7 @@ function openInEditor(fileUrl, lineNumber, columnNumber, commandLine) {
                 replace('%l', lineNumber).
                 replace('%c', columnNumber).
                 replace('%u', fileUrl).
-                replace('%f', util.fileUrlToPath(fileUrl));
+                replace('%f', fileUrlToPath(fileUrl));
         });
 
     executable.initWithPath(argv.shift());
@@ -324,7 +361,7 @@ function showSource(traceLine) {
             stylizeSource(
                 _('source-viewer', 'source').contentDocument,
                 function(sourceDoc, number, content) {
-                    content = util.padLeft(number, 3, 0) + ' ' + content + '\n';
+                    content = padLeft(number, 3, 0) + ' ' + content + '\n';
 
                     if(number == lineNumber) {
                         var currentLine = sourceDoc.createElementNS('http://www.w3.org/1999/xhtml', 'div');
