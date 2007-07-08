@@ -1,7 +1,7 @@
 function helpUrlFor(thing) {
     function xulPlanetXpcomClassUrl(classID) {
         return 'http://xulplanet.com/references/xpcomref/comps/c_' +
-            classID.replace(/^@mozilla.org\//, '').replace(/[;\?\/=]/g, '') + '.html';
+            classID.replace(/^@mozilla.org\//, '').replace(/[;\?\/=\-]/g, '') + '.html';
     }
     function xulPlanetXulElementUrl(element) {
         return 'http://xulplanet.com/references/elemref/ref_' +
