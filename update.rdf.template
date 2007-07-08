@@ -1,0 +1,59 @@
+<?xml version='1.0'?>
+<r:RDF xmlns:r='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns='http://www.mozilla.org/2004/em-rdf#'>
+  <r:Description r:about='urn:mozilla:extension:mozlab@hyperstruct.net'>
+    <updates>
+      <r:Seq>
+        <r:li>
+          <r:Description>
+            <version/>
+
+            <!-- firefox -->
+
+            <targetApplication>
+              <r:Description>
+                <id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
+                <minVersion>1.5</minVersion>
+                <maxVersion>3.0.0.*</maxVersion>
+                <updateLink>http://repo.hyperstruct.net/mozlab/mozlab-current.xpi</updateLink>
+              </r:Description>
+            </targetApplication>
+
+            <!-- flock -->
+
+            <targetApplication>
+              <Description>
+                <id>{a463f10c-3994-11da-9945-000d60ca027b}</id>
+                <maxVersion>1.0</maxVersion>
+                <minVersion>0.4</minVersion>
+                <updateLink>http://repo.hyperstruct.net/mozlab/mozlab-current.xpi</updateLink>
+              </Description>
+            </targetApplication>
+
+            <!-- thunderbird -->
+
+            <targetApplication>
+              <Description>
+                <id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</id>
+                <minVersion>1.5</minVersion>
+                <maxVersion>2.0.0.*</maxVersion>
+                <updateLink>http://repo.hyperstruct.net/mozlab/mozlab-current.xpi</updateLink>
+              </Description>
+            </targetApplication>
+
+            <!-- songbird -->
+            
+            <targetApplication>
+              <Description>
+                <id>songbird@songbirdnest.com</id>
+                <minVersion>0.2</minVersion>
+                <maxVersion>1.0+</maxVersion>
+              </Description>
+            </targetApplication>
+          </r:Description>
+        </r:li>
+      </r:Seq>
+    </updates>
+    <version/>
+    <updateLink>http://repo.hyperstruct.net/mozlab/mozlab-current.xpi</updateLink>
+  </r:Description>
+</r:RDF>
