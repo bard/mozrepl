@@ -104,7 +104,6 @@ started as needed)."
 
 (define-derived-mode inferior-moz-mode comint-mode "Inf-Mozilla"
   "Major mode for interacting with a Mozilla browser."
-  :syntax-table js-mode-syntax-table
   (setq comint-input-sender 'inferior-moz-input-sender)
   (define-key inferior-moz-mode-map "\C-cc" (lambda () (interactive) (insert moz-repl-name ".")))
   (add-hook 'comint-output-filter-functions 'inferior-moz-track-repl-name nil t))
