@@ -686,6 +686,12 @@ Key bindings:
   (set (make-local-variable 'fill-paragraph-function) 
        'javascript-fill-paragraph)
 
+  ;; Make c-mark-function work
+  (setq c-nonsymbol-token-regexp "!=\\|%=\\|&[&=]\\|\\*[/=]\\|\\+[+=]\\|-[=-]\\|/[*/=]\\|<\\(?:<=\\|[<=]\\)\\|==\\|>\\(?:>\\(?:>=\\|[=>]\\)\\|[=>]\\)\\|\\^=\\||[=|]\\|[]!%&(-,./:-?[{-~^-]"
+        c-stmt-delim-chars "^;{}?:"
+        c-syntactic-ws-end "[ \n	\f/]"
+        c-syntactic-eol "\\(\\s \\|/\\*\\([^*\n]\\|\\*[^/\n]\\)*\\*/\\)*\\(\\(/\\*\\([^*\n]\\|\\*[^/\n]\\)*\\|\\\\\\)?$\\|//\\)")
+
   ;; Imenu
   (setq imenu-case-fold-search nil)
   (set (make-local-variable 'imenu-generic-expression)
