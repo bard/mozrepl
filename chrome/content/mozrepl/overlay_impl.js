@@ -40,6 +40,18 @@ var server;
 
 function initOverlay() {
     server = Cc['@hyperstruct.net/mozlab/mozrepl;1'].getService(Ci.nsIMozRepl);
+
+    upgradeCheck(
+        'mozlab@hyperstruct.net',
+        'extensions.mozlab.version', {
+            onFirstInstall: function() {
+                openURL('http://dev.hyperstruct.net/mozlab/wiki/News');
+            },
+            
+            onUpgrade: function() {
+                openURL('http://dev.hyperstruct.net/mozlab/wiki/News');
+            }
+        });
 }
 
 function toggleServer(sourceCommand) {
@@ -85,3 +97,34 @@ function openURL(url) {
                      .newURI(url, null, null));
 }
 
+function upgradeCheck(id, versionPref, actions) {
+    const pref = Cc['@mozilla.org/preferences-service;1']
+    .getService(Ci.nsIPrefService);
+
+    function getExtensionVersion(id) {
+        return Cc['@mozilla.org/extensions/manager;1']
+        .getService(Ci.nsIExtensionManager)
+        .getItemForID(id).version;
+    }
+
+    function compareVersions(a, b) {
+        return Cc['@mozilla.org/xpcom/version-comparator;1']
+        .getService(Ci.nsIVersionComparator)
+        .compare(curVersion, prevVersion);
+    }
+
+    var curVersion = getExtensionVersion(id);
+    if(curVersion) {
+        var prevVersion = pref.getCharPref(versionPref);
+        if(prevVersion == '') {
+            if(typeof(actions.onFirstInstall) == 'function')
+                actions.onFirstInstall();
+        } else {
+            if(compareVersions(curVersion, prevVersion) > 0)
+                if(typeof(actions.onUpgrade) == 'function')
+                    actions.onUpgrade();
+        }
+
+        pref.setCharPref(versionPref, curVersion);
+    }
+}
