@@ -18,6 +18,10 @@
   Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
 */
 
+
+// GLOBAL DEFINITIONS
+// ----------------------------------------------------------------------
+
 const Ci = Components.interfaces;
 const Cc = Components.classes;
 const pref = Cc['@mozilla.org/preferences-service;1']
@@ -25,37 +29,31 @@ const pref = Cc['@mozilla.org/preferences-service;1']
     .getBranch('extensions.mozlab.mozrepl.');
 
 
-function initOverlay() {
-    this._server = Components
-        .classes['@hyperstruct.net/mozlab/mozrepl;1']
-        .getService(Ci.nsIMozRepl);
+// GLOBAL STATE
+// ----------------------------------------------------------------------
 
-    var server = this._server;
-    window.addEventListener(
-        'load', function(event) {
-            document
-                .getElementById('mozrepl-command-toggle')
-                .setAttribute('label',
-                              server.isActive() ? 'Stop Repl' : 'Start Repl');
-        }, false);
+var server;
+
+
+// INITIALIZATION
+// ----------------------------------------------------------------------
+
+function initOverlay() {
+    server = Cc['@hyperstruct.net/mozlab/mozrepl;1'].getService(Ci.nsIMozRepl);
 }
 
 function toggleServer(sourceCommand) {
     var port = pref.getIntPref('port');
     
-    if(this._server.isActive())
-        this._server.stop();        
+    if(server.isActive())
+        server.stop();
     else
-        this._server.start(port);
-}
-
-function togglePref(prefName) {
-    pref.setBoolPref(prefName, !pref.getBoolPref(prefName));
+        server.start(port);
 }
 
 function updateMenu(xulPopup) {
     document.getElementById('mozrepl-command-toggle')
-        .setAttribute('label', this._server.isActive() ? 'Stop' : 'Start');
+        .setAttribute('label', server.isActive() ? 'Stop' : 'Start');
     document.getElementById('mozrepl-command-listen-external')
         .setAttribute('checked', !pref.getBoolPref('loopbackOnly'));
     document.getElementById('mozrepl-command-autostart')
@@ -68,34 +66,22 @@ function changePort() {
         pref.setIntPref('port', value);
 }    
 
-function openURL(url) {
-    function hostAppIsBrowser() {
-        return (Cc['@mozilla.org/xre/app-info;1']
-                .getService(Ci.nsIXULAppInfo)
-                .ID == '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}');
-    }
+function openHelp() {
+    openURL('http://dev.hyperstruct.net/mozlab/wiki/MozRepl');
+}
 
-    function openExternally(url) {
+function openURL(url) {
+    if(typeof(getBrowser().addTab) == 'function')
+        // XXX bard: apparently needed otherwise it won't have any
+        // effect when called from an onload handler
+        setTimeout(function() {
+            getBrowser().selectedTab = getBrowser().addTab(url)
+        }, 500);
+    else
         Cc['@mozilla.org/uriloader/external-protocol-service;1']
             .getService(Ci.nsIExternalProtocolService)
             .loadUrl(Cc['@mozilla.org/network/io-service;1']
                      .getService(Ci.nsIIOService)
                      .newURI(url, null, null));
-    }
-
-    function openInternally(url, newTab) {
-        if(newTab)
-            getBrowser().selectedTab = getBrowser().addTab(url);
-        else
-            getBrowser().loadURI(url);
-    }
-
-    if(hostAppIsBrowser())
-        openInternally(url, true);
-    else
-        openExternally(url);
 }
 
-function openHelp() {
-    openURL('http://dev.hyperstruct.net/mozlab/wiki/MozRepl');
-}
