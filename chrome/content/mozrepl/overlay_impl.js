@@ -45,11 +45,11 @@ function initOverlay() {
         'mozlab@hyperstruct.net',
         'extensions.mozlab.version', {
             onFirstInstall: function() {
-                openURL('http://dev.hyperstruct.net/mozlab/wiki/News');
+                openURL('http://hyperstruct.net/projects/mozlab/news');
             },
             
             onUpgrade: function() {
-                openURL('http://dev.hyperstruct.net/mozlab/wiki/News');
+                openURL('http://hyperstruct.net/projects/mozlab/news');
             }
         });
 }
