@@ -90,10 +90,10 @@ function onSocketAccepted(serv, transport) {
         var outstream = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING , 0, 0);
 
         var stream = transport.openInputStream(0, 0, 0);
-        var instream = Cc['@mozilla.org/scriptableinputstream;1']
-            .createInstance(Ci.nsIScriptableInputStream);
-
-        instream.init(stream);
+        var instream = Cc['@mozilla.org/intl/converter-input-stream;1']
+            .createInstance(Ci.nsIConverterInputStream);
+        instream.init(stream, 'UTF-8', 1024,
+                      Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
     } catch(e) {
         log('MozRepl: Error: ' + e);
     }
@@ -123,7 +123,9 @@ function onSocketAccepted(serv, transport) {
                 session.quit();
             },
         onDataAvailable: function(request, context, inputStream, offset, count) {
-                session.receive(instream.read(count));
+            var str = {}
+            instream.readString(count, str)
+            session.receive(str.value);
             }
         }, null);  
 
