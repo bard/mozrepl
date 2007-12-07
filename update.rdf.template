@@ -14,7 +14,8 @@
                 <id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
                 <minVersion>1.5</minVersion>
                 <maxVersion>3.0.0.*</maxVersion>
-                <updateLink>http://repo.hyperstruct.net/mozlab/mozlab-current.xpi</updateLink>
+                <updateLink/>
+                <updateHash/>
               </r:Description>
             </targetApplication>
 
@@ -25,7 +26,8 @@
                 <id>{a463f10c-3994-11da-9945-000d60ca027b}</id>
                 <maxVersion>1.0</maxVersion>
                 <minVersion>0.4</minVersion>
-                <updateLink>http://repo.hyperstruct.net/mozlab/mozlab-current.xpi</updateLink>
+                <updateLink/>
+                <updateHash/>
               </Description>
             </targetApplication>
 
@@ -36,7 +38,8 @@
                 <id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</id>
                 <minVersion>1.5</minVersion>
                 <maxVersion>2.0.0.*</maxVersion>
-                <updateLink>http://repo.hyperstruct.net/mozlab/mozlab-current.xpi</updateLink>
+                <updateLink/>
+                <updateHash/>
               </Description>
             </targetApplication>
 
@@ -47,6 +50,20 @@
                 <id>songbird@songbirdnest.com</id>
                 <minVersion>0.2</minVersion>
                 <maxVersion>1.0+</maxVersion>
+                <updateLink/>
+                <updateHash/>
+              </Description>
+            </targetApplication>
+            
+            <!-- toolkit -->
+
+            <targetApplication>
+              <Description>
+                <id>toolkit@mozilla.org</id>
+                <minVersion>1.8</minVersion>
+                <maxVersion>1.9.0.*</maxVersion>
+                <updateLink/>
+                <updateHash/>
               </Description>
             </targetApplication>
           </r:Description>
@@ -54,6 +71,7 @@
       </r:Seq>
     </updates>
     <version/>
-    <updateLink>http://repo.hyperstruct.net/mozlab/mozlab-current.xpi</updateLink>
+    <updateLink/>
+    <updateHash/>
   </r:Description>
 </r:RDF>

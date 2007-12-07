@@ -47,11 +47,22 @@
         <em:maxVersion>1.0+</em:maxVersion>
       </Description>
     </em:targetApplication>
+
+    <!-- toolkit -->
+
+    <em:targetApplication>
+      <Description>
+        <em:id>toolkit@mozilla.org</em:id>
+        <em:minVersion>1.8</em:minVersion>
+        <em:maxVersion>1.9.0.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
    
     <em:name>MozLab</em:name>
-    <em:description>Collection of tools for Mozilla developers</em:description>
+    <em:description>Interactive console and TDD-framework for Mozilla</em:description>
     <em:creator>Massimiliano Mirra</em:creator>
     <em:homepageURL>http://hyperstruct.net/projects/mozlab</em:homepageURL>
     <em:updateURL>http://repo.hyperstruct.net/mozlab/update.rdf</em:updateURL>
+    <em:updateKey>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDEIAFfynLWE9Kh6D7bbe0yM3gHyZKikhDkVK1n/3E8RngyNDAnjVb4W7M6XRpJVWjNLObB+CA+izRCUwvWOWzdIA1409od1gN9cjWU6c6X68AX/aGW7/LH30NCGcQcmw/MUtlPUQgI1agOJIIqCVRZh9npef/Vdtr3AxjsKtK4QwIDAQAB</em:updateKey>
   </Description>      
 </RDF>
