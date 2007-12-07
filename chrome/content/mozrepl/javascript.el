@@ -244,7 +244,8 @@ list."
                 "private" "protected" "public" "return" "static" 
                 "super" "switch" "synchronized" "this" "throw" 
                 "throws" "transient" "try" "typeof" "var" "void" 
-                "volatile" "while" "with") 'words)
+                "volatile" "while" "with"
+                "let") 'words)
   "Regular expression matching any JavaScript keyword.")
 
 (defconst js-basic-type-re
@@ -333,7 +334,7 @@ list."
 
 (defconst js-possibly-braceless-keyword-re
   (regexp-opt
-   '("catch" "do" "else" "finally" "for" "if" "try" "while" "with")
+   '("catch" "do" "else" "finally" "for" "if" "try" "while" "with" "let")
    'words)
   "Regular expression matching keywords that are optionally
   followed by an opening brace.")
