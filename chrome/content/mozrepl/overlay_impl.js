@@ -54,6 +54,10 @@ function initOverlay() {
         });
 }
 
+function togglePref(prefName) {
+    pref.setBoolPref(prefName, !pref.getBoolPref(prefName));
+}
+
 function toggleServer(sourceCommand) {
     var port = pref.getIntPref('port');
     
