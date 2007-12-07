@@ -27,7 +27,7 @@ const Handler = {
         if(uri || cmdLine.handleFlag('repl', false))
             Cc['@hyperstruct.net/mozlab/mozrepl;1']
             .getService(Ci.nsIMozRepl)
-            .start(4242);
+            .start(uri ? parseInt(uri) : 4242);
     },
 
     helpInfo: '-repl              Start REPL.\n',
