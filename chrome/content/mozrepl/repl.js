@@ -469,6 +469,7 @@ function receive(input) {
     function evaluate(code) {
         var result = _this.load('data:application/x-javascript,' +
                                 encodeURIComponent(code));
+        _this.$$ = result;
         if(result != undefined)
             _this.print(represent(result));
         _this._prompt();
