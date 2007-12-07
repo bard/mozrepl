@@ -146,6 +146,42 @@ via popenv() and restores them, overwriting the current ones.';
 // OUTPUT
 // ----------------------------------------------------------------------
 
+function represent(thing) {
+    var represent = arguments.callee;
+    var s;
+    switch(typeof(thing)) {
+    case 'string':
+        s = '"' + thing + '"';
+        break;
+    case 'number':
+        s = thing;
+        break;
+    case 'object':
+        var names = [];
+        for(var name in thing)
+            names.push(name);
+
+        s = thing;
+        if(names.length > 0) {
+            s += ' — {';
+            s += names.slice(0, 7).map(function(n) {
+                return n + ': ' + (typeof(thing[n]) == 'object' ?
+                                   '{…}' : represent(thing[n]));
+            }).join(', ');
+            if(names.length > 7)
+                s += ', ...'
+            s += '}';
+        }
+        break;
+    case 'function':
+        s = 'function() {…}';
+        break;
+    default:
+        s = thing;
+    }
+    return s;
+}
+
 function print(data, appendNewline) {
     var string = data == undefined ?
         '\n' :
@@ -434,7 +470,7 @@ function receive(input) {
         var result = _this.load('data:application/x-javascript,' +
                                 encodeURIComponent(code));
         if(result != undefined)
-            _this.print(result);
+            _this.print(represent(result));
         _this._prompt();
     }
 
