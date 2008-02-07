@@ -43,7 +43,7 @@
     <em:targetApplication>
       <Description>
         <em:id>songbird@songbirdnest.com</em:id>
-        <em:minVersion>0.2</em:minVersion>
+        <em:minVersion>0.4</em:minVersion>
         <em:maxVersion>1.0+</em:maxVersion>
       </Description>
     </em:targetApplication>

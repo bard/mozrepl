@@ -1,9 +1,12 @@
+# todo: map to mozrepl and mozunit as a transition to separate packages
+
 content mozlab chrome/content/
 skin mozlab classic/1.0 chrome/skin/classic/
 
 overlay chrome://browser/content/browser.xul         chrome://mozlab/content/mozrepl/overlay_browser.xul
 overlay chrome://messenger/content/messenger.xul     chrome://mozlab/content/mozrepl/overlay_mail.xul
-overlay chrome://rubberducky/content/xul/mainwin.xul chrome://mozlab/content/mozrepl/overlay_songbird.xul
+overlay chrome://songbird/content/xul/menuOverlay.xul chrome://mozlab/content/mozrepl/overlay_songbird.xul
+
 
 overlay chrome://browser/content/browser.xul         chrome://mozlab/content/mozunit/overlay_browser.xul
 overlay chrome://messenger/content/messenger.xul     chrome://mozlab/content/mozunit/overlay_mail.xul
