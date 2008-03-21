@@ -53,6 +53,17 @@ function init(context) {
     this._contextHistory = [];
     this._inputBuffer = '';
 
+    this._eval_buffer = Cc['@mozilla.org/file/directory_service;1']
+        .getService(Ci.nsIProperties)
+        .get('ProfD', Ci.nsIFile);
+    this._eval_buffer.append('mozrepl.tmp.js');
+    
+    this._eval_buffer_url = Cc['@mozilla.org/network/io-service;1']
+        .getService(Ci.nsIIOService)
+        .getProtocolHandler('file')
+        .QueryInterface(Ci.nsIFileProtocolHandler)
+        .getURLSpecFromFile(this._eval_buffer);
+    
     this._inputSeparators = {
         line:      /\n/m,
         multiline: /\n--end-remote-input\n/m,
@@ -467,8 +478,18 @@ function receive(input) {
     
     var _this = this;
     function evaluate(code) {
-        var result = _this.load('data:application/x-javascript,' +
-                                encodeURIComponent(code));
+        var fos = Cc['@mozilla.org/network/file-output-stream;1']
+            .createInstance(Ci.nsIFileOutputStream);
+        fos.init(_this._eval_buffer, 0x02 | 0x08 | 0x20, 0600, 0); 
+
+        var os = Cc['@mozilla.org/intl/converter-output-stream;1']
+            .createInstance(Ci.nsIConverterOutputStream);
+        os.init(fos, 'UTF-8', 0, 0x0000);
+        os.writeString(code);
+        os.close();
+
+        var result = _this.load(_this._eval_buffer_url);
+
         _this.$$ = result;
         if(result != undefined)
             _this.print(represent(result));
