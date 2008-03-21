@@ -176,8 +176,14 @@ function represent(thing) {
         if(names.length > 0) {
             s += ' — {';
             s += names.slice(0, 7).map(function(n) {
-                return n + ': ' + (typeof(thing[n]) == 'object' ?
-                                   '{…}' : represent(thing[n]));
+                var repr = n + ': ';
+                try {
+                    repr += (typeof(thing[n]) == 'object' ?
+                             '{…}' : represent(thing[n]));
+                } catch(e) {
+                    repr += '[Exception!]'
+                }
+                return repr;
             }).join(', ');
             if(names.length > 7)
                 s += ', ...'
