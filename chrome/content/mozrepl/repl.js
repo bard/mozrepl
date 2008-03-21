@@ -128,8 +128,6 @@ function pushenv() {
         name = arguments[i];
         this._savedEnv[name] = this._env[name];
     }
-    
-    return this._env[name];
 }
 pushenv.doc =
     'Takes one or more names of values previously stored \
@@ -146,8 +144,6 @@ function popenv() {
             delete this._savedEnv[name];
         }        
     }
-
-    return this._env[name];
 }
 popenv.doc =
     'Takes one or more names of values previously pushed \
