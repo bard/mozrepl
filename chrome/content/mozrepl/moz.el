@@ -47,6 +47,10 @@ started as needed)."
 
 (defvar moz-input-separator "\n--end-remote-input\n")
 
+(defvar moz-repl-host "localhost")
+
+(defvar moz-repl-port 4242)
+
 (defun moz-temporary-file ()
   (if (and moz-temporary-file
            (file-readable-p moz-temporary-file))
@@ -126,9 +130,12 @@ newline, then send it all together.  This prevents newline to be
 interpreted on its own."
   (comint-send-string proc (concat string "\n")))
     
-(defun inferior-moz-switch-to-mozilla ()
+(defun inferior-moz-switch-to-mozilla (arg)
   "Show the inferior mozilla buffer.  Start the process if needed."
-  (interactive)
+  (interactive "P")
+  (when arg
+    (setq moz-repl-host (read-string "Host: " "localhost"))
+    (setq moz-repl-port (read-number "Port: " 4242)))
   (pop-to-buffer (process-buffer (inferior-moz-process)))
   (goto-char (process-mark (inferior-moz-process))))
 
@@ -146,7 +153,7 @@ It runs the hook `inferior-moz-hook' after starting the process
 and setting up the inferior-mozilla buffer."
   (interactive)
   (setq inferior-moz-buffer
-        (apply 'make-comint "Moz" '("localhost" . 4242) nil nil))
+        (apply 'make-comint "Moz" (cons moz-repl-host moz-repl-port) nil nil))
   (sleep-for 0 100)
   (with-current-buffer inferior-moz-buffer
     (inferior-moz-mode)
