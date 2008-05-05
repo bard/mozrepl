@@ -58,10 +58,10 @@ function clone(blueprintName) {
         .cloneNode(true);
 }
 
-function pickFile(mode) {
+function pickFile(mode, startDir) {
     mode = 'mode' + (mode ? 
                      mode[0].toUpperCase() + mode.substr(1) :
-                     'open');
+                     'Open');
     const nsIFilePicker = Components.interfaces.nsIFilePicker;
     
     var picker = Components
@@ -72,14 +72,16 @@ function pickFile(mode) {
     picker.init(window, 'New test file', nsIFilePicker[mode]);
     picker.appendFilter('Javascript Files', '*.js');
     picker.appendFilters(nsIFilePicker.filterAll);
+    if(startDir)
+	picker.displayDirectory = startDir;
     var result = picker.show();
     if(result == nsIFilePicker.returnOK ||
        result == nsIFilePicker.returnReplace)
         return picker.file;
 }
 
-function pickFileUrl(mode) {
-    var file = pickFile(mode);
+function pickFileUrl(mode, startDir) {
+    var file = pickFile(mode, startDir);
     if(file)
         return fileToFileUrl(file);
 }
@@ -97,14 +99,17 @@ function fileToFileUrl(file) {
         .getURLSpecFromFile(file); 
 }
 
-function fileUrlToPath(fileUrl) {
+function fileUrlToFile(fileUrl) {
     return Components
-        .classes['@mozilla.org/network/io-service;1'] 
-        .getService(Components.interfaces.nsIIOService)
-        .getProtocolHandler('file')
-        .QueryInterface(Components.interfaces.nsIFileProtocolHandler)
-        .getFileFromURLSpec(fileUrl)
-        .path;
+	.classes['@mozilla.org/network/io-service;1'] 
+	.getService(Components.interfaces.nsIIOService)
+	.getProtocolHandler('file')
+	.QueryInterface(Components.interfaces.nsIFileProtocolHandler)
+	.getFileFromURLSpec(fileUrl);
+}
+
+function fileUrlToPath(fileUrl) {
+    return fileUrlToFile().path;
 }
 
 function removeChildrenOf(element) {
@@ -170,9 +175,23 @@ function newTestCase() {
 }
 
 function openTestCase() {
-    var url = pickFileUrl();
-    if(url)
+    var pref = Components.classes["@mozilla.org/preferences-service;1"]
+        .getService(Components.interfaces.nsIPrefBranch);
+    try {
+	var startDir = pref
+	    .getComplexValue("extensions.mozlab.mozunit.lastdir", 
+			     Components.interfaces.nsILocalFile, {});
+    } catch(e) {
+	var startDir = null;
+    }
+    var url = pickFileUrl('', startDir);
+    if(url) {
         _('file').value = url;
+	var file = fileUrlToFile(url);
+	pref.setComplexValue("extensions.mozlab.mozunit.lastdir",
+			     Components.interfaces.nsILocalFile,
+			     file.parent);
+    }
 }
 
 function getTestCaseReport(title) {
@@ -222,12 +241,6 @@ function displayStackTrace(trace, listbox) {
         listbox.appendItem(line).setAttribute('crop', 'center');
 }
 
-
-function pickTestFile() {
-    var url = pickFileUrl();
-    if(url)
-        _('file').value = url;
-}
 
 function toggleContent() {
     _('content').collapsed = !_('content').collapsed;
