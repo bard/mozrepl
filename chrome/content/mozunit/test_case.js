@@ -132,8 +132,12 @@ function setTests(hash) {
  */
 
 function run() {
-    this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1'](
-        this._tests, this._setUp, this._tearDown, this._reportHandler);
+    this[this._runStrategy == 'async' ? '_asyncRun1' : '_syncRun1']
+	(
+	 this._tests,
+	 this._setUp != null ? this._setUp : null,
+	 this._tearDown != null ? this._tearDown : null,
+	 this._reportHandler);
 }
 
 /**

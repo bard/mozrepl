@@ -30,6 +30,7 @@ function x() {
         default:
             return null;
         }
+	return null;
     }
 
     return document.evaluate(
@@ -49,8 +50,7 @@ function _(idOrElement, subCriteria) {
                          '"' + subCriteria[attributeName] + '"]');
         } else
             return x(element, './/*[@role="' + subCriteria + '"]');
-    else
-        return element;
+    return element;
 }
 
 function clone(blueprintName) {
@@ -78,12 +78,14 @@ function pickFile(mode, startDir) {
     if(result == nsIFilePicker.returnOK ||
        result == nsIFilePicker.returnReplace)
         return picker.file;
+    return null;
 }
 
 function pickFileUrl(mode, startDir) {
     var file = pickFile(mode, startDir);
     if(file)
         return fileToFileUrl(file);
+    return null;
 }
 
 function barOf(progressmeter) {
@@ -197,7 +199,7 @@ function openTestCase() {
 function getTestCaseReport(title) {
     return _('testcase-reports', {title: title}) ||
         (function() {
-            wTestCaseReport = clone('testcase-report');
+            var wTestCaseReport = clone('testcase-report');
             wTestCaseReport.setAttribute('title', title);
             _(wTestCaseReport, 'title').value = title;
             barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-fine');
@@ -207,7 +209,7 @@ function getTestCaseReport(title) {
 }
 
 function testReportHandler(report) {
-    wTestCaseReport = getTestCaseReport(report.testOwner.title);
+    var wTestCaseReport = getTestCaseReport(report.testOwner.title);
     _(wTestCaseReport, 'bar').setAttribute(
         'value', report.testIndex / report.testCount * 100 + '%');
     _(wTestCaseReport, 'total-counter').value = report.testCount;
