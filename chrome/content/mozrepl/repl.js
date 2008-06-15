@@ -107,7 +107,7 @@ function init(context) {
 
     this.print('Current input mode is: ' + this._env['inputMode']);
     this.print('');
-    this.print('If you get stuck at the "...>" prompt, enter a colon (;) at the beginning of the line to force evaluation.');
+    this.print('If you get stuck at the "...>" prompt, enter a semicolon (;) at the beginning of the line to force evaluation.');
     this.print('');
     
     if(this._name != 'repl') {
