@@ -359,7 +359,7 @@ function inspect(obj, maxDepth, name, curDepth) {
             if(typeof(obj[prop]) == "object") {
                 if(obj.length != undefined)
                     this.print(name + "." + prop + "=[probably array, length "
-                               + obj[prop].length + "]");
+                               + obj.length + "]");
                 else
                     this.print(name + "." + prop + "=[" + typeof(obj[prop]) + "]");
                     
