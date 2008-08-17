@@ -126,10 +126,6 @@ function pickFileUrl(mode, startDir) {
     return null;
 }
 
-function barOf(progressmeter) {
-    return document.getAnonymousNodes(progressmeter)[0];
-}
-
 function fileToFileUrl(file) {
     return Components
         .classes['@mozilla.org/network/io-service;1']
@@ -149,7 +145,7 @@ function fileUrlToFile(fileUrl) {
 }
 
 function fileUrlToPath(fileUrl) {
-    return fileUrlToFile().path;
+    return fileUrlToFile(fileUrl).path;
 }
 
 function removeChildrenOf(element) {
@@ -240,7 +236,7 @@ function getTestCaseReport(title) {
             var wTestCaseReport = clone('testcase-report');
             wTestCaseReport.setAttribute('title', title);
             _(wTestCaseReport, 'title').value = title;
-            barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-fine');
+            _(wTestCaseReport, 'bar').setAttribute('class', 'testcase-fine');
             _('testcase-reports').appendChild(wTestCaseReport);
             return wTestCaseReport;
         })();
@@ -258,9 +254,10 @@ function testReportHandler(report) {
         return;        
     }
 
-    barOf(_(wTestCaseReport, 'bar')).setAttribute('class', 'testcase-problems');
+    _(wTestCaseReport, 'bar').setAttribute('class', 'testcase-problems');
 
     var wTestReport = clone('test-report');
+    _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
     _(wTestReport, 'result').value = report.result.toUpperCase();
     _(wTestReport, 'icon').setAttribute('class', 'test-' + report.result);
     _(wTestReport, 'description').value = report.testDescription;
@@ -272,8 +269,6 @@ function testReportHandler(report) {
             _(wTestReport, 'stack-trace').hidden = false;
         }
     }
-
-    _(wTestCaseReport, 'test-reports').appendChild(wTestReport);
 }
 
 function displayStackTrace(trace, listbox) {

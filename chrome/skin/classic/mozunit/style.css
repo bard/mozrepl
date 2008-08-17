@@ -13,13 +13,17 @@
 {
   }
 
-.testcase-fine
+progressmeter.testcase-fine bar,
+progressmeter.testcase-fine .progress-bar
 {
+  -moz-appearance: none !important;
   background-color: green;
   }
 
-.testcase-problems
+progressmeter.testcase-problems bar,
+progressmeter.testcase-problems .progress-bar
 {
+  -moz-appearance: none !important;
   background-color: red;
   }
 
