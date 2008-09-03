@@ -4,7 +4,7 @@
 const CLASS_ID = Components.ID('{57f4284b-1f9b-4990-8525-9ed5cbb23e01}');
 const CLASS_NAME = 'MozRepl Server XPCOM';
 const CONTRACT_ID = '@hyperstruct.net/mozlab/mozrepl;1';
-const SOURCE = 'chrome://mozlab/content/mozrepl/server.js';
+const SOURCE = 'chrome://mozrepl/content/server.js';
 const INTERFACE = Components.interfaces.nsIMozRepl;
 
 /* ---------------------------------------------------------------------- */

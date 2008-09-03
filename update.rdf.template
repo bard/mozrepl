@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
 <r:RDF xmlns:r='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns='http://www.mozilla.org/2004/em-rdf#'>
-  <r:Description r:about='urn:mozilla:extension:mozlab@hyperstruct.net'>
+  <r:Description r:about='urn:mozilla:extension:mozrepl@hyperstruct.net'>
     <updates>
       <r:Seq>
         <r:li>
@@ -44,7 +44,7 @@
             </targetApplication>
 
             <!-- songbird -->
-            
+
             <targetApplication>
               <Description>
                 <id>songbird@songbirdnest.com</id>
@@ -54,7 +54,7 @@
                 <updateHash/>
               </Description>
             </targetApplication>
-            
+
             <!-- toolkit -->
 
             <targetApplication>
