@@ -257,7 +257,10 @@ or optionally into an arbitrary context passed as a second parameter.';
 // CONTEXT NAVIGATION
 // ----------------------------------------------------------------------
 
-function enter(context) {
+function enter(context, wrapped) {
+    if (wrapped != true && context.wrappedJSObject != undefined) 
+      context = context.wrappedJSObject;
+
     this._contextHistory.push(this._workContext);
 
     if(isTopLevel(context))
