@@ -43,9 +43,12 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
     .getService(Ci.mozIJSSubScriptLoader);
-const pref = Cc['@mozilla.org/preferences-service;1']
-    .getService(Ci.nsIPrefService)
-    .getBranch('extensions.mozrepl.');
+const srvPref = Cc['@mozilla.org/preferences-service;1']
+    .getService(Ci.nsIPrefService);
+const srvObserver = Cc['@mozilla.org/observer-service;1']
+    .getService(Ci.nsIObserverService);
+const pref = srvPref.getBranch('extensions.mozlab.mozrepl.');
+
 
 function REPL() {};
 loader.loadSubScript('chrome://mozrepl/content/repl.js', REPL.prototype);
@@ -84,11 +87,6 @@ var sessions = {
     }
 };
 
-
-function init() {
-    if(pref.getBoolPref('autoStart'))
-        start(pref.getIntPref('port'));
-}
 
 function start(port) {
     try {
@@ -165,6 +163,29 @@ function isActive() {
         return true;
 }
 
+function observe(subject, topic, data) {
+    switch(topic) {
+    case 'app-startup':
+        srvObserver.addObserver(this, 'network:offline-status-changed', false);
+
+        if(srvPref.getBranch('network.').getBoolPref('online') &&
+           pref.getBoolPref('autoStart'))
+            this.start(pref.getIntPref('port'));
+        break;
+    case 'network:offline-status-changed':
+        switch(data) {
+        case 'online':
+            if(pref.getBoolPref('autoStart'))
+                this.start(pref.getIntPref('port'));
+            break;
+        case 'offline':
+            if(isActive())
+                this.stop();
+            break;
+        }
+        break;
+    }
+}
 
 // UTILITIES
 // ----------------------------------------------------------------------
@@ -172,3 +193,4 @@ function isActive() {
 function log(msg) {
     dump(msg + '\n');
 }
+

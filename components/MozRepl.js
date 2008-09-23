@@ -13,10 +13,13 @@ const INTERFACE = Components.interfaces.nsIMozRepl;
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cr = Components.results;
+const Cu = Components.utils;
 const loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
     .getService(Ci.mozIJSSubScriptLoader);
 
-function Component() {}
+function Component() {
+    this.wrappedJSObject = this;
+}
 
 Component.prototype = {
     reload: function() {
@@ -25,7 +28,8 @@ Component.prototype = {
 
     QueryInterface: function(aIID) {
         if(!aIID.equals(INTERFACE) &&
-           !aIID.equals(Ci.nsISupports))
+           !aIID.equals(Ci.nsISupports) &&
+           !aIID.equals(Ci.nsIObserver))
             throw Cr.NS_ERROR_NO_INTERFACE;
         return this;
     }
@@ -37,7 +41,6 @@ var Factory = {
         if(aOuter != null)
             throw Cr.NS_ERROR_NO_AGGREGATION;
         var component = new Component();
-        component.init();
 
         return component.QueryInterface(aIID);
     }
@@ -51,14 +54,23 @@ var Module = {
             this._firstTime = false;
             throw Components.results.NS_ERROR_FACTORY_REGISTER_AGAIN;
         };
+
         aCompMgr = aCompMgr.QueryInterface(Ci.nsIComponentRegistrar);
         aCompMgr.registerFactoryLocation(
             CLASS_ID, CLASS_NAME, CONTRACT_ID, aFileSpec, aLocation, aType);
+
+        var catMan = Cc['@mozilla.org/categorymanager;1'].
+            getService(Ci.nsICategoryManager);
+        catMan.addCategoryEntry('app-startup', 'MozRepl', 'service,' + CONTRACT_ID, true, true);
     },
 
-    unregisterSelf: function(aCompMgr, aLocation, aType) {
+    unregisterSelf: function(aCompMgr, aLocation, aType) {pp
         aCompMgr = aCompMgr.QueryInterface(Ci.nsIComponentRegistrar);
         aCompMgr.unregisterFactoryLocation(CLASS_ID, aLocation);
+
+        var catMan = Cc['@mozilla.org/categorymanager;1'].
+            getService(Ci.nsICategoryManager);
+        catMan.deleteCategoryEntry('app-startup', 'service,' + CONTRACT_ID, true);
     },
 
     getClassObject: function(aCompMgr, aCID, aIID) {

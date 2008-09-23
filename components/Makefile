@@ -1,5 +1,5 @@
-IDLC=/usr/lib/firefox/xpidl
-INC=/usr/share/idl/mozilla/
+IDLC=/usr/lib/xulrunner-1.9/xpidl
+INC=/usr/share/idl/xulrunner-1.9/stable/
 XPTS=MozRepl.xpt
 
 all: $(XPTS)
