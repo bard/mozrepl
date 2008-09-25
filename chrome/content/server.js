@@ -47,7 +47,7 @@ const srvPref = Cc['@mozilla.org/preferences-service;1']
     .getService(Ci.nsIPrefService);
 const srvObserver = Cc['@mozilla.org/observer-service;1']
     .getService(Ci.nsIObserverService);
-const pref = srvPref.getBranch('extensions.mozlab.mozrepl.');
+const pref = srvPref.getBranch('extensions.mozrepl.');
 
 
 function REPL() {};
