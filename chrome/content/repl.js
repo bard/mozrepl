@@ -81,13 +81,7 @@ function init(context) {
         .getProtocolHandler('file')
         .QueryInterface(Ci.nsIFileProtocolHandler)
         .getURLSpecFromFile(this._eval_buffer);
-
-    this._inputSeparators = {
-        line:      /\n/m,
-        multiline: /\n--end-remote-input\n/m,
-        syntax:    /\n$/m
-    }
-
+    
     this._emergencyExit = function(event) {
         _this.print('Host context unloading! Going back to creation context.')
         _this.home();
@@ -487,10 +481,20 @@ function _migrateTopLevel(context) {
 
 function _prompt(prompt) {
     if(this.getenv('printPrompt'))
-        if(prompt)
+        if(prompt) {
             this.print(prompt, false);
-        else
-            this.print(this._name + '> ', false);
+        } else {
+            switch(this.getenv('inputMode')) {
+            case 'line':
+            case 'multiline':
+            case 'syntax':
+                this.print(this._name + '> ', false);
+                break;
+            case 'tool':
+                this.print('t> ', false);
+                break;
+            }
+        }
 }
 
 function receive(input) {
@@ -499,26 +503,83 @@ function receive(input) {
         return;
     }
 
+    switch(this._env['inputMode']) {
+    case 'tool':
+        this.__reader_tool(input);
+        break;
+    case 'line':
+    case 'multiline':
+        this.__reader_js_line(input);
+        break;
+    case 'syntax':
+        this.__reader_js_syntax(input);
+        break;
+    }
+}
+
+
+// READERS AND EVALUATORS
+// ----------------------------------------------------------------------
+
+function __evaluate_js(code) {
+    var fos = Cc['@mozilla.org/network/file-output-stream;1']
+        .createInstance(Ci.nsIFileOutputStream);
+    fos.init(this._eval_buffer, 0x02 | 0x08 | 0x20, 0600, 0);
+
+    var os = Cc['@mozilla.org/intl/converter-output-stream;1']
+        .createInstance(Ci.nsIConverterOutputStream);
+    os.init(fos, 'UTF-8', 0, 0x0000);
+    os.writeString(code);
+    os.close();
+
+    var result = this.load(this._eval_buffer_url);
+
+    this.$$ = result;
+    if(result != undefined)
+        this.print(represent(result));
+    this._prompt();
+}
+
+function __reader_js_syntax(input) {
     var _this = this;
-    function evaluate(code) {
-        var fos = Cc['@mozilla.org/network/file-output-stream;1']
-            .createInstance(Ci.nsIFileOutputStream);
-        fos.init(_this._eval_buffer, 0x02 | 0x08 | 0x20, 0600, 0);
+    function handleError(e) {
+        if(e)
+            _this.print(formatStackTrace(e));
 
-        var os = Cc['@mozilla.org/intl/converter-output-stream;1']
-            .createInstance(Ci.nsIConverterOutputStream);
-        os.init(fos, 'UTF-8', 0, 0x0000);
-        os.writeString(code);
-        os.close();
+        _this.print('!!! ' + e + '\n');
 
-        var result = _this.load(_this._eval_buffer_url);
-
-        _this.$$ = result;
-        if(result != undefined)
-            _this.print(represent(result));
         _this._prompt();
     }
 
+    if(/^\s*;\s*$/.test(input)) {
+        try {
+            this.__evaluate_js(this._inputBuffer);
+        } catch(e) {
+            handleError(e);
+        }
+        this._inputBuffer = '';
+    } else {
+        this._inputBuffer += input;
+        try {
+            this.__evaluate_js(this._inputBuffer);
+            this._inputBuffer = '';
+        } catch(e if e.name == 'SyntaxError') {
+            // ignore and keep filling the buffer
+            this._prompt(this._name.replace(/./g, '.') + '> ');
+        } catch(e) {
+            handleError(e);
+            this._inputBuffer = '';
+        }
+    }
+}
+
+function __reader_js_line(input) {
+    const inputSeparators = {
+        line:      /\n/m,
+        multiline: /\n--end-remote-input\n/m,
+    };
+
+    var _this = this;
     function handleError(e) {
         if(e)
             _this.print(formatStackTrace(e));
@@ -527,53 +588,44 @@ function receive(input) {
         _this._prompt();
     }
 
-    function scan(string, separator) {
-        var match = string.match(separator);
-        if(match)
-            return [string.substring(0, match.index),
-                    string.substr(match.index + match[0].length)];
-        else
-            return [null, string];
+    this._inputBuffer += input;
+    var [chunk, rest] = scan(this._inputBuffer, inputSeparators[this._env['inputMode']]);
+    while(chunk) {
+        try {
+            this.__evaluate_js(chunk);
+        } catch(e) {
+            handleError(e);
+        }
+        [chunk, rest] = scan(rest, inputSeparators[this._env['inputMode']]);
     }
+    this._inputBuffer = rest;
+}
 
-    switch(this._env['inputMode']) {
-    case 'line':
-    case 'multiline':
-        this._inputBuffer += input;
-        var res = scan(this._inputBuffer, this._inputSeparators[this._env['inputMode']]);
-        while(res[0]) {
-            try {
-                evaluate(res[0]);
-            } catch(e) {
-                handleError(e);
-            }
-            res = scan(res[1], this._inputSeparators[this._env['inputMode']]);
-        }
-        this._inputBuffer = res[1];
-        break;
-    case 'syntax':
-        if(/^\s*;\s*$/.test(input)) {
-            try {
-                evaluate(this._inputBuffer);
-            } catch(e) {
-                handleError(e);
-            }
-            this._inputBuffer = '';
-        } else {
-            this._inputBuffer += input;
-            try {
-                evaluate(this._inputBuffer);
-                this._inputBuffer = '';
-            } catch(e if e.name == 'SyntaxError') {
-                // ignore and keep filling the buffer
-                this._prompt(this._name.replace(/./g, '.') + '> ');
-            } catch(e) {
-                handleError(e);
-                this._inputBuffer = '';
-            }
-            break;
-        }
+function __reader_tool(input) {
+    this._inputBuffer = input;
+    try {
+        this.__evaluate_tool(input);
+    } catch(e) {
+        // ...
     }
+    this._inputBuffer = '';
+}
+
+function __evaluate_tool(s) {
+    switch(s.replace(/^\s+|\s+$/g, '')) {
+    case 'q':
+        this.setenv('inputMode', 'syntax');
+        break;
+
+    case 'h':
+        this.print('Help text: this is a sample interaction mode.  Type "q" to exit.');
+        break;
+
+    default:
+        this.print('Uknown command.');
+        break;
+    }
+    this._prompt();
 }
 
 
@@ -611,4 +663,13 @@ function isTopLevel(object) {
     return (object instanceof Ci.nsIDOMWindow ||
             'wrappedJSObject' in object ||
             'NSGetModule' in object)
+}
+
+function scan(string, separator) {
+    var match = string.match(separator);
+    if(match)
+        return [string.substring(0, match.index),
+                string.substr(match.index + match[0].length)];
+    else
+        return [null, string];
 }
