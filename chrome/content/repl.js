@@ -572,6 +572,7 @@ interactors.javascript.handleInput = function(input) {
                 if(result != undefined)
                     this.print(represent(result));
                 this._prompt();
+                this._inputBuffer = '';
             } catch(e if e.name == 'SyntaxError') {
                 // ignore and keep filling the buffer
                 this._prompt(this._name.replace(/./g, '.') + '> ');
