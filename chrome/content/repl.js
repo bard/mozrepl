@@ -71,17 +71,6 @@ function init(context) {
     this._contextHistory = [];
     this._inputBuffer = '';
 
-    this._eval_buffer = Cc['@mozilla.org/file/directory_service;1']
-        .getService(Ci.nsIProperties)
-        .get('ProfD', Ci.nsIFile);
-    this._eval_buffer.append('mozrepl.tmp.js');
-
-    this._eval_buffer_url = Cc['@mozilla.org/network/io-service;1']
-        .getService(Ci.nsIIOService)
-        .getProtocolHandler('file')
-        .QueryInterface(Ci.nsIFileProtocolHandler)
-        .getURLSpecFromFile(this._eval_buffer);
-    
     this._emergencyExit = function(event) {
         _this.print('Host context unloading! Going back to creation context.')
         _this.home();
@@ -94,22 +83,18 @@ function init(context) {
 
     this._env = {};
     this._savedEnv = {};
+
+    this._interactor = Cc['@mozilla.org/preferences-service;1']
+        .getService(Ci.nsIPrefBranch)
+        .getCharPref('extensions.mozrepl.defaultInteractor');
+    // fallback to javascript here if interactor not found
+
     this.setenv('printPrompt', true);
     this.setenv('inputMode', 'syntax');
 
     this.loadInit();
 
-    this.print('Current input mode is: ' + this._env['inputMode']);
-    this.print('');
-    this.print('If you get stuck at the "...>" prompt, enter a semicolon (;) at the beginning of the line to force evaluation.');
-    this.print('');
-
-    if(this._name != 'repl') {
-        this.print('Hmmm, seems like other repl\'s are running in this context.');
-        this.print('To avoid conflicts, yours will be named "' + this._name + '".');
-    }
-
-    this._prompt();
+    interactors[this._interactor].onStart.call(this);
 }
 
 
@@ -234,8 +219,8 @@ function loadInit() {
         }
 
     } catch(e) {
-        this.print('Could not load initialization script ' +
-                   initUrl + ': ' + e);
+        this.print('\n!!! Could not load initialization script ' +
+                   initUrl + ': ' + e + '\n');
     }
 }
 
@@ -484,17 +469,19 @@ function _prompt(prompt) {
         if(prompt) {
             this.print(prompt, false);
         } else {
-            switch(this.getenv('inputMode')) {
-            case 'line':
-            case 'multiline':
-            case 'syntax':
-                this.print(this._name + '> ', false);
-                break;
-            case 'tool':
-                this.print('t> ', false);
-                break;
-            }
+            var interactor = interactors[this._interactor];
+            if(typeof(interactor.getPrompt) == 'function')
+                this.print(interactor.getPrompt.call(this), false);
+            else
+                this.print('> ', false);
         }
+}
+
+function setInteractor(interactorName) {
+    if(typeof(interactors[interactorName]) == 'undefined')
+        throw new Error('Interactor <' + interactorName + '> not defined.');
+    else
+        this._interactor = interactorName;
 }
 
 function receive(input) {
@@ -503,77 +490,35 @@ function receive(input) {
         return;
     }
 
-    switch(this._env['inputMode']) {
-    case 'tool':
-        this.__reader_tool(input);
-        break;
-    case 'line':
-    case 'multiline':
-        this.__reader_js_line(input);
-        break;
-    case 'syntax':
-        this.__reader_js_syntax(input);
-        break;
-    }
+    interactors[this._interactor].handleInput.call(this, input);
 }
 
 
-// READERS AND EVALUATORS
+// JAVASCRIPT INTERACTOR
 // ----------------------------------------------------------------------
 
-function __evaluate_js(code) {
-    var fos = Cc['@mozilla.org/network/file-output-stream;1']
-        .createInstance(Ci.nsIFileOutputStream);
-    fos.init(this._eval_buffer, 0x02 | 0x08 | 0x20, 0600, 0);
+var interactors = {};
+interactors.javascript = {};
 
-    var os = Cc['@mozilla.org/intl/converter-output-stream;1']
-        .createInstance(Ci.nsIConverterOutputStream);
-    os.init(fos, 'UTF-8', 0, 0x0000);
-    os.writeString(code);
-    os.close();
+interactors.javascript.onStart = function() {
+    this.print('Current input mode is: ' + this._env['inputMode']);
+    this.print('');
+    this.print('If you get stuck at the "...>" prompt, enter a semicolon (;) at the beginning of the line to force evaluation.');
+    this.print('');
 
-    var result = this.load(this._eval_buffer_url);
+    if(this._name != 'repl') {
+        this.print('Hmmm, seems like other repl\'s are running in this context.');
+        this.print('To avoid conflicts, yours will be named "' + this._name + '".');
+    }
 
-    this.$$ = result;
-    if(result != undefined)
-        this.print(represent(result));
     this._prompt();
-}
+};
 
-function __reader_js_syntax(input) {
-    var _this = this;
-    function handleError(e) {
-        if(e)
-            _this.print(formatStackTrace(e));
+interactors.javascript.getPrompt = function() {
+    return this._name + '> ';
+},
 
-        _this.print('!!! ' + e + '\n');
-
-        _this._prompt();
-    }
-
-    if(/^\s*;\s*$/.test(input)) {
-        try {
-            this.__evaluate_js(this._inputBuffer);
-        } catch(e) {
-            handleError(e);
-        }
-        this._inputBuffer = '';
-    } else {
-        this._inputBuffer += input;
-        try {
-            this.__evaluate_js(this._inputBuffer);
-            this._inputBuffer = '';
-        } catch(e if e.name == 'SyntaxError') {
-            // ignore and keep filling the buffer
-            this._prompt(this._name.replace(/./g, '.') + '> ');
-        } catch(e) {
-            handleError(e);
-            this._inputBuffer = '';
-        }
-    }
-}
-
-function __reader_js_line(input) {
+interactors.javascript.handleInput = function(input) {
     const inputSeparators = {
         line:      /\n/m,
         multiline: /\n--end-remote-input\n/m,
@@ -588,45 +533,55 @@ function __reader_js_line(input) {
         _this._prompt();
     }
 
-    this._inputBuffer += input;
-    var [chunk, rest] = scan(this._inputBuffer, inputSeparators[this._env['inputMode']]);
-    while(chunk) {
-        try {
-            this.__evaluate_js(chunk);
-        } catch(e) {
-            handleError(e);
+    switch(this._env['inputMode']) {
+    case 'line':
+    case 'multiline':
+        this._inputBuffer += input;
+        var [chunk, rest] = scan(this._inputBuffer, inputSeparators[this._env['inputMode']]);
+        while(chunk) {
+            try {
+                var result = this.evaluate(chunk);
+                if(this != undefined)
+                    this.print(represent(result));
+                this._prompt();
+            } catch(e) {
+                handleError(e);
+            }
+
+            [chunk, rest] = scan(rest, inputSeparators[this._env['inputMode']]);
         }
-        [chunk, rest] = scan(rest, inputSeparators[this._env['inputMode']]);
-    }
-    this._inputBuffer = rest;
-}
-
-function __reader_tool(input) {
-    this._inputBuffer = input;
-    try {
-        this.__evaluate_tool(input);
-    } catch(e) {
-        // ...
-    }
-    this._inputBuffer = '';
-}
-
-function __evaluate_tool(s) {
-    switch(s.replace(/^\s+|\s+$/g, '')) {
-    case 'q':
-        this.setenv('inputMode', 'syntax');
+        this._inputBuffer = rest;
         break;
 
-    case 'h':
-        this.print('Help text: this is a sample interaction mode.  Type "q" to exit.');
-        break;
+    case 'syntax':
+        if(/^\s*;\s*$/.test(input)) {
+            try {
+                var result = this.evaluate(this._inputBuffer);
+                if(result != undefined)
+                    this.print(represent(result));
+                this._prompt();
+            } catch(e) {
+                handleError(e);
+            }
 
-    default:
-        this.print('Uknown command.');
-        break;
+            this._inputBuffer = '';
+        } else {
+            this._inputBuffer += input;
+            try {
+                var result = this.evaluate(this._inputBuffer);
+                if(result != undefined)
+                    this.print(represent(result));
+                this._prompt();
+            } catch(e if e.name == 'SyntaxError') {
+                // ignore and keep filling the buffer
+                this._prompt(this._name.replace(/./g, '.') + '> ');
+            } catch(e) {
+                handleError(e);
+                this._inputBuffer = '';
+            }
+        }
     }
-    this._prompt();
-}
+};
 
 
 // UTILITIES
@@ -673,3 +628,33 @@ function scan(string, separator) {
     else
         return [null, string];
 }
+
+function evaluate(code) {
+    var _ = arguments.callee;
+    if(typeof(_.TMP_FILE) == 'undefined') {
+        _.TMP_FILE = Cc['@mozilla.org/file/directory_service;1']
+            .getService(Ci.nsIProperties)
+            .get('ProfD', Ci.nsIFile);
+        _.TMP_FILE.append('mozrepl.tmp.js');
+
+        _.TMP_FILE_URL = Cc['@mozilla.org/network/io-service;1']
+            .getService(Ci.nsIIOService)
+            .getProtocolHandler('file')
+            .QueryInterface(Ci.nsIFileProtocolHandler)
+            .getURLSpecFromFile(_.TMP_FILE);
+    }
+
+    var fos = Cc['@mozilla.org/network/file-output-stream;1']
+        .createInstance(Ci.nsIFileOutputStream);
+    fos.init(_.TMP_FILE, 0x02 | 0x08 | 0x20, 0600, 0);
+
+    var os = Cc['@mozilla.org/intl/converter-output-stream;1']
+        .createInstance(Ci.nsIConverterOutputStream);
+    os.init(fos, 'UTF-8', 0, 0x0000);
+    os.writeString(code);
+    os.close();
+
+    var result = this.load(_.TMP_FILE_URL);
+    this.$$ = result;
+    return result;
+};
