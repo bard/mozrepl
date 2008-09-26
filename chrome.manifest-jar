@@ -1,0 +1,6 @@
+content mozrepl jar:chrome/mozrepl.jar!/content/
+skin mozrepl classic/1.0 jar:chrome/mozrepl.jar!/skin/classic/
+
+overlay chrome://browser/content/browser.xul         chrome://mozrepl/content/overlay_browser.xul
+overlay chrome://messenger/content/messenger.xul     chrome://mozrepl/content/overlay_mail.xul
+overlay chrome://songbird/content/xul/menuOverlay.xul chrome://mozrepl/conte/overlay_songbird.xul
