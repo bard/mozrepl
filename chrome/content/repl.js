@@ -213,14 +213,11 @@ function loadInit() {
             .getService(Ci.nsIPrefBranch)
             .getCharPref('extensions.mozrepl.initUrl');
 
-        if(initUrl) {
-            this.print('Loading ' + initUrl + '...');
+        if(initUrl)
             this.load(initUrl, this);
-        }
 
     } catch(e) {
-        this.print('\n!!! Could not load initialization script ' +
-                   initUrl + ': ' + e + '\n');
+        Components.utils.reportError('MozRepl: could not load initialization file ' + initUrl + ': ' + e);
     }
 }
 
