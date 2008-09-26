@@ -58,17 +58,17 @@ var server;
 function initOverlay() {
     server = Cc['@hyperstruct.net/mozlab/mozrepl;1'].getService(Ci.nsIMozRepl);
 
-    upgradeCheck(
-        'mozrepl@hyperstruct.net',
-        'extensions.mozrepl.version', {
-            onFirstInstall: function() {
-                openURL('http://hyperstruct.net/projects/mozlab/news');
-            },
+    // upgradeCheck(
+    //     'mozrepl@hyperstruct.net',
+    //     'extensions.mozrepl.version', {
+    //         onFirstInstall: function() {
+    //             openURL('http://hyperstruct.net/projects/mozlab/news');
+    //         },
 
-            onUpgrade: function() {
-                openURL('http://hyperstruct.net/projects/mozlab/news');
-            }
-        });
+    //         onUpgrade: function() {
+    //             openURL('http://hyperstruct.net/projects/mozlab/news');
+    //         }
+    //     });
 }
 
 function togglePref(prefName) {
