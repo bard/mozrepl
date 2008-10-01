@@ -498,9 +498,17 @@ var interactors = {};
 interactors.javascript = {};
 
 interactors.javascript.onStart = function() {
-    this.print('Current input mode is: ' + this._env['inputMode']);
     this.print('');
-    this.print('If you get stuck at the "...>" prompt, enter a semicolon (;) at the beginning of the line to force evaluation.');
+    this.print('Welcome to MozRepl.');
+    this.print('');
+    this.print(' - If you get stuck at the "...>" prompt, enter a semicolon (;) at the beginning of the line to force evaluation.');
+    this.print(' - If you get errors after every character you type, see http://github.com/bard/mozrepl/wikis/troubleshooting (short version: stop using Microsoft telnet, use netcat or putty instead)');
+    this.print('');
+    this.print('Current working context: ' + (this._workContext instanceof Ci.nsIDOMWindow ?
+                                              this._workContext.document.location.href :
+                                              this._workContext));
+    this.print('Current input mode: ' + this._env['inputMode']);
+
     this.print('');
 
     if(this._name != 'repl') {
