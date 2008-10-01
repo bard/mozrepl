@@ -167,10 +167,13 @@ function observe(subject, topic, data) {
     switch(topic) {
     case 'app-startup':
         srvObserver.addObserver(this, 'network:offline-status-changed', false);
-
+        srvObserver.addObserver(this, 'final-ui-startup', false);
+        break;
+    case 'final-ui-startup':
         if(srvPref.getBranch('network.').getBoolPref('online') &&
            pref.getBoolPref('autoStart'))
             this.start(pref.getIntPref('port'));
+
         break;
     case 'network:offline-status-changed':
         switch(data) {
