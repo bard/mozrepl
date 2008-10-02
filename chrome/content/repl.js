@@ -84,17 +84,17 @@ function init(context) {
     this._env = {};
     this._savedEnv = {};
 
-    this._interactor = Cc['@mozilla.org/preferences-service;1']
-        .getService(Ci.nsIPrefBranch)
-        .getCharPref('extensions.mozrepl.defaultInteractor');
-    // fallback to javascript here if interactor not found
-
     this.setenv('printPrompt', true);
     this.setenv('inputMode', 'syntax');
 
     this.loadInit();
 
-    interactors[this._interactor].onStart.call(this);
+    var interactorName = Cc['@mozilla.org/preferences-service;1']
+        .getService(Ci.nsIPrefBranch)
+        .getCharPref('extensions.mozrepl.defaultInteractor');
+    var interactorClass = interactors[interactorName] || interactors.javascript;
+    this._interactor = new interactorClass(this);
+    this._interactor.onStart(this);
 }
 
 
@@ -277,6 +277,7 @@ home.doc =
 // ----------------------------------------------------------------------
 
 function quit() {
+    this._interactor.onStop(this);
     delete this._hostContext[this._name];
     delete this._creationContext[this._name];
     this.onQuit();
@@ -446,6 +447,27 @@ doc.doc =
 (if present) or on XULPlanet.com.';
 
 
+function defineInteractor(name, proto) {
+    interactors[name] = function() {}
+    interactors[name].prototype = proto;
+}
+defineInteractor.doc = 'Defines a new interactor.';
+
+function setInteractor(interactorName) {
+    var interactorClass = interactors[interactorName];
+    if(typeof(interactorClass) == 'undefined')
+        throw new Error('Interactor <' + interactorName + '> not defined.');
+    else
+        this._interactor = new interactorClass(this);
+}
+setInteractor.__defineGetter__('doc', function() {
+    var intNames = [];
+    for(var intName in interactors)
+        intNames.push(intName);
+    return 'Sets the current interactor. (Currently defined: "' + intNames.join('", "') + '")';
+});
+
+
 // INTERNALS
 // ----------------------------------------------------------------------
 
@@ -466,19 +488,11 @@ function _prompt(prompt) {
         if(prompt) {
             this.print(prompt, false);
         } else {
-            var interactor = interactors[this._interactor];
-            if(typeof(interactor.getPrompt) == 'function')
-                this.print(interactor.getPrompt.call(this), false);
+            if(typeof(this._interactor.getPrompt) == 'function')
+                this.print(this._interactor.getPrompt(this), false);
             else
                 this.print('> ', false);
         }
-}
-
-function setInteractor(interactorName) {
-    if(typeof(interactors[interactorName]) == 'undefined')
-        throw new Error('Interactor <' + interactorName + '> not defined.');
-    else
-        this._interactor = interactorName;
 }
 
 function receive(input) {
@@ -487,7 +501,7 @@ function receive(input) {
         return;
     }
 
-    interactors[this._interactor].handleInput.call(this, input);
+    this._interactor.handleInput(this, input);
 }
 
 
@@ -495,99 +509,105 @@ function receive(input) {
 // ----------------------------------------------------------------------
 
 var interactors = {};
-interactors.javascript = {};
 
-interactors.javascript.onStart = function() {
-    this.print('');
-    this.print('Welcome to MozRepl.');
-    this.print('');
-    this.print(' - If you get stuck at the "...>" prompt, enter a semicolon (;) at the beginning of the line to force evaluation.');
-    this.print(' - If you get errors after every character you type, see http://github.com/bard/mozrepl/wikis/troubleshooting (short version: stop using Microsoft telnet, use netcat or putty instead)');
-    this.print('');
-    this.print('Current working context: ' + (this._workContext instanceof Ci.nsIDOMWindow ?
-                                              this._workContext.document.location.href :
-                                              this._workContext));
-    this.print('Current input mode: ' + this._env['inputMode']);
+defineInteractor('javascript', {
+    onStart: function(repl) {
+        this._inputBuffer = '';
 
-    this.print('');
+        repl.print('');
+        repl.print('Welcome to MozRepl.');
+        repl.print('');
+        repl.print(' - If you get stuck at the "...>" prompt, enter a semicolon (;) at the beginning of the line to force evaluation.');
+        repl.print(' - If you get errors after every character you type, see http://github.com/bard/mozrepl/wikis/troubleshooting (short version: stop using Microsoft telnet, use netcat or putty instead)');
+        repl.print('');
+        repl.print('Current working context: ' + (repl._workContext instanceof Ci.nsIDOMWindow ?
+                                                  repl._workContext.document.location.href :
+                                                  repl._workContext));
+        repl.print('Current input mode: ' + repl._env['inputMode']);
 
-    if(this._name != 'repl') {
-        this.print('Hmmm, seems like other repl\'s are running in this context.');
-        this.print('To avoid conflicts, yours will be named "' + this._name + '".');
-    }
+        repl.print('');
 
-    this._prompt();
-};
-
-interactors.javascript.getPrompt = function() {
-    return this._name + '> ';
-},
-
-interactors.javascript.handleInput = function(input) {
-    const inputSeparators = {
-        line:      /\n/m,
-        multiline: /\n--end-remote-input\n/m,
-    };
-
-    var _this = this;
-    function handleError(e) {
-        if(e)
-            _this.print(formatStackTrace(e));
-
-        _this.print('!!! ' + e + '\n');
-        _this._prompt();
-    }
-
-    switch(this._env['inputMode']) {
-    case 'line':
-    case 'multiline':
-        this._inputBuffer += input;
-        var [chunk, rest] = scan(this._inputBuffer, inputSeparators[this._env['inputMode']]);
-        while(chunk) {
-            try {
-                var result = this.evaluate(chunk);
-                if(this != undefined)
-                    this.print(represent(result));
-                this._prompt();
-            } catch(e) {
-                handleError(e);
-            }
-
-            [chunk, rest] = scan(rest, inputSeparators[this._env['inputMode']]);
+        if(repl._name != 'repl') {
+            repl.print('Hmmm, seems like other repl\'s are running in repl context.');
+            repl.print('To avoid conflicts, yours will be named "' + repl._name + '".');
         }
-        this._inputBuffer = rest;
-        break;
 
-    case 'syntax':
-        if(/^\s*;\s*$/.test(input)) {
-            try {
-                var result = this.evaluate(this._inputBuffer);
-                if(result != undefined)
-                    this.print(represent(result));
-                this._prompt();
-            } catch(e) {
-                handleError(e);
-            }
+        repl._prompt();
+    },
 
-            this._inputBuffer = '';
-        } else {
+    onStop: function(repl) {
+        repl.print('Good bye!');
+    },
+
+    getPrompt: function(repl) {
+        return repl._name + '> ';
+    },
+
+    handleInput: function(repl, input) {
+        const inputSeparators = {
+            line:      /\n/m,
+            multiline: /\n--end-remote-input\n/m,
+        };
+
+        function handleError(e) {
+            if(e)
+                repl.print(formatStackTrace(e));
+
+            repl.print('!!! ' + e + '\n');
+            repl._prompt();
+        }
+
+        switch(repl.getenv('inputMode')) {
+        case 'line':
+        case 'multiline':
             this._inputBuffer += input;
-            try {
-                var result = this.evaluate(this._inputBuffer);
-                if(result != undefined)
-                    this.print(represent(result));
-                this._prompt();
+            var [chunk, rest] = scan(this._inputBuffer, inputSeparators[repl.getenv('inputMode')]);
+            while(chunk) {
+                try {
+                    var result = repl.evaluate(chunk);
+                    if(this != undefined)
+                        repl.print(represent(result));
+                    repl._prompt();
+                } catch(e) {
+                    handleError(e);
+                }
+
+                [chunk, rest] = scan(rest, inputSeparators[repl.getenv('inputMode')]);
+            }
+            this._inputBuffer = rest;
+            break;
+
+        case 'syntax':
+            if(/^\s*;\s*$/.test(input)) {
+                try {
+                    var result = repl.evaluate(this._inputBuffer);
+                    if(result != undefined)
+                        repl.print(represent(result));
+                    repl._prompt();
+                } catch(e) {
+                    handleError(e);
+                }
+
                 this._inputBuffer = '';
-            } catch(e if e.name == 'SyntaxError') {
-                // ignore and keep filling the buffer
-                this._prompt(this._name.replace(/./g, '.') + '> ');
-            } catch(e) {
-                handleError(e);
-                this._inputBuffer = '';
+            } else {
+                this._inputBuffer += input;
+                try {
+                    var result = repl.evaluate(this._inputBuffer);
+                    if(result != undefined)
+                        repl.print(represent(result));
+                    repl._prompt();
+                    this._inputBuffer = '';
+                } catch(e if e.name == 'SyntaxError') {
+                    // ignore and keep filling the buffer
+                    repl._prompt(repl._name.replace(/./g, '.') + '> ');
+                } catch(e) {
+                    handleError(e);
+                    this._inputBuffer = '';
+                }
             }
         }
     }
-};
+});
 
 
 // UTILITIES
