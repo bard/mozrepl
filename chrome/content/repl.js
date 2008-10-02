@@ -43,6 +43,9 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const loader = Cc['@mozilla.org/moz/jssubscript-loader;1']
     .getService(Ci.mozIJSSubScriptLoader);
+const srvPref = Cc['@mozilla.org/preferences-service;1']
+    .getService(Ci.nsIPrefService)
+    .getBranch('extensions.mozrepl.');
 
 var util = {};
 loader.loadSubScript('chrome://mozrepl/content/util.js', util);
@@ -87,14 +90,18 @@ function init(context) {
     this.setenv('printPrompt', true);
     this.setenv('inputMode', 'syntax');
 
+    this._interactorClasses = {};
+    this._interactorStack = [];
+
+    this.defineInteractor('javascript', javascriptInteractor);
     this.loadInit();
 
-    var interactorName = Cc['@mozilla.org/preferences-service;1']
-        .getService(Ci.nsIPrefBranch)
-        .getCharPref('extensions.mozrepl.defaultInteractor');
-    var interactorClass = interactors[interactorName] || interactors.javascript;
-    this._interactor = new interactorClass(this);
-    this._interactor.onStart(this);
+    var defaultInteractorClass = (this._interactorClasses[srvPref.getCharPref('defaultInteractor')] ||
+                                  this._interactorClasses['javascript']);
+    var defaultInteractor = new defaultInteractorClass(this);
+
+    this._interactorStack = [defaultInteractor];
+    defaultInteractor.onStart(this);
 }
 
 
@@ -277,7 +284,7 @@ home.doc =
 // ----------------------------------------------------------------------
 
 function quit() {
-    this._interactor.onStop(this);
+    this.currentInteractor().onStop && this.currentInteractor().onStop(this);
     delete this._hostContext[this._name];
     delete this._creationContext[this._name];
     this.onQuit();
@@ -447,70 +454,51 @@ doc.doc =
 (if present) or on XULPlanet.com.';
 
 
+// INTERACTOR HANDLING
+// ----------------------------------------------------------------------
+
 function defineInteractor(name, proto) {
-    interactors[name] = function() {}
-    interactors[name].prototype = proto;
+    this._interactorClasses[name] = function() {}
+    this._interactorClasses[name].prototype = proto;
 }
 defineInteractor.doc = 'Defines a new interactor.';
 
-function setInteractor(interactorName) {
-    var interactorClass = interactors[interactorName];
+function currentInteractor() {
+    return this._interactorStack[this._interactorStack.length-1];
+}
+
+function popInteractor() {
+    if(this._interactorStack.length == 1)
+        throw new Error('Cannot leave last interactor.');
+    this.currentInteractor().onStop && this.currentInteractor().onStop(this);
+    this._interactorStack.pop();
+    this.currentInteractor().onResume && this.currentInteractor().onResume(this);
+}
+
+function pushInteractor(interactorName) {
+    var interactorClass = this._interactorClasses[interactorName];
     if(typeof(interactorClass) == 'undefined')
         throw new Error('Interactor <' + interactorName + '> not defined.');
-    else
-        this._interactor = new interactorClass(this);
+    else {
+        this.currentInteractor().onSuspend && this.currentInteractor().onSuspend(this);
+
+        var newInteractor = new interactorClass(this);
+        this._interactorStack.push(newInteractor);
+        newInteractor.onStart(this);
+    }
 }
-setInteractor.__defineGetter__('doc', function() {
+pushInteractor.__defineGetter__('doc', function() {
     var intNames = [];
-    for(var intName in interactors)
+    for(var intName in this._interactorClasses)
         intNames.push(intName);
     return 'Sets the current interactor. (Currently defined: "' + intNames.join('", "') + '")';
 });
 
 
-// INTERNALS
-// ----------------------------------------------------------------------
-
-function _migrateTopLevel(context) {
-    if(this._hostContext instanceof Ci.nsIDOMWindow)
-        this._hostContext.removeEventListener('unload', this._emergencyExit, false);
-
-    this._hostContext[this._name] = undefined;
-    this._hostContext = context;
-    this._hostContext[this._name] = this;
-
-    if(this._hostContext instanceof Ci.nsIDOMWindow)
-        this._hostContext.addEventListener('unload', this._emergencyExit, false);
-}
-
-function _prompt(prompt) {
-    if(this.getenv('printPrompt'))
-        if(prompt) {
-            this.print(prompt, false);
-        } else {
-            if(typeof(this._interactor.getPrompt) == 'function')
-                this.print(this._interactor.getPrompt(this), false);
-            else
-                this.print('> ', false);
-        }
-}
-
-function receive(input) {
-    if(input.match(/^\s*$/) && this._inputBuffer.match(/^\s*$/)) {
-        this._prompt();
-        return;
-    }
-
-    this._interactor.handleInput(this, input);
-}
-
-
 // JAVASCRIPT INTERACTOR
 // ----------------------------------------------------------------------
 
-var interactors = {};
-
-defineInteractor('javascript', {
+var javascriptInteractor = {
     onStart: function(repl) {
         this._inputBuffer = '';
 
@@ -535,15 +523,22 @@ defineInteractor('javascript', {
         repl._prompt();
     },
 
-    onStop: function(repl) {
-        repl.print('Good bye!');
-    },
+    onStop: function(repl) {},
+
+    onSuspend: function(repl) {},
+
+    onResume: function(repl) {},
 
     getPrompt: function(repl) {
         return repl._name + '> ';
     },
 
     handleInput: function(repl, input) {
+        if(input.match(/^\s*$/) && this._inputBuffer.match(/^\s*$/)) {
+            repl._prompt();
+            return;
+        }
+
         const inputSeparators = {
             line:      /\n/m,
             multiline: /\n--end-remote-input\n/m,
@@ -607,7 +602,39 @@ defineInteractor('javascript', {
             }
         }
     }
-});
+}
+
+
+// INTERNALS
+// ----------------------------------------------------------------------
+
+function _migrateTopLevel(context) {
+    if(this._hostContext instanceof Ci.nsIDOMWindow)
+        this._hostContext.removeEventListener('unload', this._emergencyExit, false);
+
+    this._hostContext[this._name] = undefined;
+    this._hostContext = context;
+    this._hostContext[this._name] = this;
+
+    if(this._hostContext instanceof Ci.nsIDOMWindow)
+        this._hostContext.addEventListener('unload', this._emergencyExit, false);
+}
+
+function _prompt(prompt) {
+    if(this.getenv('printPrompt'))
+        if(prompt) {
+            this.print(prompt, false);
+        } else {
+            if(typeof(this.currentInteractor().getPrompt) == 'function')
+                this.print(this.currentInteractor().getPrompt(this), false);
+            else
+                this.print('> ', false);
+        }
+}
+
+function receive(input) {
+    this.currentInteractor().handleInput(this, input);
+}
 
 
 // UTILITIES
