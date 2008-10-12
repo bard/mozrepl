@@ -100,7 +100,7 @@ function changePort() {
 }
 
 function openHelp() {
-    openURL('http://dev.hyperstruct.net/mozlab/wiki/MozRepl');
+    openURL('http://github.com/bard/mozrepl/wikis/home');
 }
 
 function openURL(url) {
