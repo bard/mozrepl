@@ -423,8 +423,11 @@ function search(criteria, context) {
     context = context || this._workContext;
 
     var matcher;
+    print(typeof(criteria.match))
     if(typeof(criteria) == 'function')
         matcher = criteria;
+    else if(typeof(criteria.test) == 'function')
+        matcher = function(name) { return criteria.test(name); }
     else
         matcher = function(name) { return name == criteria; }
 
