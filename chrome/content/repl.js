@@ -230,8 +230,12 @@ function loadInit() {
 }
 
 function load(url, arbitraryContext) {
-    return loader.loadSubScript(
-        url, arbitraryContext || this._workContext);
+    try {
+        return loader.loadSubScript(
+            url, arbitraryContext || this._workContext);
+    } catch(e) {
+        throw new LoadedScriptError(e);
+    }
 }
 load.doc =
     'Loads a chrome:// or file:// script into the current context, \
@@ -549,10 +553,24 @@ var javascriptInteractor = {
         };
 
         function handleError(e) {
-            if(e)
-                repl.print(formatStackTrace(e));
+            var realException = (e instanceof LoadedScriptError ? e.cause : e);
 
-            repl.print('!!! ' + e + '\n');
+            repl.print('!!! ' + realException + '\n');
+            if(realException) {
+                repl.print('Details:')
+                repl.print();
+                for(var name in realException) {
+                    var content = String(realException[name]);
+                    if(content.indexOf('\n') != -1)
+                        content = '\n' + content.replace(/^(?!$)/gm, '    ');
+                    else
+                        content = ' ' + content;
+
+                    repl.print('  ' + name + ':' + content.replace(/\s*\n$/m, ''));
+                }
+                repl.print();
+            }
+
             repl._prompt();
         }
 
@@ -596,7 +614,7 @@ var javascriptInteractor = {
                         repl.print(represent(result));
                     repl._prompt();
                     this._inputBuffer = '';
-                } catch(e if e.name == 'SyntaxError') {
+                } catch(e if e instanceof SyntaxError) {
                     // ignore and keep filling the buffer
                     repl._prompt(repl._name.replace(/./g, '.') + '> ');
                 } catch(e) {
@@ -864,7 +882,18 @@ function evaluate(code) {
     os.writeString(code);
     os.close();
 
-    var result = this.load(_.TMP_FILE_URL);
+    var result = loader.loadSubScript(_.TMP_FILE_URL, this._workContext);
+
     this.$$ = result;
     return result;
 };
+
+// We wrap exceptions in scripts loaded by repl.load() (thus also by
+// Emacs Moz interaction mode) into a LoadScriptError exception, so
+// that SyntaxError's don't interfere with the special use we make of
+// them in the javascriptInteractor.handleInput, i.e. to detected
+// unfinished input.
+
+function LoadedScriptError(cause) {
+    this.cause = cause;
+}
