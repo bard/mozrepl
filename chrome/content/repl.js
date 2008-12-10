@@ -614,7 +614,7 @@ var javascriptInteractor = {
                         repl.print(represent(result));
                     repl._prompt();
                     this._inputBuffer = '';
-                } catch(e if e instanceof SyntaxError) {
+                } catch(e if e.name == 'SyntaxError') {
                     // ignore and keep filling the buffer
                     repl._prompt(repl._name.replace(/./g, '.') + '> ');
                 } catch(e) {
