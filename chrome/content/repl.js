@@ -846,7 +846,7 @@ function isTopLevel(object) {
     return (object instanceof Ci.nsIDOMWindow ||
             'wrappedJSObject' in object ||
             'NSGetModule' in object ||
-            'EXPORTED_SYMBOLS' in object);
+            'EXPORTED_SYMBOLS' in object.__parent__);
 }
 
 function scan(string, separator) {
