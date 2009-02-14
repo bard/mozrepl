@@ -666,7 +666,7 @@ var httpInspectInteractor = {
             // interactor from telnet, to avoid stopping and
             // restarting the REPL after each change.
         case 'q':
-            repl.setInteractor('javascript');
+            repl.pushInteractor('javascript');
             repl._prompt();
             break;
 
