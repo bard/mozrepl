@@ -653,9 +653,9 @@ var httpInspectInteractor = {
         function resolveObjectPath(startContext, path) {
             return path
                 .split('/')
-                .reduce(
-                    function(context, pathStep) pathStep == '' ?  context :  context[pathStep],
-                    startContext);
+                .reduce(function(context, pathStep) {
+                    return pathStep == '' ?  context :  context[pathStep], startContext;
+                });
         }
 
         // Strip leading and trailing whitespace
