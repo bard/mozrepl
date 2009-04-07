@@ -152,7 +152,7 @@ The following keys are bound in this minor mode:
 Curent function is the one recognized by c-mark-function."
   (interactive)
   (save-excursion
-    (c-mark-function)
+    (mark-defun)
     (moz-send-region (point) (mark))))
 
 (defun moz-send-defun-and-go ()
@@ -160,7 +160,7 @@ Curent function is the one recognized by c-mark-function."
 Also switch to the interaction buffer."
   (interactive)
   (moz-send-defun)
-  (inferior-moz-switch-to-mozilla))
+  (inferior-moz-switch-to-mozilla nil))
 
 (defun moz-save-buffer-and-send ()
   "Save the current buffer and load it in Firefox via MozRepl."
