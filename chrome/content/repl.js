@@ -179,8 +179,12 @@ function represent(thing) {
             s += names.slice(0, 7).map(function(n) {
                 var repr = n + ': ';
                 try {
-                    repr += (typeof(thing[n]) == 'object' ?
-                             '{…}' : represent(thing[n]));
+                    if(thing[n] === null)
+                        repr += 'null';
+                    else if(typeof(thing[n]) == 'object')
+                        repr += '{…}';
+                    else
+                        repr += represent(thing[n]);
                 } catch(e) {
                     repr += '[Exception!]'
                 }
@@ -348,7 +352,9 @@ function inspect(obj, maxDepth, name, curDepth) {
 
         try {
             i++;
-            if(typeof(obj[prop]) == "object") {
+            if(obj[prop] === null)
+                this.print(name + "." + prop + '=null');
+            else if(typeof(obj[prop]) == "object") {
                 if(obj.length != undefined)
                     this.print(name + "." + prop + "=[probably array, length "
                                + obj.length + "]");
@@ -357,8 +363,12 @@ function inspect(obj, maxDepth, name, curDepth) {
 
                 this.inspect(obj[prop], maxDepth, name + "." + prop, curDepth+1);
             }
-            else if (typeof(obj[prop]) == "function")
+            else if(typeof(obj[prop]) == "function")
                 this.print(name + "." + prop + "=[function]");
+            else if(typeof(obj[prop]) == "xml") {
+                let s = obj[prop].toXMLString().replace(/>\n\s*/g, ' ');
+                this.print(name + "." + prop + "=" + (s.length > 100 ? s.slice(0, 97) + '...' : s));
+            }
             else
                 this.print(name + "." + prop + "=" + obj[prop]);
 
