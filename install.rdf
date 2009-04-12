@@ -18,36 +18,6 @@
       </Description>
     </em:targetApplication>
 
-    <!-- flock -->
-
-    <em:targetApplication>
-      <Description>
-        <em:id>{a463f10c-3994-11da-9945-000d60ca027b}</em:id>
-        <em:maxVersion>1.0</em:maxVersion>
-        <em:minVersion>0.4</em:minVersion>
-      </Description>
-    </em:targetApplication>
-
-    <!-- thunderbird -->
-
-    <em:targetApplication>
-      <Description>
-        <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
-        <em:minVersion>2.0</em:minVersion>
-        <em:maxVersion>2.0.0.*</em:maxVersion>
-      </Description>
-    </em:targetApplication>
-
-    <!-- songbird -->
-
-    <em:targetApplication>
-      <Description>
-        <em:id>songbird@songbirdnest.com</em:id>
-        <em:minVersion>0.4</em:minVersion>
-        <em:maxVersion>1.0+</em:maxVersion>
-      </Description>
-    </em:targetApplication>
-
     <!-- toolkit -->
 
     <em:targetApplication>
