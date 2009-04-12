@@ -16,6 +16,7 @@
                 <maxVersion>3.5.*</maxVersion>
                 <updateLink/>
                 <updateHash/>
+                <updateInfoURL>http://bard.github.com/mozrepl/changelog.xhtml</updateInfoURL>
               </r:Description>
             </targetApplication>
 
@@ -28,6 +29,7 @@
                 <maxVersion>1.9.*</maxVersion>
                 <updateLink/>
                 <updateHash/>
+                <updateInfoURL>http://bard.github.com/mozrepl/changelog.xhtml</updateInfoURL>                
               </Description>
             </targetApplication>
           </r:Description>
