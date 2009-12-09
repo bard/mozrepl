@@ -476,29 +476,27 @@ doc.doc =
 
 function reloadChrome() {
     try {
-      Components.classes["@mozilla.org/chrome/chrome-registry;1"].
-        getService(Components.interfaces.nsIXULChromeRegistry).reloadChrome();
+      Cc["@mozilla.org/chrome/chrome-registry;1"].
+        getService(Ci.nsIXULChromeRegistry).reloadChrome();
     } catch(e) { this.print('Exception while reloading chrome: '+e); }
 }
-
 reloadChrome.doc = "Reload all chrome packages";
 
-function debugPrefs(enabled) {
+function setDebugPrefs(enabled) {
     try {
       var dbgPrefs = ["nglayout.debug.disable_xul_cache", 
       	              "javascript.options.showInConsole", 
                       "browser.dom.window.dump.enabled"];
 
-      var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-          .getService(Components.interfaces.nsIPrefBranch);
+      var prefs = Cc["@mozilla.org/preferences-service;1"]
+          .getService(Ci.nsIPrefBranch);
 
       for each (let pname in dbgPrefs) { 
-	  prefs.setBoolPref(pname, enabled); 
+          prefs.setBoolPref(pname, enabled); 
       }
     } catch(e) { this.print('Exception while setting debugging preferences: '+e); }
 }
-
-debugPrefs.doc = "Enable/Disable common debugging preferences";
+setDebugPrefs.doc = "Enable/Disable common debugging preferences";
 
 // INTERACTOR HANDLING
 // ----------------------------------------------------------------------
