@@ -13,7 +13,7 @@
               <r:Description>
                 <id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
                 <minVersion>3.0</minVersion>
-                <maxVersion>3.5.*</maxVersion>
+                <maxVersion>3.6.*</maxVersion>
                 <updateLink/>
                 <updateHash/>
                 <updateInfoURL>http://bard.github.com/mozrepl/changelog.xhtml</updateInfoURL>
