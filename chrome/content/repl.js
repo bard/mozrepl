@@ -619,7 +619,7 @@ var javascriptInteractor = {
                 try {
                     var result = repl.evaluate(chunk);
                     if(this != undefined)
-                        repl.print(represent(result));
+                        repl.print(repl.represent(result));
                     repl._prompt();
                 } catch(e) {
                     handleError(e);
@@ -635,7 +635,7 @@ var javascriptInteractor = {
                 try {
                     var result = repl.evaluate(this._inputBuffer);
                     if(result != undefined)
-                        repl.print(represent(result));
+                        repl.print(repl.represent(result));
                     repl._prompt();
                 } catch(e) {
                     handleError(e);
@@ -647,7 +647,7 @@ var javascriptInteractor = {
                 try {
                     var result = repl.evaluate(this._inputBuffer);
                     if(result != undefined)
-                        repl.print(represent(result));
+                        repl.print(repl.represent(result));
                     repl._prompt();
                     this._inputBuffer = '';
                 } catch(e if e.name == 'SyntaxError') {
