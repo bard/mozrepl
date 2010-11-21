@@ -165,11 +165,8 @@ function isActive() {
 
 function observe(subject, topic, data) {
     switch(topic) {
-    case 'app-startup':
+    case 'profile-after-change':
         srvObserver.addObserver(this, 'network:offline-status-changed', false);
-        srvObserver.addObserver(this, 'final-ui-startup', false);
-        break;
-    case 'final-ui-startup':
         if(srvPref.getBranch('network.').getBoolPref('online') &&
            pref.getBoolPref('autoStart'))
             this.start(pref.getIntPref('port'));
@@ -187,6 +184,8 @@ function observe(subject, topic, data) {
             break;
         }
         break;
+    case 'quit-application-granted':
+	this.stop();
     }
 }
 
