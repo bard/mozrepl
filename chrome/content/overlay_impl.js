@@ -82,6 +82,19 @@ function toggleServer(sourceCommand) {
         server.stop();
     else
         server.start(port);
+
+    pref.setBoolPref('started', server.isActive());
+}
+
+function updatePreferences(prefWin) {
+    if(server) {
+	document.getElementById('startstop')
+	    .setAttribute('label', server.isActive() ? 'Stop' : 'Start');
+    }
+    else {
+	document.getElementById('startstop')
+	    .setAttribute('label', pref.getBoolPref("started") ? 'Stop' : 'Start');
+    }
 }
 
 function updateMenu(xulPopup) {

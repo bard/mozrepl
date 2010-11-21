@@ -5,6 +5,9 @@ overlay chrome://browser/content/browser.xul         chrome://mozrepl/content/ov
 overlay chrome://messenger/content/messenger.xul     chrome://mozrepl/content/overlay_mail.xul
 overlay chrome://songbird/content/xul/menuOverlay.xul chrome://mozrepl/conte/overlay_songbird.xul
 
+override chrome://mozrepl/content/options.xul chrome://mozrepl/content/preferences_window.xul 
+override chrome://mozrepl/content/options.xul chrome://mozrepl/content/fennec_options.xul application={a23983c0-fd0e-11dc-95ff-0800200c9a66}
+
 interfaces components/MozRepl.xpt
 component {57f4284b-1f9b-4990-8525-9ed5cbb23e01} components/MozRepl.js
 contract @hyperstruct.net/mozlab/mozrepl;1 {57f4284b-1f9b-4990-8525-9ed5cbb23e01}

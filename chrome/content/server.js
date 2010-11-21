@@ -95,6 +95,7 @@ function start(port) {
         serv.init(port, pref.getBoolPref('loopbackOnly'), -1);
         serv.asyncListen(this);
         log('MozRepl: Listening...');
+        pref.setBoolPref('started', true);
     } catch(e) {
         log('MozRepl: Exception: ' + e);
     }
@@ -155,6 +156,7 @@ function stop() {
     log('MozRepl: Closing...');
     serv.close();
     sessions.quit();
+    pref.setBoolPref('started', false);
     serv = undefined;
 }
 

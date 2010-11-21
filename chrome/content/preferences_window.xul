@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+ 
+<prefwindow id="mozrepl-prefs"
+	    title="MozREPL Preferences"
+	    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/x-javascript" src="overlay.js"/>
+ 
+<prefpane id="mozrepl.prefs-pane" label="MozREPL Settings">
+  <preferences>
+    <preference id="mozrepl_autostart" name="extensions.mozrepl.autoStart" type="bool"/>
+    <preference id="mozrepl_loopback_only" name="extensions.mozrepl.loopbackOnly" type="bool"/>
+    <preference id="mozrepl_port" name="extensions.mozrepl.port" type="int"/>
+    <preference id="mozrepl_started" name="extensions.mozrepl.started" type="bool"/>
+  </preferences>
+ 
+  <hbox align="center">
+    <label control="autostart" value="Activate on startup"/>
+    <checkbox preference="mozrepl_autostart" id="autostart"/>
+  </hbox>
+  <hbox align="center">
+    <label control="loopback" value="Allow outside connections"/>
+    <checkbox preference="mozrepl_loopback_only" id="loopback"/>
+  </hbox>
+  <hbox align="center">
+    <label control="port" value="Change TCP Port"/>
+    <textbox preference="mozrepl_port" id="port" maxlength="6"/>
+  </hbox>
+  <hbox align="center">
+    <button id="startstop" label="Unknown" 
+	    oncommand="mozrepl.toggleServer();mozrepl.updatePreferences()">
+    </button>
+  </hbox>
+</prefpane>
+<script type="application/x-javascript">
+mozrepl.updatePreferences();
+</script>
+</prefwindow>

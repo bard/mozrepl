@@ -35,6 +35,8 @@
       </Description>
     </em:targetApplication>
 
+    <em:optionsURL>chrome://mozrepl/content/options.xul</em:optionsURL>
+
     <em:name>MozRepl</em:name>
     <em:description>Interactive console for Mozilla applications</em:description>
     <em:creator>Massimiliano Mirra</em:creator>
