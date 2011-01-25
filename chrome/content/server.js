@@ -166,8 +166,19 @@ function isActive() {
 }
 
 function observe(subject, topic, data) {
+    /**
+       NOTE:
+       On Gecko 1.9.2 we're observing app-startup and then profile-after-change
+
+       On Gecko 2.0 we're observing only profile-after-change 
+
+       (See https://developer.mozilla.org/en/XPCOM/XPCOM_changes_in_Gecko_2.0)
+     */
     switch(topic) {
-    case 'profile-after-change':
+    case 'app-startup': // Gecko 1.9.2 only
+	srvObserver.addObserver(this, 'profile-after-change', false);
+        break;
+    case 'profile-after-change': // Gecko 1.9.2 and Gecko 2.0 
         srvObserver.addObserver(this, 'network:offline-status-changed', false);
         if(srvPref.getBranch('network.').getBoolPref('online') &&
            pref.getBoolPref('autoStart'))
