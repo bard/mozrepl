@@ -15,25 +15,12 @@
     <preference id="mozrepl_started" name="extensions.mozrepl.started" type="bool"/>
   </preferences>
  
+  <checkbox preference="mozrepl_autostart" id="autostart" label="Activate on startup"/>
+  <checkbox preference="mozrepl_loopback_only" id="loopback" label="Allow outside connections"/>
   <hbox align="center">
-    <label control="autostart" value="Activate on startup"/>
-    <checkbox preference="mozrepl_autostart" id="autostart"/>
-  </hbox>
-  <hbox align="center">
-    <label control="loopback" value="Allow outside connections"/>
-    <checkbox preference="mozrepl_loopback_only" id="loopback"/>
-  </hbox>
-  <hbox align="center">
-    <label control="port" value="Change TCP Port"/>
-    <textbox preference="mozrepl_port" id="port" maxlength="6"/>
-  </hbox>
-  <hbox align="center">
-    <button id="startstop" label="Unknown" 
-	    oncommand="mozrepl.toggleServer();mozrepl.updatePreferences()">
-    </button>
+    <label control="port" value="Port:"/>
+    <textbox preference="mozrepl_port" id="port" type="number"
+             min="1" max="65535" decimalplaces="0"/>
   </hbox>
 </prefpane>
-<script type="application/x-javascript">
-mozrepl.updatePreferences();
-</script>
 </prefwindow>
