@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+         id="mozrepl-overlay">
+         
+  <script type="application/javascript">
+  /*
+    NOTE: add listener to update mozrepl-startstop-button inside fennec options
+
+    https://wiki.mozilla.org/Mobile/Fennec/Extensions/Options#Options_XUL
+  */
+  addEventListener("AddonOptionsLoad", function initOptions(event) {
+    if (event.target.id != "urn:mozilla:item:mozrepl@hyperstruct.net")
+      return;
+
+      mozrepl.updateStartStopButton();
+
+    removeEventListener(event.type, arguments.callee, false);
+  }, false);
+  </script>    
+
+</overlay>

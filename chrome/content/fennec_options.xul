@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 
-<!DOCTYPE mozrepl SYSTEM "chrome://mozrepl/locale/mozrepl.dtd">
-
 <vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <setting pref="extensions.mozrepl.autoStart" type="bool" title="Active on startup"/>
   <setting pref="extensions.mozrepl.loopbackOnly" type="bool" title="Allow outside connections"/>
   <setting pref="extensions.mozrepl.port" type="integer" title="Change TCP port"/>
-  <setting pref="extensions.mozrepl.started" type="bool" oncommand="mozrepl.toggleServer()"
-	   onlabel="Started" offlabel="Stopped"
-	   title="Change service status"/>
+  <setting type="button" title="Stopped">
+    <hbox align="center">
+      <button label="Start" id="mozrepl-startstop-button"
+              oncommand="mozrepl.toggleServer();"/>
+    </hbox>
+  </setting>
 </vbox>

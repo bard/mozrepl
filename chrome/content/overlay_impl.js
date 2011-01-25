@@ -58,6 +58,8 @@ var server;
 function initOverlay() {
     server = Cc['@hyperstruct.net/mozlab/mozrepl;1'].getService(Ci.nsIMozRepl);
 
+    updateStartStopButton();
+
     // upgradeCheck(
     //     'mozrepl@hyperstruct.net',
     //     'extensions.mozrepl.version', {
@@ -82,9 +84,24 @@ function toggleServer(sourceCommand) {
         server.stop();
     else
         server.start(port);
+
+    updateStartStopButton();
 }
 
-function updateMenu(xulPopup) {
+function updateStartStopButton() {
+    // NOTE: update mozrepl-startstop-button if exists
+    //       (inside desktop preference-window or fennec options)
+    var btn = document.getElementById("mozrepl-startstop-button");
+
+    if(btn) {
+	if(server.isActive())
+	    btn.label = "Stop";
+	else
+	    btn.label = "Start";
+    }
+}
+
+function updateMenu(xulPopup) {    
     document.getElementById('mozrepl-command-toggle')
         .setAttribute('label', server.isActive() ? 'Stop' : 'Start');
     document.getElementById('mozrepl-command-listen-external')

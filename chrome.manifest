@@ -2,6 +2,10 @@ content mozrepl chrome/content/
 skin mozrepl classic/1.0 chrome/skin/classic/
 
 overlay chrome://browser/content/browser.xul         chrome://mozrepl/content/overlay_browser.xul
+
+overlay  chrome://browser/content/browser.xul 	     chrome://mozrepl/content/overlay_mobile.xul application={a23983c0-fd0e-11dc-95ff-0800200c9a66}
+
+
 overlay chrome://messenger/content/messenger.xul     chrome://mozrepl/content/overlay_mail.xul
 overlay chrome://songbird/content/xul/menuOverlay.xul chrome://mozrepl/conte/overlay_songbird.xul
 

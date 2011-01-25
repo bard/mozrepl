@@ -6,7 +6,6 @@
 	    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script type="application/x-javascript" src="overlay.js"/>
- 
 <prefpane id="mozrepl.prefs-pane" label="MozREPL Settings">
   <preferences>
     <preference id="mozrepl_autostart" name="extensions.mozrepl.autoStart" type="bool"/>
@@ -21,6 +20,10 @@
     <label control="port" value="Port:"/>
     <textbox preference="mozrepl_port" id="port" type="number"
              min="1" max="65535" decimalplaces="0"/>
+  </hbox>
+  <hbox align="center">
+    <button label="Start" id="mozrepl-startstop-button"
+            oncommand="mozrepl.toggleServer();"/>
   </hbox>
 </prefpane>
 </prefwindow>
