@@ -100,8 +100,7 @@ function onSocketAccepted(serv, transport) {
         var stream = transport.openInputStream(0, 0, 0);
         var instream = Cc['@mozilla.org/intl/converter-input-stream;1']
             .createInstance(Ci.nsIConverterInputStream);
-        instream.init(stream, 'UTF-8', 1024,
-                      Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
+        instream.init(instream, 'UTF-8', 1024, 0);
     } catch(e) {
         log('E, MOZREPL : Error : ' + e);
     }
