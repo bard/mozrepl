@@ -104,6 +104,9 @@ function start(port) {
 function onSocketAccepted(serv, transport) {
     try {
         var outstream = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING , 0, 0);
+        var outstreamutf8 = Cc['@mozilla.org/intl/converter-output-stream;1']
+            .createInstance(Ci.nsIConverterOutputStream);
+        outstreamutf8.init(outstream, 'UTF-8', 0, 0);
 
         var stream = transport.openInputStream(0, 0, 0);
         var instream = Cc['@mozilla.org/intl/converter-input-stream;1']
@@ -120,7 +123,7 @@ function onSocketAccepted(serv, transport) {
 
     var session = new REPL();
     session.onOutput = function(string) {
-        outstream.write(string, string.length);
+        outstreamutf8.writeString(string);
     };
     session.onQuit = function() {
         instream.close();
