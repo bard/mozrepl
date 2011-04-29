@@ -936,7 +936,7 @@ function evaluate(code) {
     _.cacheKiller++;
     var scriptUrl = _.TMP_FILE_URL + '?' + _.cacheKiller;
     debug('evaluate', scriptUrl);
-    var result = loader.loadSubScript(scriptUrl, this._workContext);
+    var result = loader.loadSubScript(scriptUrl, this._workContext, 'UTF-8');
 
     this.$$ = result;
     return result;
