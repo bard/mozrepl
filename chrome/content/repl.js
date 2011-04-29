@@ -920,7 +920,7 @@ function evaluate(code) {
     os.writeString(code);
     os.close();
 
-    var result = loader.loadSubScript(_.TMP_FILE_URL, this._workContext);
+    var result = loader.loadSubScript(_.TMP_FILE_URL, this._workContext, 'UTF-8');
 
     this.$$ = result;
     return result;
