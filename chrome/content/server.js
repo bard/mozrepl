@@ -104,12 +104,14 @@ function start(port) {
 function onSocketAccepted(serv, transport) {
     try {
         var outstream = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING , 0, 0);
+        var outstreamutf8 = Cc['@mozilla.org/intl/converter-output-stream;1']
+            .createInstance(Ci.nsIConverterOutputStream);
+        outstreamutf8.init(outstream, 'UTF-8', 0, 0);
 
-        var stream = transport.openInputStream(0, 0, 0);
-        var instream = Cc['@mozilla.org/intl/converter-input-stream;1']
+        var instream = transport.openInputStream(0, 0, 0);
+        var instreamutf8 = Cc['@mozilla.org/intl/converter-input-stream;1']
             .createInstance(Ci.nsIConverterInputStream);
-        instream.init(stream, 'UTF-8', 1024,
-                      Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
+        instreamutf8.init(instream, 'UTF-8', 1024, 0);
     } catch(e) {
         log('MozRepl: Error: ' + e);
     }
@@ -121,7 +123,7 @@ function onSocketAccepted(serv, transport) {
 
     var session = new REPL();
     session.onOutput = function(string) {
-        outstream.write(string, string.length);
+        outstreamutf8.writeString(string);
     };
     session.onQuit = function() {
         instream.close();
@@ -132,7 +134,7 @@ function onSocketAccepted(serv, transport) {
 
     var pump = Cc['@mozilla.org/network/input-stream-pump;1']
         .createInstance(Ci.nsIInputStreamPump);
-    pump.init(stream, -1, -1, 0, 0, false);
+    pump.init(instream, -1, -1, 0, 0, false);
     pump.asyncRead({
         onStartRequest: function(request, context) {},
         onStopRequest: function(request, context, status) {
@@ -140,7 +142,7 @@ function onSocketAccepted(serv, transport) {
             },
         onDataAvailable: function(request, context, inputStream, offset, count) {
             var str = {}
-            instream.readString(count, str)
+            instreamutf8.readString(count, str)
             session.receive(str.value);
             }
         }, null);

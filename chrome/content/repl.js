@@ -175,14 +175,14 @@ function represent(thing) {
 
         s = thing;
         if(names.length > 0) {
-            s += ' — {';
+            s += ' \u2014 {';
             s += names.slice(0, 7).map(function(n) {
                 var repr = n + ': ';
                 try {
                     if(thing[n] === null)
                         repr += 'null';
                     else if(typeof(thing[n]) == 'object')
-                        repr += '{…}';
+                        repr += '{\u2026}';
                     else
                         repr += represent(thing[n]);
                 } catch(e) {
@@ -196,7 +196,7 @@ function represent(thing) {
         }
         break;
     case 'function':
-        s = 'function() {…}';
+        s = 'function() {\u2026}';
         break;
     default:
         s = thing;
@@ -920,7 +920,7 @@ function evaluate(code) {
     os.writeString(code);
     os.close();
 
-    var result = loader.loadSubScript(_.TMP_FILE_URL, this._workContext);
+    var result = loader.loadSubScript(_.TMP_FILE_URL, this._workContext, 'UTF-8');
 
     this.$$ = result;
     return result;
