@@ -88,15 +88,18 @@ var sessions = {
 };
 
 
-function start(port) {
+function start(port, loopbackOnly) {
+    if(typeof(loopbackOnly) == 'undefined')
+        loopbackOnly = true;
+    
     try {
         serv = Cc['@mozilla.org/network/server-socket;1']
             .createInstance(Ci.nsIServerSocket);
-        serv.init(port, pref.getBoolPref('loopbackOnly'), -1);
+        serv.init(port, loopbackOnly, -1);
         serv.asyncListen(this);
-        log('MozRepl: Listening...');
+        log('I, MOZREPL : Listening : ' + (loopbackOnly ? '127.0.0.1' : '0.0.0.0') + ':' + port);
     } catch(e) {
-        log('MozRepl: Exception: ' + e);
+        log('E, MOZREPL : Error : ' + e);
     }
 }
 
@@ -110,9 +113,9 @@ function onSocketAccepted(serv, transport) {
         instream.init(stream, 'UTF-8', 1024,
                       Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
     } catch(e) {
-        log('MozRepl: Error: ' + e);
+        log('E, MOZREPL : Error : ' + e);
     }
-    log('MozRepl: Accepted connection.');
+    log('I, MOZREPL : Client connected : ' + transport.host + ':' + transport.port);
 
     var window = Cc['@mozilla.org/appshell/window-mediator;1']
         .getService(Ci.nsIWindowMediator)
@@ -123,6 +126,7 @@ function onSocketAccepted(serv, transport) {
         outstream.write(string, string.length);
     };
     session.onQuit = function() {
+        log('I, MOZREPL : Client closed connection : ' + transport.host + ':' + transport.port);        
         instream.close();
         outstream.close();
         sessions.remove(session);
@@ -152,7 +156,7 @@ function onStopListening(serv, status) {
 
 
 function stop() {
-    log('MozRepl: Closing...');
+    log('I, MOZREPL : Closing.');
     serv.close();
     sessions.quit();
     serv = undefined;
@@ -176,7 +180,8 @@ function observe(subject, topic, data) {
         switch(data) {
         case 'online':
             if(pref.getBoolPref('autoStart'))
-                this.start(pref.getIntPref('port'));
+                this.start(pref.getIntPref('port'),
+                           pref.getBoolPref('loopbackOnly'));
             break;
         case 'offline':
             if(isActive())
