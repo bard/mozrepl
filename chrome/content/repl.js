@@ -546,18 +546,20 @@ var javascriptInteractor = {
     onStart: function(repl) {
         this._inputBuffer = '';
 
-        repl.print('');
-        repl.print('Welcome to MozRepl.');
-        repl.print('');
-        repl.print(' - If you get stuck at the "...>" prompt, enter a semicolon (;) at the beginning of the line to force evaluation.');
-        repl.print(' - If you get errors after every character you type, see http://github.com/bard/mozrepl/wikis/troubleshooting (short version: stop using Microsoft telnet, use netcat or putty instead)');
-        repl.print('');
-        repl.print('Current working context: ' + (repl._workContext instanceof Ci.nsIDOMWindow ?
-                                                  repl._workContext.document.location.href :
-                                                  repl._workContext));
-        repl.print('Current input mode: ' + repl._env['inputMode']);
+        if(srvPref.getBoolPref('interactor.javascript.printWelcome')) {
+            repl.print('');
+            repl.print('Welcome to MozRepl.');
+            repl.print('');
+            repl.print(' - If you get stuck at the "...>" prompt, enter a semicolon (;) at the beginning of the line to force evaluation.');
+            repl.print(' - If you get errors after every character you type, see http://github.com/bard/mozrepl/wikis/troubleshooting (short version: stop using Microsoft telnet, use netcat or putty instead)');
+            repl.print('');
+            repl.print('Current working context: ' + (repl._workContext instanceof Ci.nsIDOMWindow ?
+                                                      repl._workContext.document.location.href :
+                                                      repl._workContext));
+            repl.print('Current input mode: ' + repl._env['inputMode']);
 
-        repl.print('');
+            repl.print('');
+        }
 
         if(repl._name != 'repl') {
             repl.print('Hmmm, seems like other repl\'s are running in repl context.');
