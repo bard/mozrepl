@@ -1,42 +1,41 @@
-const CATEGORY = 'c-mozrepl';
-const CONTRACT_ID = '@mozilla.org/commandlinehandler/general-startup;1?type=repl';
-
-
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cr = Components.results;
-const CLASS_ID = Components.ID('{f62cbe68-ee70-4264-8586-66df185244f5}');
+const Cu = Components.utils;
 
+const CATEGORY = 'c-mozrepl';
+const CLASS_ID = Components.ID('{f62cbe68-ee70-4264-8586-66df185244f5}');
+const CONTRACT_ID = '@mozilla.org/commandlinehandler/general-startup;1?type=repl';
 const INTERFACE = Ci.nsICommandLineHandler;
 
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
-function MozReplCommandLineHandler() {
+const srvPref = Components.classes['@mozilla.org/preferences-service;1']
+    .getService(Components.interfaces.nsIPrefService)
+    .getBranch('extensions.mozrepl.');
 
-}
+
+function MozReplCommandLineHandler() {}
 
 MozReplCommandLineHandler.prototype = {
-  classDescription: "MozREPL command line handler",
-  classID: CLASS_ID,
-  contactID: CONTRACT_ID,
-  QueryInterface: XPCOMUtils.generateQI([
-    Ci.nsICommandLineHandler
-  ]),
+    classDescription: "MozRepl command line handler",
+    classID: CLASS_ID,
+    contactID: CONTRACT_ID,
+    QueryInterface: XPCOMUtils.generateQI([Ci.nsICommandLineHandler]),
 
-  handle: function(cmdLine) {
-    var uri;
-    try {
-      uri = cmdLine.handleFlagWithParam('repl', false);
-    } catch (e) {
-    }
+    handle: function(cmdLine) {
+        var port;
+        try {
+            port = parseInt(cmdLine.handleFlagWithParam('repl', false));
+        } catch (e) {}
 
-    if(uri || cmdLine.handleFlag('repl', false))
-      Cc['@hyperstruct.net/mozlab/mozrepl;1']
-      .getService(Ci.nsIMozRepl)
-      .start(uri ? parseInt(uri) : 4242);
-  },
+        if(port || cmdLine.handleFlag('repl', false))
+            Cc['@hyperstruct.net/mozlab/mozrepl;1']
+            .getService(Ci.nsIMozRepl)
+            .start(port || srvPref.getIntPref('port'));
+    },
 
-  helpInfo: '-repl              Start REPL.\n'
+    helpInfo: '-repl              Start REPL.\n'
 };
 
 /**
