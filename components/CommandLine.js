@@ -24,18 +24,34 @@ MozReplCommandLineHandler.prototype = {
     QueryInterface: XPCOMUtils.generateQI([Ci.nsICommandLineHandler]),
 
     handle: function(cmdLine) {
-        var port;
+        var start;
         try {
-            port = parseInt(cmdLine.handleFlagWithParam('repl', false));
+            start = cmdLine.handleFlag('repl', false);
         } catch (e) {}
 
-        if(port || cmdLine.handleFlag('repl', false))
-            Cc['@hyperstruct.net/mozlab/mozrepl;1']
-            .getService(Ci.nsIMozRepl)
-            .start(port || srvPref.getIntPref('port'));
+        var contextWindowType;
+        try {
+            contextWindowType = cmdLine.handleFlagWithParam('repl-context', false);
+        } catch(e) {}
+
+        if(start || contextWindowType) {
+            var port = Number(cmdLine.handleFlagWithParam('repl', false)) ||
+                srvPref.getIntPref('port');
+
+            var service = Cc['@hyperstruct.net/mozlab/mozrepl;1']
+                .getService(Ci.nsIMozRepl)
+                .wrappedJSObject;
+
+            if(contextWindowType)
+                service.setContextWindowType(contextWindowType);
+
+            service.start(port);
+        }
     },
 
-    helpInfo: '-repl              Start REPL.\n'
+    helpInfo: ['-repl              Start REPL.\n',
+               '-repl-context      Start in the context gives as window type (see XUL windowtype attribute).\n'].join('')
+            
 };
 
 /**

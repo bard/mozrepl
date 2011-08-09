@@ -58,6 +58,7 @@ loader.loadSubScript('chrome://mozrepl/content/repl.js', REPL.prototype);
 // ----------------------------------------------------------------------
 
 var serv;
+var contextWindowType;
 
 
 // CODE
@@ -115,12 +116,11 @@ function onSocketAccepted(serv, transport) {
     } catch(e) {
         log('E, MOZREPL : Error : ' + e);
     }
-    log('I, MOZREPL : Client connected : ' + transport.host + ':' + transport.port);
 
-    var window = Cc['@mozilla.org/appshell/window-mediator;1']
+    var context = Cc['@mozilla.org/appshell/window-mediator;1']
         .getService(Ci.nsIWindowMediator)
-        .getMostRecentWindow('');
-
+        .getMostRecentWindow(typeof(contextWindowType) !== 'undefined' ?
+                             contextWindowType : pref.getCharPref('startingContext'));
     var session = new REPL();
     session.onOutput = function(string) {
         outstream.write(string, string.length);
@@ -131,7 +131,11 @@ function onSocketAccepted(serv, transport) {
         outstream.close();
         sessions.remove(session);
     };
-    session.init(window);
+    session.init(context);
+
+    log('I, MOZREPL : Client connected : ' + transport.host + ':' + transport.port +
+        ' : ' + (context instanceof Ci.nsIDOMWindow ?
+                 context.document.location.href : context));
 
     var pump = Cc['@mozilla.org/network/input-stream-pump;1']
         .createInstance(Ci.nsIInputStreamPump);
@@ -192,6 +196,10 @@ function observe(subject, topic, data) {
     case 'quit-application-granted':
 	this.stop();
     }
+}
+
+function setContextWindowType(windowType) {
+    contextWindowType = windowType;
 }
 
 // UTILITIES
