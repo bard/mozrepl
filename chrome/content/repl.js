@@ -546,6 +546,12 @@ pushInteractor.__defineGetter__('doc', function() {
 
 var javascriptInteractor = {
     onStart: function(repl) {
+        debug('start');
+
+        Cc['@mozilla.org/observer-service;1']
+            .getService(Ci.nsIObserverService)
+            .notifyObservers(null, "startupcache-invalidate", null);
+
         this._inputBuffer = '';
 
         if(srvPref.getBoolPref('interactor.javascript.printWelcome')) {
@@ -858,8 +864,12 @@ function receive(input) {
 // ----------------------------------------------------------------------
 
 function debug() {
-    if(DEBUG)
-        dump('MOZREPL :: DEBUG :: ' + Array.prototype.slice.call(arguments).join(' :: ') + '\n');
+    if(DEBUG) {
+        var s = 'D, MOZREPL : ' + Array.prototype.slice.call(arguments).join(' :: ');
+        if(!s.match(/\n$/))
+            s += '\n';
+        dump(s);
+    }
 }
 
 function formatStackTrace(exception) {
@@ -907,8 +917,6 @@ function scan(string, separator) {
 }
 
 function evaluate(code) {
-    debug('evaluate', code);
-
     var _ = arguments.callee;
     if(typeof(_.TMP_FILE) == 'undefined') {
         _.TMP_FILE = Cc['@mozilla.org/file/directory_service;1']
@@ -937,7 +945,9 @@ function evaluate(code) {
         _.cacheKiller = 0;
     
     _.cacheKiller++;
-    var result = loader.loadSubScript(_.TMP_FILE_URL + '?' + _.cacheKiller, this._workContext);
+    var scriptUrl = _.TMP_FILE_URL + '?' + _.cacheKiller;
+    debug('evaluate', scriptUrl);
+    var result = loader.loadSubScript(scriptUrl, this._workContext);
 
     this.$$ = result;
     return result;
