@@ -50,6 +50,8 @@ const srvPref = Cc['@mozilla.org/preferences-service;1']
 var util = {};
 loader.loadSubScript('chrome://mozrepl/content/util.js', util);
 
+const DEBUG = false;
+
 
 // CORE
 // ----------------------------------------------------------------------
@@ -580,6 +582,8 @@ var javascriptInteractor = {
     },
 
     handleInput: function(repl, input) {
+        debug('input', input);
+
         if(input.match(/^\s*$/) && this._inputBuffer.match(/^\s*$/)) {
             repl._prompt();
             return;
@@ -853,6 +857,11 @@ function receive(input) {
 // UTILITIES
 // ----------------------------------------------------------------------
 
+function debug() {
+    if(DEBUG)
+        dump('MOZREPL :: DEBUG :: ' + Array.prototype.slice.call(arguments).join(' :: ') + '\n');
+}
+
 function formatStackTrace(exception) {
     var trace = '';
     if(exception.stack) {
@@ -898,6 +907,8 @@ function scan(string, separator) {
 }
 
 function evaluate(code) {
+    debug('evaluate', code);
+
     var _ = arguments.callee;
     if(typeof(_.TMP_FILE) == 'undefined') {
         _.TMP_FILE = Cc['@mozilla.org/file/directory_service;1']
@@ -922,7 +933,11 @@ function evaluate(code) {
     os.writeString(code);
     os.close();
 
-    var result = loader.loadSubScript(_.TMP_FILE_URL, this._workContext);
+    if(typeof(_.cacheKiller) == 'undefined')
+        _.cacheKiller = 0;
+    
+    _.cacheKiller++;
+    var result = loader.loadSubScript(_.TMP_FILE_URL + '?' + _.cacheKiller, this._workContext);
 
     this.$$ = result;
     return result;
