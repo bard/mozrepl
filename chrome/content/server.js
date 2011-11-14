@@ -121,6 +121,13 @@ function onSocketAccepted(serv, transport) {
         .getService(Ci.nsIWindowMediator)
         .getMostRecentWindow(typeof(contextWindowType) !== 'undefined' ?
                              contextWindowType : pref.getCharPref('startingContext'));
+
+    if(context === null) {
+        context = Cc["@mozilla.org/appshell/appShellService;1"]
+            .getService(Ci.nsIAppShellService)
+            .hiddenDOMWindow.wrappedJSObject;
+    }
+
     var session = new REPL();
     session.onOutput = function(string) {
         outstream.write(string, string.length);
