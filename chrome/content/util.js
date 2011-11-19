@@ -35,30 +35,28 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
 function helpUrlFor(thing) {
-    function xulPlanetXpcomClassUrl(classID) {
-        return 'http://xulplanet.com/references/xpcomref/comps/c_' +
-            classID.replace(/^@mozilla.org\//, '').replace(/[;\?\/=\-]/g, '') + '.html';
+    function mdcXpcomClassUrl(classID) {
+        return 'https://developer.mozilla.org/en-US/search?q=' + escape('"'+classID+'"');
     }
-    function xulPlanetXulElementUrl(element) {
-        return 'http://xulplanet.com/references/elemref/ref_' +
-            element.nodeName + '.html';
+    function mdcXulElementUrl(element) {
+        return 'http://developer.mozilla.org/en/XUL/' +
+            element.nodeName;
     }
 
     if(typeof(thing) == 'string') {
         if(thing.match(/^@mozilla.org\//))
-            return xulPlanetXpcomClassUrl(thing);
+            return mdcXpcomClassUrl(thing);
 
     } else if(thing.QueryInterface &&
               (function() {
-                  const NS_NOINTERFACE = 0x80004002;
+                  var NS_NOINTERFACE = 0x80004002;
                   try {
                       thing.QueryInterface(Components.interfaces.nsIDOMXULElement);
                       return true;
                   } catch(e if e.result == NS_NOINTERFACE) {}
               })()) {
-        return xulPlanetXulElementUrl(thing);
+        return mdcXulElementUrl(thing);
     }
 }
 
@@ -93,15 +91,3 @@ function argList(fn) {
     else
         return [];
 }
-
-function xulPlanetCss(document) {
-    var cssLink = document.createElementNS(
-        'http://www.w3.org/1999/xhtml', 'link');
-    cssLink.rel = 'stylesheet';
-    cssLink.type = 'text/css';
-    cssLink.href = 'data:text/css,#sidebar, #header, #navigatebar, ' +
-        '.navlinks-pnc { display: none; } ' +
-        '#content { margin-left: 0; }';
-    document.getElementsByTagName('head')[0].appendChild(cssLink);
-}
-
