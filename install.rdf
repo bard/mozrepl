@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>mozrepl@hyperstruct.net</em:id>
-    <em:version>42.0.0</em:version>
+    <em:version>1.1b3</em:version>
     <em:type>2</em:type>
 
     <!-- firefox -->
