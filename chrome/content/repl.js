@@ -166,14 +166,14 @@ function represent(thing) {
 
         s = thing;
         if(names.length > 0) {
-            s += ' — {';
+            s += ' - {';
             s += names.slice(0, 7).map(function(n) {
                 var repr = n + ': ';
                 try {
                     if(thing[n] === null)
                         repr += 'null';
                     else if(typeof(thing[n]) == 'object')
-                        repr += '{…}';
+                        repr += '{...}';
                     else
                         repr += represent(thing[n]);
                 } catch(e) {
@@ -187,7 +187,7 @@ function represent(thing) {
         }
         break;
     case 'function':
-        s = 'function() {…}';
+        s = 'function() {...}';
         break;
     default:
         s = thing;
