@@ -2,8 +2,6 @@ content mozrepl chrome/content/
 skin mozrepl classic/1.0 chrome/skin/classic/
 
 overlay chrome://browser/content/browser.xul         chrome://mozrepl/content/overlay_browser.xul
-overlay chrome://messenger/content/messenger.xul     chrome://mozrepl/content/overlay_mail.xul
-overlay chrome://songbird/content/xul/menuOverlay.xul chrome://mozrepl/conte/overlay_songbird.xul
 
 interfaces components/MozRepl.xpt
 component {57f4284b-1f9b-4990-8525-9ed5cbb23e01} components/MozRepl.js
