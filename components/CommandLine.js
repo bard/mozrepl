@@ -63,6 +63,7 @@ MozReplCommandLineHandler.prototype = {
         if(start || contextWindowType) {
             var port = Number(cmdLine.handleFlagWithParam('repl', false)) ||
                 srvPref.getIntPref('port');
+            var loopbackOnly = srvPref.getBoolPref('loopbackOnly');
 
             var service = Cc['@hyperstruct.net/mozlab/mozrepl;1']
                 .getService(Ci.nsIMozRepl)
@@ -71,7 +72,7 @@ MozReplCommandLineHandler.prototype = {
             if(contextWindowType)
                 service.setContextWindowType(contextWindowType);
 
-            service.start(port);
+            service.start(port, loopbackOnly);
         }
     },
 

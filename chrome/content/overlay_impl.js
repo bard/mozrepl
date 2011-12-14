@@ -65,12 +65,11 @@ function togglePref(prefName) {
 }
 
 function toggleServer(sourceCommand) {
-    var port = pref.getIntPref('port');
-
     if(server.isActive())
         server.stop();
     else
-        server.start(port);
+        server.start(pref.getIntPref('port'),
+                     pref.getBoolPref('loopbackOnly'));
 }
 
 function updateMenu(xulPopup) {

@@ -173,7 +173,8 @@ function observe(subject, topic, data) {
         srvObserver.addObserver(this, 'network:offline-status-changed', false);
         if(srvPref.getBranch('network.').getBoolPref('online') &&
            pref.getBoolPref('autoStart'))
-            this.start(pref.getIntPref('port'));
+            this.start(pref.getIntPref('port'),
+                       pref.getBoolPref('loopbackOnly'));
 
         break;
     case 'network:offline-status-changed':
