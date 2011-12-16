@@ -1,27 +1,27 @@
 /*
  * Copyright 2006-2011 by Massimiliano Mirra
- * 
+ *
  * This file is part of MozRepl.
- * 
+ *
  * MozRepl is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 3 of the License, or (at your
  * option) any later version.
- * 
+ *
  * MozRepl is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * The interactive user interfaces in modified source and object code
  * versions of this program must display Appropriate Legal Notices, as
  * required under Section 5 of the GNU General Public License version 3.
- * 
+ *
  * Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
- *  
+ *
  */
 
 
@@ -241,7 +241,7 @@ or optionally into an arbitrary context passed as a second parameter.';
 // ----------------------------------------------------------------------
 
 function enter(context, wrapped) {
-    if (wrapped != true && context.wrappedJSObject != undefined) 
+    if (wrapped != true && context.wrappedJSObject != undefined)
       context = context.wrappedJSObject;
 
     this._contextHistory.push(this._workContext);
@@ -475,15 +475,15 @@ reloadChrome.doc = "Reload all chrome packages";
 
 function setDebugPrefs(enabled) {
     try {
-      var dbgPrefs = ["nglayout.debug.disable_xul_cache", 
-      	              "javascript.options.showInConsole", 
+      var dbgPrefs = ["nglayout.debug.disable_xul_cache",
+      	              "javascript.options.showInConsole",
                       "browser.dom.window.dump.enabled"];
 
       var prefs = Cc["@mozilla.org/preferences-service;1"]
           .getService(Ci.nsIPrefBranch);
 
-      for each (let pname in dbgPrefs) { 
-          prefs.setBoolPref(pname, enabled); 
+      for each (let pname in dbgPrefs) {
+          prefs.setBoolPref(pname, enabled);
       }
     } catch(e) { this.print('Exception while setting debugging preferences: '+e); }
 }
@@ -932,7 +932,7 @@ function evaluate(code) {
 
     if(typeof(_.cacheKiller) == 'undefined')
         _.cacheKiller = 0;
-    
+
     _.cacheKiller++;
     var scriptUrl = _.TMP_FILE_URL + '?' + _.cacheKiller;
     debug('evaluate', scriptUrl);
