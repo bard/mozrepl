@@ -719,7 +719,7 @@ var httpInspectInteractor = {
 
             var target = resolveObjectPath(repl._hostContext, path);
 
-            var content = <tbody/>;
+            var content = document.createElement("tbody");
             for(var propName in target) {
                 var propType;
                 try {
@@ -728,23 +728,31 @@ var httpInspectInteractor = {
                     propType = '[exception]';
                 }
 
-                content.appendChild(
-                        <tr>
-                        <td><a href={path + (path.slice(-1) == '/' ? '' : '/') + propName}>{propName}</a></td>
-                        <td>{propType}</td>
-                        </tr>
-                );
+    	        var tr = document.createElement("tr");
+		        tr.innerHTML = "<td><a href=" + path
+		            + (path.slice(-1) == '/' ? '' : '/') + propName
+		            + ">" + propName + "</a></td><td>" + propType + "</td>";
+                content.appendChild(tr);
             }
 
             var targetType = typeof(target);
             var targetRepresentation = target.toString();
 
-            var breadcrumbs = <div id="breadcrumb"><a href="/">[root]</a></div>;
+            var breadcrumbs = document.createElement("div");
+            breadcrumb.id = "breadcrumb";
+	        breadcrumb.innerHTML = '<a href="/">[root]</a>';
 
             var pathSteps = path.split('/');
             for(let i=1; i<pathSteps.length; i++) {
-                breadcrumbs.appendChild('/')
-                breadcrumbs.appendChild(<a href={pathSteps.slice(0,i+1).join('/')}>{pathSteps[i]}</a>);
+                breadcrumbs.appendChild('/');
+
+    	        var aLink = document.createElement("a");
+		        aLink.setAttribute(
+		            "href",
+		            pathSteps.slice(0,i+1).join('/')
+		        );
+		        aLink.textContent = pathSteps[i];
+                breadcrumbs.appendChild(aLink);
             }
             breadcrumbs.appendChild('(' + targetType + ')');
 
@@ -752,56 +760,53 @@ var httpInspectInteractor = {
             repl.print("Server: you wouldn't believe. :D");
             repl.print('Content-Type: application/xhtml+xml');
             repl.print();
-            repl.print(
-                    <html xmlns="http://www.w3.org/1999/xhtml">
-                    <head>
-                    <title>Meta-Browser</title>
-                    <style type="text/css">
-                    <![CDATA[
-                        html {
-                            font-family: "Trebuchet MS", Verdana, Helvetica, Arial, sans-serif;
-                            background: lightblue;
-                        }
-                        body { margin: 1em; }
-                        td { padding: 0.1em 0.5em; }
-                        h2 { text-align: center; }
-                        #content {
-                                -moz-border-radius: 1em;
-                            width: 40em; margin: auto;
-                            background: white;
-                            padding: 0.5em 1.5em 2em 1.5em;
-                            min-height: 30em;
-                        }
-                        #representation {
-                            white-space: -moz-pre-wrap;
-                            overflow: auto;
-                            background: #f2f2f2;
-                            padding: 1em;
-                        }
-                        #properties { width: 100%; }
-                        td { background: #f2f2f2; }
-                    ]]>
-                    </style>
-                    </head>
-                    <body>
-                    <div id="content">
-                    <h2>Context</h2>
-                    {breadcrumbs}
-
-                    <h2>Representation</h2>
-                    <pre id="representation">{targetRepresentation}</pre>
-
-                    <h2>Properties</h2>
-                    <table id="properties">
-                    <thead>
-                    <tr><th>Name</th><th>Type</th></tr>
-                    </thead>
-                    {content}
-                </table>
-                    </div>
-                    </body>
-                    </html>
-            );
+            repl.print('\
+                    <html xmlns="http://www.w3.org/1999/xhtml">\
+                    <head>\
+                    <title>Meta-Browser</title>\
+                    <style type="text/css">\
+                    <![CDATA[\
+                        html {\
+                            font-family: "Trebuchet MS", Verdana, Helvetica, Arial, sans-serif;\
+                            background: lightblue;\
+                        }\
+                        body { margin: 1em; }\
+                        td { padding: 0.1em 0.5em; }\
+                        h2 { text-align: center; }\
+                        #content {\
+                                -moz-border-radius: 1em;\
+                            width: 40em; margin: auto;\
+                            background: white;\
+                            padding: 0.5em 1.5em 2em 1.5em;\
+                            min-height: 30em;\
+                        }\
+                        #representation {\
+                            white-space: -moz-pre-wrap;\
+                            overflow: auto;\
+                            background: #f2f2f2;\
+                            padding: 1em;\
+                        }\
+                        #properties { width: 100%; }\
+                        td { background: #f2f2f2; }\
+                    ]]>\
+                    </style>\
+                    </head>\
+                    <body>\
+                    <div id="content">\
+                    <h2>Context</h2>'
+                    + breadcrumbs
+                    + '<h2>Representation</h2>\
+                    <pre id="representation">' + targetRepresentation
+                    + '</pre>\
+                    <h2>Properties</h2>\
+                    <table id="properties">\
+                    <thead>\
+                    <tr><th>Name</th><th>Type</th></tr>\
+                    </thead>' + content
+                + '</table>\
+                    </div>\
+                    </body>\
+                    </html>');
 
             // Don't keep connection open
             repl.quit();
