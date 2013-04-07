@@ -6,7 +6,7 @@ interface nsIObserver;
 [scriptable, uuid(57f4284b-1f9b-4990-8525-9ed5cbb23e01)]
 interface nsIMozRepl: nsISupports
 {
-    void start(in short port);
+    void start(in short port, in boolean loopbackOnly);
 
     void stop();
 
