@@ -39,9 +39,22 @@ const srvObserver = Cc['@mozilla.org/observer-service;1']
 const pref = srvPref.getBranch('extensions.mozrepl.');
 
 
-function REPL() {};
+function REPL() {
+    // FIX #37 (https://github.com/bard/mozrepl/issues/37)
+    // needed by toolkit >= 17.0
+    // http://blog.mozilla.org/addons/2012/08/20/exposing-objects-to-content-safely/
+    this.__exposedProps__ = this.__exposedProps__ || _generateExposedProps(this.__proto__);
+};
 loader.loadSubScript('chrome://mozrepl/content/repl.js', REPL.prototype);
 
+function _generateExposedProps(obj) {
+    var props = {};
+    Object.keys(obj).filter(function (k) k[0] !== '_').
+        forEach(function (k) {
+            props[k] = 'r';
+        });
+    return props;
+}
 
 // STATE
 // ----------------------------------------------------------------------
