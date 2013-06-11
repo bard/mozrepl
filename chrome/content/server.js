@@ -218,6 +218,8 @@ function setContextWindowType(windowType) {
 // ----------------------------------------------------------------------
 
 function log(msg) {
-    dump(msg + '\n');
+    if(! pref.getBoolPref('noLog')) {
+      dump(msg + '\n');
+    }
 }
 
