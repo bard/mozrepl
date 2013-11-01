@@ -119,11 +119,13 @@ The following keys are bound in this minor mode:
 
 (defvar moz-repl-port 4242)
 
+(defvar moz-temporary-file-name nil)
+
 (defun moz-temporary-file ()
-  (if (and moz-temporary-file
-           (file-readable-p moz-temporary-file))
-      moz-temporary-file
-    (setq moz-temporary-file (make-temp-file "emacs-mozrepl"))))
+  (if (and moz-temporary-file-name
+           (file-readable-p moz-temporary-file-name))
+      moz-temporary-file-name
+    (setq moz-temporary-file-name (make-temp-file "emacs-mozrepl"))))
 
 (defun moz-send-region (start end)
   "Send the region to Firefox via MozRepl."
@@ -203,7 +205,7 @@ Also switch to the interaction buffer."
   (interactive)
   (if (looking-back "\\(\\w+\\)> $")
       (insert moz-repl-name ".")
-    (insert last-command-char)))
+    (insert last-command-event)))
 
 (defun inferior-moz-input-sender (proc string)
   "Custom function to send input with comint-send-input.
