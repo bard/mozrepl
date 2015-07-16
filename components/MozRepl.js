@@ -1,27 +1,27 @@
 /*
  * Copyright 2006-2011 by Massimiliano Mirra
- * 
+ *
  * This file is part of MozRepl.
- * 
+ *
  * MozRepl is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 3 of the License, or (at your
  * option) any later version.
- * 
+ *
  * MozRepl is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * The interactive user interfaces in modified source and object code
  * versions of this program must display Appropriate Legal Notices, as
  * required under Section 5 of the GNU General Public License version 3.
- * 
+ *
  * Author: Massimiliano Mirra, <bard [at] hyperstruct [dot] net>
- *  
+ *
  */
 
 
@@ -56,7 +56,7 @@ MozRepl.prototype = {
   contactID: CONTRACT_ID,
   QueryInterface: XPCOMUtils.generateQI([
     INTERFACE,
-    Ci.nsISupports,  
+    Ci.nsISupports,
     Ci.nsIObserver
   ]),
 
@@ -86,43 +86,43 @@ else { /* Gecko 1.9.2 */
 
     var Module = {
         _firstTime: true,
-    
+
         registerSelf: function(aCompMgr, aFileSpec, aLocation, aType) {
             if (this._firstTime) {
                 this._firstTime = false;
                 throw Components.results.NS_ERROR_FACTORY_REGISTER_AGAIN;
             };
-    
+
             aCompMgr = aCompMgr.QueryInterface(Ci.nsIComponentRegistrar);
             aCompMgr.registerFactoryLocation(
                 CLASS_ID, CLASS_NAME, CONTRACT_ID, aFileSpec, aLocation, aType);
-    
+
             var catMan = Cc['@mozilla.org/categorymanager;1'].
                 getService(Ci.nsICategoryManager);
             catMan.addCategoryEntry('app-startup', 'MozRepl', 'service,' + CONTRACT_ID, true, true);
         },
-    
+
         unregisterSelf: function(aCompMgr, aLocation, aType) {pp
             aCompMgr = aCompMgr.QueryInterface(Ci.nsIComponentRegistrar);
             aCompMgr.unregisterFactoryLocation(CLASS_ID, aLocation);
-    
+
             var catMan = Cc['@mozilla.org/categorymanager;1'].
                 getService(Ci.nsICategoryManager);
             catMan.deleteCategoryEntry('app-startup', 'service,' + CONTRACT_ID, true);
         },
-    
+
         getClassObject: function(aCompMgr, aCID, aIID) {
             if (!aIID.equals(Ci.nsIFactory))
                 throw Cr.NS_ERROR_NOT_IMPLEMENTED;
-    
+
             if (aCID.equals(CLASS_ID))
                 return Factory;
-    
-            throw Cr.NS_ERROR_NO_INTERFACE;        
+
+            throw Cr.NS_ERROR_NO_INTERFACE;
         },
-    
+
         canUnload: function(aCompMgr) { return true; }
     };
-    
+
     var NSGetModule = function(aCompMgr, aFileSpec) { return Module; }
 }
