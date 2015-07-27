@@ -2,9 +2,13 @@
 .*
 *~
 *.xpi
+
+components/Makefile
+
 tmp/*
 node_modules/*
 test/*
+
 npm-debug.log
 README.md
 package.json
