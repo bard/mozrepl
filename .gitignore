@@ -1,0 +1,4 @@
+*~
+*.xpi
+node_modules/
+tmp/
