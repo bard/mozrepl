@@ -2,6 +2,11 @@ sudo: false
 language: node_js
 node_js:
 - "0.10"
+env:
+  - FIREFOX_VERSION=39.0
+  - FIREFOX_VERSION=38.0.6
+  - FIREFOX_VERSION=37.0.2
+  - FIREFOX_VERSION=36.0.4
 
 before_install:
 - "export DISPLAY=:99.0"
@@ -11,13 +16,12 @@ before_install:
 - npm --version
 
 before_script:
-- npm install 
-- npm install mozilla-download -g
 - cd ..
-- mozilla-download --branch FIREFOX_39_0 --product firefox $TRAVIS_BUILD_DIR/../
+- wget "https://download.mozilla.org/?product=firefox-$FIREFOX_VERSION-SSL&os=linux64&lang=en-US" -O $TRAVIS_BUILD_DIR/../firefox.tar.bz2
+- tar xvf firefox.tar.bz2
 - cd $TRAVIS_BUILD_DIR
 
 script:
 - export JPM_FIREFOX_BINARY=$TRAVIS_BUILD_DIR/../firefox/firefox
 - export FIREFOX_BIN=$JPM_FIREFOX_BINARY
-- npm run test 
+- npm run test
