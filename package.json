@@ -3,7 +3,7 @@
   "title": "MozRepl",
   "id": "mozrepl@hyperstruct.net",
   "description": "Interactive console for Mozilla applications",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "author": "Massimiliano Mirra <bard@hyperstruct.net>",
   "contributors": [
     "Luca Greco <luca.greco@alcacoop.it>"
