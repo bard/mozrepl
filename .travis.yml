@@ -3,6 +3,7 @@ language: node_js
 node_js:
 - "0.10"
 env:
+  - FIREFOX_VERSION=40.0b8
   - FIREFOX_VERSION=39.0
   - FIREFOX_VERSION=38.0.6
   - FIREFOX_VERSION=37.0.2

@@ -10,6 +10,16 @@ var path = require("path");
 
 var mozrepl;
 
+var static = require('node-static');
+
+var file = new static.Server("./test/fixtures/");
+
+require('http').createServer(function (request, response) {
+    request.addListener('end', function () {
+        file.serve(request, response);
+    }).resume();
+}).listen(8080);
+
 var manifest = jpm_utils.getManifest();
 
 jpm_run(manifest, {
@@ -30,7 +40,9 @@ beforeEach(function(done) {
     mozrepl.connect();
   }
 
-  mozrepl.on("connect", done);
+  mozrepl.on("connect", function() {
+    mozrepl.eval("content.location = 'http://localhost:8080';", done);
+  });
   mozrepl.on("error", function() {
     if (retries > 0) {
       console.log("RETRY");

@@ -1,3 +1,6 @@
 {
-  "extensions.mozrepl.autoStart": true
+  "extensions.mozrepl.autoStart": true,
+  "browser.tabs.remote.autostart": false,
+  "browser.tabs.remote.autostart.1": false,
+  "browser.tabs.remote.autostart.2": false
 }
