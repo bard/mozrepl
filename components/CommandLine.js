@@ -61,7 +61,7 @@ MozReplCommandLineHandler.prototype = {
         } catch(e) {}
 
         if(start || contextWindowType) {
-            var port = Number(cmdLine.handleFlagWithParam('repl', false)) ||
+            var port = Number(cmdLine.handleFlagWithParam('repl-port', false)) ||
                 srvPref.getIntPref('port');
             var loopbackOnly = srvPref.getBoolPref('loopbackOnly');
 
@@ -77,7 +77,8 @@ MozReplCommandLineHandler.prototype = {
     },
 
     helpInfo: ['-repl              Start REPL.\n',
-               '-repl-context      Start in the context gives as window type (see XUL windowtype attribute).\n'].join('')
+               '-repl-context      Start in the context gives as window type (see XUL windowtype attribute).\n',
+               '-repl-port <num>   Specify access port.\n'].join('')
             
 };
 
