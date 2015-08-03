@@ -20,12 +20,13 @@ require('http').createServer(function (request, response) {
     }).resume();
 }).listen(8080);
 
-var manifest = jpm_utils.getManifest();
-
-jpm_run(manifest, {
-  verbose: process.env.VERBOSE,
-  prefs: "./test/fixtures/test-prefs.json",
-  binary: process.env.FIREFOX_BIN || "/usr/bin/firefox"
+var getManifest = jpm_utils.getManifest();
+getManifest.then(function(manifest) {
+  jpm_run(manifest, {
+    verbose: process.env.VERBOSE,
+    prefs: "./test/fixtures/test-prefs.json",
+    binary: process.env.FIREFOX_BIN || "/usr/bin/firefox"
+  });
 });
 
 beforeEach(function(done) {
