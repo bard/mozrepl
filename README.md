@@ -1,3 +1,6 @@
+MozRepl [![Build Status](https://travis-ci.org/rpl/mozrepl.png)](https://travis-ci.org/rpl/mozrepl)
+============
+
 ## Notice
 
 MozRepl is looking for a maintainer. Please get in touch with `hyperstruct [at] gmail.com` or `luca.greco [at] alcacoop.it`.
