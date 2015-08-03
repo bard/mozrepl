@@ -3,7 +3,11 @@ language: node_js
 node_js:
 - "0.10"
 env:
+  ## Firefox Developer Edition
+  - FIREFOX_VERSION=aurora-latest
+  ## Firefox Upcoming Release
   - FIREFOX_VERSION=40.0b8
+  ## Firefox Releases
   - FIREFOX_VERSION=39.0
   - FIREFOX_VERSION=38.0.6
   - FIREFOX_VERSION=37.0.2
@@ -18,7 +22,7 @@ before_install:
 
 before_script:
 - cd ..
-- wget "https://download.mozilla.org/?product=firefox-$FIREFOX_VERSION-SSL&os=linux64&lang=en-US" -O $TRAVIS_BUILD_DIR/../firefox.tar.bz2
+- wget "https://download.mozilla.org/?product=firefox-$FIREFOX_VERSION-ssl&os=linux64&lang=en-US" -O $TRAVIS_BUILD_DIR/../firefox.tar.bz2
 - tar xvf firefox.tar.bz2
 - cd $TRAVIS_BUILD_DIR
 
