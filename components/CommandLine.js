@@ -50,23 +50,19 @@ MozReplCommandLineHandler.prototype = {
     QueryInterface: XPCOMUtils.generateQI([Ci.nsICommandLineHandler]),
 
     handle: function(cmdLine) {
-        var start;
+        var start, port, contextWindowType;
         try {
-            start = cmdLine.handleFlag('repl', false);
-        } catch (e) {}
+            port = cmdLine.handleFlagWithParam('repl', false);
+        } catch (e) {
+            start = cmdLine.handleFlag('repl', false)
+        }
 
-        var contextWindowType;
         try {
             contextWindowType = cmdLine.handleFlagWithParam('repl-context', false);
         } catch(e) {}
 
-        var port;
-        try {
-            var port = parseInt(cmdLine.handleFlagWithParam('repl-port', false));
-        } catch(e) {}
-
         if(start || port || contextWindowType) {
-            port = port || srvPref.getIntPref('port');
+            port = parseInt(port) || srvPref.getIntPref('port');
             var loopbackOnly = srvPref.getBoolPref('loopbackOnly');
 
             var service = Cc['@hyperstruct.net/mozlab/mozrepl;1']
@@ -80,10 +76,9 @@ MozReplCommandLineHandler.prototype = {
         }
     },
 
-    helpInfo: ['-repl              Start REPL.\n',
-               '-repl-context      Start in the context gives as window type (see XUL windowtype attribute).\n',
-               '-repl-port <num>   Specify access port.\n'].join('')
-            
+    helpInfo: ['-repl [PORT]       Start REPL (PORT defaults to 4242).\n',
+               '-repl-context      Start in the context gives as window type (see XUL windowtype attribute).\n'
+              ].join('')
 };
 
 /**
