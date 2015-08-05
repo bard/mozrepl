@@ -1,4 +1,4 @@
-MozRepl [![Build Status](https://travis-ci.org/rpl/mozrepl.png)](https://travis-ci.org/rpl/mozrepl)
+MozRepl [![Build Status](https://travis-ci.org/bard/mozrepl.png)](https://travis-ci.org/bard/mozrepl)
 ============
 
 ## Notice
