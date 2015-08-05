@@ -42,7 +42,9 @@ beforeEach(function(done) {
   }
 
   mozrepl.on("connect", function() {
-    mozrepl.eval("content.location = 'http://localhost:8080';", done);
+    mozrepl.eval("content.location = 'http://localhost:8080';", function() {
+      setTimeout(done, 1500);
+    });
   });
   mozrepl.on("error", function() {
     if (retries > 0) {
