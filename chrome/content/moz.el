@@ -127,6 +127,27 @@ The following keys are bound in this minor mode:
       moz-temporary-file-name
     (setq moz-temporary-file-name (make-temp-file "emacs-mozrepl"))))
 
+(defun moz-send-string (string)
+  "Send the string to Firefox via MozRepl, don't display the
+process buffer."
+  (comint-send-string (inferior-moz-process)
+                      (concat moz-repl-name ".pushenv('printPrompt', 'inputMode'); "
+                              moz-repl-name ".setenv('printPrompt', false); "
+                              moz-repl-name ".setenv('inputMode', 'multiline'); "
+                              "undefined; \n"))
+  ;; Give the previous line a chance to be evaluated on its own.  If
+  ;; it gets concatenated to the following ones, we are doomed.
+  (sleep-for 0 1)
+  (comint-send-string (inferior-moz-process)
+                      string)
+  (comint-send-string (inferior-moz-process)
+                      "\n--end-remote-input\n")
+  (comint-send-string (inferior-moz-process)
+                      (concat moz-repl-name ".popenv('inputMode', 'printPrompt'); "
+                              "undefined; \n"))
+  (comint-send-string (inferior-moz-process)
+                      "\n--end-remote-input\n"))
+
 (defun moz-send-region (start end)
   "Send the region to Firefox via MozRepl."
   (interactive "r")
