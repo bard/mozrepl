@@ -2,3 +2,4 @@
 *.xpi
 node_modules/
 tmp/
+bootstrap.js
