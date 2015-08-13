@@ -782,8 +782,7 @@ function evaluate(code) {
 
     var fos = Cc['@mozilla.org/network/file-output-stream;1']
         .createInstance(Ci.nsIFileOutputStream);
-    fos.init(_.TMP_FILE, 0x02 | 0x08 | 0x20, 0600, 0);
-
+    fos.init(_.TMP_FILE, 0x02 | 0x08 | 0x20, 0o600, 0);
     var os = Cc['@mozilla.org/intl/converter-output-stream;1']
         .createInstance(Ci.nsIConverterOutputStream);
     os.init(fos, 'UTF-8', 0, 0x0000);
