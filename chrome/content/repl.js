@@ -575,6 +575,28 @@ var javascriptInteractor = {
         return repl._name + '> ';
     },
 
+    handleError: function(repl, e) {
+        var realException = (e instanceof LoadedScriptError ? e.cause : e);
+
+        repl.print('!!! ' + realException + '\n');
+        if(realException) {
+            repl.print('Details:')
+            repl.print();
+            for(var name in realException) {
+                var content = String(realException[name]);
+                if(content.indexOf('\n') != -1)
+                    content = '\n' + content.replace(/^(?!$)/gm, '    ');
+                else
+                    content = ' ' + content;
+
+                repl.print('  ' + name + ':' + content.replace(/\s*\n$/m, ''));
+            }
+            repl.print();
+        }
+
+        repl._prompt();
+    },
+
     handleInput: function(repl, input) {
         debug('input', input);
 
@@ -588,28 +610,6 @@ var javascriptInteractor = {
             multiline: /\n--end-remote-input\n/m,
         };
 
-        function handleError(e) {
-            var realException = (e instanceof LoadedScriptError ? e.cause : e);
-
-            repl.print('!!! ' + realException + '\n');
-            if(realException) {
-                repl.print('Details:')
-                repl.print();
-                for(var name in realException) {
-                    var content = String(realException[name]);
-                    if(content.indexOf('\n') != -1)
-                        content = '\n' + content.replace(/^(?!$)/gm, '    ');
-                    else
-                        content = ' ' + content;
-
-                    repl.print('  ' + name + ':' + content.replace(/\s*\n$/m, ''));
-                }
-                repl.print();
-            }
-
-            repl._prompt();
-        }
-
         switch(repl.getenv('inputMode')) {
         case 'line':
         case 'multiline':
@@ -622,7 +622,7 @@ var javascriptInteractor = {
                         repl.print(repl.represent(result));
                     repl._prompt();
                 } catch(e) {
-                    handleError(e);
+                    this.handleError(repl, e);
                 }
 
                 [chunk, rest] = scan(rest, inputSeparators[repl.getenv('inputMode')]);
@@ -638,7 +638,7 @@ var javascriptInteractor = {
                         repl.print(repl.represent(result));
                     repl._prompt();
                 } catch(e) {
-                    handleError(e);
+                    this.handleError(repl, e);
                 }
 
                 this._inputBuffer = '';
@@ -654,7 +654,7 @@ var javascriptInteractor = {
                     // ignore and keep filling the buffer
                     repl._prompt(repl._name.replace(/./g, '.') + '> ');
                 } catch(e) {
-                    handleError(e);
+                    this.handleError(repl, e);
                     this._inputBuffer = '';
                 }
             }
