@@ -3,7 +3,7 @@ MozRepl [![Build Status](https://travis-ci.org/bard/mozrepl.png)](https://travis
 
 ## Notice
 
-MozRepl is looking for a maintainer. Please get in touch with `hyperstruct [at] gmail.com` or `luca.greco [at] alcacoop.it`.
+**Key technologies upon which MozRepl depends will be retired from the Mozilla platform in November 2017**. If you are relying on MozRepl, please investigate migration paths.
 
 ## What is it
 
